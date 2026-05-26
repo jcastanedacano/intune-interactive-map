@@ -41,8 +41,7 @@ export const SV_COMPONENTS = {
   'app-protection':      { cat:'apps', name:'App Protection (MAM)',   x:260, y:155, desc:'Protege datos en apps M365 sin enrolar el dispositivo.' },
   'app-config':          { cat:'apps', name:'App Configuration',      x:260, y:230, desc:'Settings por app — sin fricción para el usuario.' },
   'scripts':             { cat:'devices', name:'Scripts & Remediations', x:260, y:305, desc:'PowerShell / Bash + pares detección / remediación.' },
-  'filters':             { cat:'devices', name:'Filters & Scope Tags', x:260, y:380, desc:'Scoping en runtime + RBAC.' },
-  'managed-google-play': { cat:'apps', name:'Managed Google Play',    x:260, y:450, desc:'Android Enterprise prerequisite.' },
+  'account-protection':  { cat:'security', name:'Account Protection (LAPS)', x:260, y:380, desc:'LAPS + Windows Hello + control de cuentas locales.' },
 
   // Col C — Endpoint Security
   'security-baselines':  { cat:'security', name:'Security Baselines', x:430, y:80,  desc:'Hardening pre-curado por Microsoft.' },
@@ -63,11 +62,10 @@ export const SV_COMPONENTS = {
   // Col E — Identity + Defender + Copilot
   'entra-id':            { cat:'entra',    name:'Entra ID',                 x:770, y:80,  desc:'Identidad, join, grupos.' },
   'entra-ca':            { cat:'entra',    name:'Conditional Access',       x:770, y:155, desc:'Compliant device + APP claims aquí se consumen.' },
-  'entra-private-access':{ cat:'entra',    name:'Entra Private Access',     x:770, y:230, desc:'SSE / ZTNA para reemplazar VPNs.' },
-  'defender-endpoint':   { cat:'defender', name:'Defender for Endpoint',    x:770, y:305, desc:'EDR + risk score → compliance.' },
-  'defender-xdr':        { cat:'defender', name:'Defender XDR',             x:770, y:380, desc:'Correlación de incidentes cross-workload.' },
-  'security-copilot':    { cat:'defender', name:'Security Copilot',         x:770, y:450, desc:'Resumen + KQL + agentes autónomos (CA Optimizer).' },
-  'copilot-intune':      { cat:'suite',    name:'Copilot in Intune',        x:770, y:0,   desc:'AI embedded en el portal Intune.' }
+  'defender-endpoint':   { cat:'defender', name:'Defender for Endpoint',    x:770, y:230, desc:'EDR + risk score → compliance.' },
+  'defender-xdr':        { cat:'defender', name:'Defender XDR',             x:770, y:305, desc:'Correlación de incidentes cross-workload.' },
+  'security-copilot':    { cat:'defender', name:'Security Copilot',         x:770, y:380, desc:'Resumen + KQL + agentes autónomos (CA Optimizer).' },
+  'copilot-intune':      { cat:'suite',    name:'Copilot in Intune',        x:770, y:450, desc:'AI embedded en el portal Intune.' }
 }
 
 export function pickNodes(ids) {
