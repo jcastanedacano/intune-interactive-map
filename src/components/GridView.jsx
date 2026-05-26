@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import * as Icons from 'lucide-react'
 import { COMPONENTS, COMPONENT_MAP, CATEGORIES } from '../data/components.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
@@ -153,7 +154,9 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
 
       {/* Middle: icon + name */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 1 }}>
-        <img src={item.iconSvg} alt="" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
+        {item.iconSvg
+          ? <img src={item.iconSvg} alt="" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
+          : (() => { const I = Icons[item.icon] || Icons.Box; return <I size={28} color={CATEGORIES[item.category]?.color} style={{ flexShrink: 0 }} /> })()}
         <div style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? T.selection : T.ink2, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {item.name}
         </div>

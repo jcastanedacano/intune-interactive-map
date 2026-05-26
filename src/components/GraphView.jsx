@@ -432,7 +432,9 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                       width: '100%', height: '100%',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3
                     }}>
-                      <img src={n.iconSvg} alt="" style={{ width: r * 0.7, height: r * 0.7, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                      {n.iconSvg
+                        ? <img src={n.iconSvg} alt="" style={{ width: r * 0.7, height: r * 0.7, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                        : (() => { const I = Icons[n.icon] || Icons.Box; return <I size={r * 0.7} color={cat.color} style={{ flexShrink: 0 }} /> })()}
                       <div style={{
                         fontSize: Math.max(8.5, r * 0.18), fontWeight: 600, color: '#0E1729',
                         lineHeight: 1.15, textAlign: 'center', fontFamily: 'Inter, sans-serif',
@@ -464,7 +466,9 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
           const sel  = COMPONENT_MAP[selectedId]
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 12, borderRight: '1px solid #EEF0F3', flexShrink: 0 }}>
-              {sel?.iconSvg && <img src={sel.iconSvg} alt="" style={{ width: 18, height: 18, flexShrink: 0 }} onError={e => { e.target.style.display='none' }} />}
+              {sel && (sel.iconSvg
+                ? <img src={sel.iconSvg} alt="" style={{ width: 18, height: 18, flexShrink: 0 }} onError={e => { e.target.style.display='none' }} />
+                : (() => { const I = Icons[sel.icon] || Icons.Box; return <I size={18} color={CATEGORIES[sel.category]?.color} style={{ flexShrink: 0 }} /> })())}
               <div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#0E1729', lineHeight: 1.1, maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sel?.name}</div>
                 <div style={{ fontSize: 9, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 1 }}>{CATEGORIES[sel?.category]?.label}</div>
@@ -603,7 +607,9 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
               <div key={t.comp.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, cursor: 'pointer' }}
                 onClick={() => onSelectComponent && onSelectComponent(t.comp)}>
                 <span style={{ fontSize: 9, color: '#98A2B3', fontVariantNumeric: 'tabular-nums', fontFamily: 'JetBrains Mono, ui-monospace, monospace', width: 16 }}>{String(i + 1).padStart(2, '0')}</span>
-                <img src={t.comp.iconSvg} alt="" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                {t.comp.iconSvg
+                  ? <img src={t.comp.iconSvg} alt="" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                  : (() => { const I = Icons[t.comp.icon] || Icons.Box; return <I size={16} color={cat.color} style={{ flexShrink: 0 }} /> })()}
                 <span style={{ color: '#0E1729', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>{t.comp.name}</span>
                 <div style={{ width: 50, height: 3, background: '#EEF0F3', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ width: `${(t.deg / maxDeg) * 100}%`, height: '100%', background: cat.color }}></div>
