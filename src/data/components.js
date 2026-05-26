@@ -415,7 +415,10 @@ COMPONENTS.forEach(c => {
     'firewall','managed-google-play',
     // (entra-id upgraded to official Entra cube from the same source)
     // From Azure Architecture Icons V23 (learn.microsoft.com official pack) — Nov 2025.
-    'disk-encryption','app-config','entra-private-access'
+    'disk-encryption','app-config','entra-private-access',
+    // V23 proxy icons (conceptually-adjacent products) — fill gaps where no dedicated brand icon exists.
+    // cloud-pki uses App-Service-Certificates; tunnel uses VPNClientWindows; enterprise-app-mgmt uses Intune Client-Apps blade.
+    'cloud-pki','tunnel','enterprise-app-mgmt'
   ])
   c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
