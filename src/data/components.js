@@ -412,8 +412,10 @@ COMPONENTS.forEach(c => {
     // From Intune admin center icon pack (zip) — gradients normalized to flat #0078D4 brand blue.
     'endpoint-analytics','app-deployment','entra-id','filters',
     // From mscloudlogos.com (loryanstrant/MicrosoftCloudLogos) — official Microsoft cloud product icons.
-    'firewall','managed-google-play'
+    'firewall','managed-google-play',
     // (entra-id upgraded to official Entra cube from the same source)
+    // From Azure Architecture Icons V23 (learn.microsoft.com official pack) — Nov 2025.
+    'disk-encryption','app-config','entra-private-access'
   ])
   c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
