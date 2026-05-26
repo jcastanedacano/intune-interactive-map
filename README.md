@@ -1,5 +1,7 @@
 # Microsoft Intune – Interactive Concept Map
 
+**Live:** https://intune.d3fend.me
+
 Interactive visual map of the Microsoft Intune service ecosystem: Device Management, App Management, Endpoint Security, Provisioning & Updates, the Intune Suite add-ons, and the surrounding Entra + Defender platforms.
 
 Views:
