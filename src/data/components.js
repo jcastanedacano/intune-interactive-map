@@ -408,7 +408,9 @@ COMPONENTS.forEach(c => {
     // From official Microsoft Azure SVG stencil pack (Intune family)
     'enrollment','config-profiles','compliance-policies','security-baselines',
     'app-protection','update-rings','feature-updates','driver-updates',
-    'co-management','remote-help'
+    'co-management','remote-help',
+    // From Intune admin center icon pack (zip)
+    'endpoint-analytics'
   ])
   c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
