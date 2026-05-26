@@ -97,14 +97,13 @@ export const MINDMAP_PRESETS = [
         { id:'ir-policy-profile',  name:'Policy and Profile Manager',  cat:'role-intune' },
         { id:'ir-read-only',       name:'Read Only Operator',          cat:'role-intune' },
         { id:'ir-school',          name:'School Administrator',        cat:'role-intune' },
-        { id:'ir-role-admin',      name:'Intune Role Administrator',   cat:'role-intune' }
+        { id:'ir-role-admin',      name:'Intune Role Administrator',   cat:'role-intune' },
+        { id:'ir-epm',             name:'Endpoint Privilege Manager',  cat:'role-intune' },
+        { id:'ir-epm-reader',      name:'Endpoint Privilege Reader',   cat:'role-intune' }
       ]},
-      { cat: 'role-suite', label: 'INTUNE SUITE ROLES', items: [
-        { id:'ir-cloud-pki',       name:'Cloud PKI Administrator',     cat:'role-suite' },
-        { id:'ir-epm',             name:'Endpoint Privilege Manager',  cat:'role-suite' },
-        { id:'ir-remote-help',     name:'Remote Help (scoped)',        cat:'role-suite' },
-        { id:'ir-tunnel-admin',    name:'Microsoft Tunnel Admin',      cat:'role-suite' },
-        { id:'ir-adv-analytics',   name:'Endpoint Analytics Manager',  cat:'role-suite' }
+      { cat: 'role-suite', label: 'CLOUD PC ROLES (Windows 365)', items: [
+        { id:'ir-cpc-admin',       name:'Cloud PC Administrator',      cat:'role-suite' },
+        { id:'ir-cpc-reader',      name:'Cloud PC Reader',             cat:'role-suite' }
       ]},
       { cat: 'role-entra', label: 'ENTRA ID ROLES (Intune-relevant)', items: [
         { id:'ir-intune-admin',    name:'Intune Administrator',                cat:'role-entra' },

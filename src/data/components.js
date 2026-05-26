@@ -171,7 +171,7 @@ export const COMPONENTS = [
   { id: 'cloud-pki', name: 'Microsoft Cloud PKI', category: 'suite', icon: 'FileKey',
     sublabel: 'Issuing CAs · SCEP · Auto-renewal · No on-prem NDES',
     prereqs: [],
-    description: "Fully-managed cloud PKI for Intune. Issues SCEP certificates to managed devices for Wi-Fi, VPN, S/MIME and Tunnel without requiring on-prem ADCS, NDES or connectors. Supports up to 6 Issuing CAs per tenant." },
+    description: "Fully-managed cloud PKI for Intune. Issues SCEP certificates to managed devices for Wi-Fi, VPN, S/MIME and Tunnel without requiring on-prem ADCS, NDES or connectors. Supports up to 6 CAs total per tenant (Root + Issuing + BYOCA combined — e.g., 1 root + 5 issuing, or 3 roots × 1 issuing each, etc)." },
   { id: 'endpoint-analytics', name: 'Endpoint Analytics (Advanced)', category: 'suite', icon: 'Activity',
     sublabel: 'Startup · App reliability · Anomalies · Battery health',
     prereqs: ['enrollment'],
@@ -358,7 +358,7 @@ const COMPONENT_DETAILS = {
       { tag: 'TVM', tagColor: '#0891A6', name: 'Threat & Vulnerability Management',
         description: 'Continuous discovery of CVEs and misconfigurations per device. Prioritized by exploitability and business value. Feeds Intune remediation recommendations.' },
       { tag: 'RskScr', tagColor: '#E24B4A', name: 'Machine Risk Score → Intune Compliance',
-        description: 'Defender produces a per-device risk score (Low/Medium/High). Intune compliance policy can require risk score below a threshold to mark the device compliant.' },
+        description: 'Defender produces a per-device risk score with 4 levels (Clear / Low / Medium / High). Intune compliance policy can require risk at-or-below a threshold to mark the device compliant.' },
       { tag: 'LR', tagColor: '#8541C5', name: 'Live Response',
         description: 'Interactive remote shell into a managed endpoint for incident responders. Audited, time-bounded, RBAC-controlled.' }
     ],
@@ -372,7 +372,7 @@ const COMPONENT_DETAILS = {
     effort: 'Low', multiTenant: 'Yes',
     subComponents: [
       { tag: 'RootCA', tagColor: '#0891A6', name: 'Root & Issuing CAs',
-        description: 'Up to 1 Root CA and 6 Issuing CAs per tenant. Issuing CAs can be hierarchical from a Cloud PKI Root or anchored to a customer BYO Root.' },
+        description: 'Up to 6 CAs total per tenant (counts Root + Issuing + BYOCA). Two-tier hierarchy: a Cloud PKI Root anchors Issuing CAs, or BYOCA Issuing CAs anchor to your existing private CA (ADCS).' },
       { tag: 'SCEP', tagColor: '#3B5DD9', name: 'SCEP Issuance to Devices',
         description: 'Devices request certs via SCEP through standard Intune profiles. No NDES, no on-prem ADCS, no connectors to maintain.' },
       { tag: 'AutoRn', tagColor: '#0F9D6A', name: 'Automatic Renewal',

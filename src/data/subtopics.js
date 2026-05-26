@@ -83,7 +83,7 @@ export const SUBTOPICS = {
       desc: "Allows MDE to block post-breach detections even when a non-Microsoft AV is the active engine (passive mode Defender)." },
     { id: "risk", chip: "Risk", label: "Risk Score → Compliance",
       url: "https://learn.microsoft.com/en-us/intune/intune-service/protect/advanced-threat-protection",
-      desc: "Compliance policies can require device risk score below a threshold (Low / Medium / High). High-risk devices flip to non-compliant automatically." }
+      desc: "Compliance policies can require device risk score at-or-below a threshold (4 levels: Clear / Low / Medium / High). Devices exceeding the threshold flip to non-compliant automatically." }
   ],
 
   "asr": [
@@ -155,7 +155,7 @@ export const SUBTOPICS = {
   "cloud-pki": [
     { id: "rca", chip: "RootCA", label: "Root & Issuing CAs",
       url: "https://learn.microsoft.com/en-us/intune/intune-service/protect/microsoft-cloud-pki-overview",
-      desc: "Up to 1 Root CA and 6 Issuing CAs per tenant. Anchored to Cloud PKI Root or BYO Root." },
+      desc: "Up to 6 CAs total per tenant — combined limit across Root, Issuing and BYOCA. Two-tier hierarchy: Cloud PKI Root anchors Issuing, or BYOCA Issuing anchors to your existing private CA." },
     { id: "scep", chip: "SCEP", label: "SCEP Issuance",
       url: "https://learn.microsoft.com/en-us/intune/intune-service/protect/certificates-scep-configure",
       desc: "Devices request certs via standard SCEP profile — no NDES, no ADCS, no on-prem connectors." },
@@ -188,7 +188,7 @@ export const SUBTOPICS = {
       desc: "Continuous CVE + misconfiguration discovery per device. Prioritized by exploitability + business value. Feeds Intune remediation recommendations." },
     { id: "risk", chip: "Risk", label: "Machine Risk Score",
       url: "https://learn.microsoft.com/en-us/defender-endpoint/configure-conditional-access",
-      desc: "Per-device risk score (Low/Medium/High). Intune compliance policy enforces minimum risk threshold — high-risk devices become non-compliant." }
+      desc: "Per-device risk score with 4 levels: Clear / Low / Medium / High. Intune compliance policy enforces an at-or-below threshold — devices above the threshold become non-compliant." }
   ],
 
   "endpoint-analytics": [
