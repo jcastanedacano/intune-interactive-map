@@ -73,6 +73,66 @@ export const MINDMAP_PRESETS = [
       { id:'ic-eco-xdr',      name:'Defender XDR',                 cat:'defender' },
       { id:'ic-eco-secop',    name:'Security Copilot',             cat:'defender' }
     ]
+  },
+
+  // ── Microsoft Intune Admin Roles (RBAC) ──────────────────────────────────
+  {
+    id: 'intune-roles',
+    label: 'Microsoft Intune Admin Roles',
+    description: 'Roles RBAC para administrar Microsoft Intune — built-in, Suite, Entra y cross-service.',
+    root: { top: 'MICROSOFT', main: 'Intune Roles' },
+    ecoHubLabel: 'CROSS-SERVICE',
+    presetCategories: {
+      'role-cross':  { color: '#E24B4A', bg: '#FBE6E6', label: 'Cross-service (Entra)' },
+      'role-intune': { color: '#0891A6', bg: '#E0F4F7', label: 'Intune built-in' },
+      'role-suite':  { color: '#8541C5', bg: '#F0E7FA', label: 'Intune Suite add-ons' },
+      'role-entra':  { color: '#C5377A', bg: '#FBE6EF', label: 'Entra-side roles' },
+      'role-rbac':   { color: '#0F9D6A', bg: '#E6F6EE', label: 'RBAC primitives' }
+    },
+    families: [
+      { cat: 'role-intune', label: 'INTUNE BUILT-IN ROLES', items: [
+        { id:'ir-app-mgr',         name:'Application Manager',         cat:'role-intune' },
+        { id:'ir-endpoint-sec',    name:'Endpoint Security Manager',   cat:'role-intune' },
+        { id:'ir-helpdesk',        name:'Help Desk Operator',          cat:'role-intune' },
+        { id:'ir-policy-profile',  name:'Policy and Profile Manager',  cat:'role-intune' },
+        { id:'ir-read-only',       name:'Read Only Operator',          cat:'role-intune' },
+        { id:'ir-school',          name:'School Administrator',        cat:'role-intune' },
+        { id:'ir-role-admin',      name:'Intune Role Administrator',   cat:'role-intune' }
+      ]},
+      { cat: 'role-suite', label: 'INTUNE SUITE ROLES', items: [
+        { id:'ir-cloud-pki',       name:'Cloud PKI Administrator',     cat:'role-suite' },
+        { id:'ir-epm',             name:'Endpoint Privilege Manager',  cat:'role-suite' },
+        { id:'ir-remote-help',     name:'Remote Help (scoped)',        cat:'role-suite' },
+        { id:'ir-tunnel-admin',    name:'Microsoft Tunnel Admin',      cat:'role-suite' },
+        { id:'ir-adv-analytics',   name:'Endpoint Analytics Manager',  cat:'role-suite' }
+      ]},
+      { cat: 'role-entra', label: 'ENTRA ID ROLES (Intune-relevant)', items: [
+        { id:'ir-intune-admin',    name:'Intune Administrator',                cat:'role-entra' },
+        { id:'ir-cloud-dev',       name:'Cloud Device Administrator',          cat:'role-entra' },
+        { id:'ir-auth-policy',     name:'Authentication Policy Administrator', cat:'role-entra' },
+        { id:'ir-ca-admin',        name:'Conditional Access Administrator',    cat:'role-entra' },
+        { id:'ir-groups-admin',    name:'Groups Administrator',                cat:'role-entra' },
+        { id:'ir-user-admin',      name:'User Administrator',                  cat:'role-entra' }
+      ]},
+      { cat: 'role-rbac', label: 'RBAC PRIMITIVES', items: [
+        { id:'ir-scope-tags',      name:'Scope Tags',                  cat:'role-rbac' },
+        { id:'ir-custom-roles',    name:'Custom RBAC Roles',           cat:'role-rbac' },
+        { id:'ir-admin-units',     name:'Administrative Units (AU)',   cat:'role-rbac' },
+        { id:'ir-pim-jit',         name:'PIM Just-in-Time activation', cat:'role-rbac' },
+        { id:'ir-pim-approval',    name:'PIM Approval workflows',      cat:'role-rbac' },
+        { id:'ir-rbac-audit',      name:'Role Assignment Audit',       cat:'role-rbac' }
+      ]}
+    ],
+    ecoItems: [
+      { id:'ir-cross-ga',      name:'Global Administrator',     cat:'role-cross' },
+      { id:'ir-cross-gr',      name:'Global Reader',            cat:'role-cross' },
+      { id:'ir-cross-secadm',  name:'Security Administrator',   cat:'role-cross' },
+      { id:'ir-cross-secread', name:'Security Reader',          cat:'role-cross' },
+      { id:'ir-cross-secop',   name:'Security Operator',        cat:'role-cross' },
+      { id:'ir-cross-compl',   name:'Compliance Administrator', cat:'role-cross' },
+      { id:'ir-cross-billing', name:'Billing Administrator',    cat:'role-cross' },
+      { id:'ir-cross-priv-auth', name:'Privileged Auth Admin',  cat:'role-cross' }
+    ]
   }
 ]
 
