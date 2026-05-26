@@ -409,8 +409,8 @@ COMPONENTS.forEach(c => {
     'enrollment','config-profiles','compliance-policies','security-baselines',
     'app-protection','update-rings','feature-updates','driver-updates',
     'co-management','remote-help',
-    // From Intune admin center icon pack (zip)
-    'endpoint-analytics'
+    // From Intune admin center icon pack (zip) — gradients normalized to flat #0078D4 brand blue.
+    'endpoint-analytics','app-deployment','entra-id','filters'
   ])
   c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
