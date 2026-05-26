@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; margin: 0; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #F8FAFC; color: #0F172A; }
+
+.node-card { transition: box-shadow 120ms ease, transform 120ms ease; }
+.node-card:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.12); }
+
+.edge-label { font-size: 10px; fill: #475569; pointer-events: none; }
+.edge-path { fill: none; stroke-width: 1.5; }
+
+.tab-active { background: #0F172A; color: white; }
+.tab-inactive { background: white; color: #0F172A; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 6px; }
+
+/* Node selection — dim non-connected nodes when a selection is active */
+.fw-dim { opacity: 0.15; transition: opacity 120ms ease; }
+.fw-dim image, .fw-dim img { opacity: 0.6; }
+.fw-edge-dim { opacity: 0.06 !important; }
+.fw-edge-hi { opacity: 0.9 !important; }
+.fw-selected-card { filter: drop-shadow(0 0 8px rgba(37,99,235,0.5)); }
