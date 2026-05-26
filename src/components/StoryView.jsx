@@ -755,7 +755,7 @@ function StoryToolbar({ storyId, onPickStory, pickerOpen, onTogglePicker, view, 
   return (
     <div style={{display:'flex', alignItems:'center', gap:12, padding:'10px 18px', borderBottom:`1px solid ${SV.divider}`, background:'#fff'}}>
       <div style={{display:'flex', alignItems:'center', gap:8}}>
-        <div style={{width:26, height:26, background:'#0E1729', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:11, fontWeight:700}}>P</div>
+        <img src="/favicon.svg" alt="" style={{width:26, height:26, flexShrink:0}} />
         <div style={{fontSize:13, fontWeight:600, letterSpacing:'-0.01em'}}>Intune Map</div>
       </div>
 

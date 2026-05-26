@@ -30,7 +30,7 @@ export default function Toolbar(props) {
       {/* Row 1 — brand + tabs + spacer + search + reset + ? (minimalist per design package) */}
       <div className="flex items-center gap-3" style={{ padding: '0 22px', minHeight: 54 }}>
         <div className="flex items-center gap-2 shrink-0">
-          <div style={{ width: 30, height: 30, background: '#0E1729', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700 }}>I</div>
+          <img src="/favicon.svg" alt="" style={{ width: 30, height: 30, flexShrink: 0 }} />
           <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em', color: SV_INK }}>Intune Map</div>
         </div>
 
