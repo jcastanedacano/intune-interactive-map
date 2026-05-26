@@ -400,8 +400,12 @@ COMPONENTS.forEach(c => {
     licensing: `https://m365maps.com/files/Microsoft-365-Maps-Overview.htm`,
     permissions: `https://rbacmap.com/`
   }
-  // No custom SVG icons in Intune v1 — fall back to lucide-react `icon` field everywhere.
-  c.iconSvg = null
+  // SVGs ported from sibling maps (Defender / Purview). Lucide `icon` is the fallback.
+  const SVG_ICONS = new Set([
+    'defender-endpoint','defender-xdr','security-copilot','entra-ca',
+    'antivirus','edr','asr','copilot-intune'
+  ])
+  c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
 
 const _byId = Object.fromEntries(COMPONENTS.map(c => [c.id, c]))
