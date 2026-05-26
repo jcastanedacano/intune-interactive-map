@@ -62,6 +62,36 @@ export const SCENARIO_GROUPS = [
         problem: 'Retail / hospitality scenario: shared Android tablets with kiosk-style single-app experience. High device churn. No personal accounts.',
         outcome: 'Android Enterprise Dedicated devices via Managed Google Play. Configuration Profile locks the device to one app. Remote Help for the few times something breaks.',
         nodes: ['managed-google-play','enrollment','config-profiles','app-deployment','remote-help']
+      },
+      {
+        id: 'uc-credential-theft', title: 'Credential theft / lateral movement detected',
+        problem: 'Defender for Identity / MDE detect Pass-the-Hash or Kerberoasting on a managed Windows endpoint. The attacker has valid creds; standard MFA already passed. Need to contain the device without paging the user out of bed.',
+        outcome: 'MDE risk score flips to High → Compliance Policy marks non-compliant → CA blocks new tokens. EPM prevents elevation of further tools. Defender XDR auto-isolates. Security Copilot drafts the incident summary.',
+        nodes: ['defender-endpoint','compliance-policies','entra-ca','epm','defender-xdr','security-copilot']
+      },
+      {
+        id: 'uc-usb-exfil', title: 'USB exfiltration attempt blocked',
+        problem: 'Departing employee inserts a personal USB to copy SharePoint downloads. Traditional DLP catches network exfil but not local copy.',
+        outcome: 'ASR Device Control blocks the write at the kernel layer. EDR raises an alert. Endpoint Analytics flags the anomalous pattern. Audit log feeds XDR for the eventual investigation.',
+        nodes: ['asr','edr','defender-endpoint','defender-xdr','endpoint-analytics']
+      },
+      {
+        id: 'uc-jailbreak', title: 'Jailbroken iOS detected on managed device',
+        problem: 'A user-owned, App Protection-managed iPhone is jailbroken. The user can now exfiltrate corporate data outside the managed app sandbox.',
+        outcome: 'App Protection Conditional Launch blocks app launch. MDE Mobile reports threat → Compliance flips → CA denies. Selective wipe removes corporate data. User notified via Company Portal.',
+        nodes: ['app-protection','defender-endpoint','compliance-policies','entra-ca']
+      },
+      {
+        id: 'uc-tvm-cve', title: 'Critical CVE: fleet-wide vulnerability hunt',
+        problem: "A high-severity CVE publishes for Chrome / OpenSSL / a popular agent. CISO wants exposure + remediation status by EOD — across 12,000 mixed endpoints.",
+        outcome: 'MDE TVM finds vulnerable devices in minutes. Intune Remediation script targets the affected group, deploys the patch (or workaround), then re-runs detection. Security Copilot Vulnerability Remediation Agent prioritizes by blast radius. Update Rings push the official patch as it lands.',
+        nodes: ['defender-endpoint','scripts','update-rings','security-copilot','compliance-policies']
+      },
+      {
+        id: 'uc-patch-emergency', title: 'Emergency out-of-band patch deployment',
+        problem: 'Microsoft releases an out-of-band security update for a critical zero-day. Standard 30-day deferral would leave the fleet exposed for weeks.',
+        outcome: 'Expedited Quality Update profile overrides the deferral on the Pilot ring; Endpoint Analytics monitors anomalies; Broad ring follows within 24h; Critical ring within 72h. Compliance Policy enforces minimum OS version after the deadline.',
+        nodes: ['update-rings','feature-updates','endpoint-analytics','compliance-policies','entra-ca']
       }
     ]
   },
@@ -97,6 +127,18 @@ export const SCENARIO_GROUPS = [
         problem: 'CISO mandate to align endpoint operations with the Zero Trust model: verify explicitly, least privilege, assume breach. Need a coherent deployment that maps to those pillars.',
         outcome: 'Verify explicitly: Compliance Policies + CA + MDE risk score. Least privilege: EPM + LAPS + App Protection. Assume breach: ASR + EDR in Block Mode + Sentinel via XDR.',
         nodes: ['compliance-policies','entra-ca','defender-endpoint','epm','account-protection','app-protection','asr','edr','defender-xdr']
+      },
+      {
+        id: 'dp-privileged-workstation', title: 'Deployment: Privileged Access Workstation (PAW)',
+        problem: 'Admins for Entra, Azure, M365 must operate from hardened, segregated devices. No web browsing, no personal mail, no unsigned binaries, no local admin. Audit every elevation.',
+        outcome: 'Dedicated Autopilot profile + restrictive Security Baseline + EPM "deny by default" + LAPS + Tunnel-only egress + Remote Help logged. Conditional Access requires this exact device for admin scopes.',
+        nodes: ['autopilot','security-baselines','epm','account-protection','tunnel','remote-help','entra-ca','compliance-policies']
+      },
+      {
+        id: 'dp-mdm-attached-mecm', title: 'Deployment: MECM Tenant Attach progressive uplift',
+        problem: 'Long-standing MECM hierarchy with 40,000 endpoints. Need cloud visibility, modern reporting, and a glide path to Intune without ripping out MECM.',
+        outcome: 'Tenant Attach surfaces MECM devices in Intune portal day-1. Co-management sliders move Compliance → Endpoint Protection → Windows Update one at a time. CMG (Cloud Management Gateway) extends MECM reach to off-network devices.',
+        nodes: ['co-management','config-profiles','compliance-policies','update-rings','endpoint-analytics']
       }
     ]
   }
