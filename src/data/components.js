@@ -400,10 +400,15 @@ COMPONENTS.forEach(c => {
     licensing: `https://m365maps.com/files/Microsoft-365-Maps-Overview.htm`,
     permissions: `https://rbacmap.com/`
   }
-  // SVGs ported from sibling maps (Defender / Purview). Lucide `icon` is the fallback.
+  // SVGs ported from sibling maps + official Microsoft Azure stencils. Lucide `icon` is the fallback.
   const SVG_ICONS = new Set([
+    // From sibling Defender / Purview maps
     'defender-endpoint','defender-xdr','security-copilot','entra-ca',
-    'antivirus','edr','asr','copilot-intune'
+    'antivirus','edr','asr','copilot-intune',
+    // From official Microsoft Azure SVG stencil pack (Intune family)
+    'enrollment','config-profiles','compliance-policies','security-baselines',
+    'app-protection','update-rings','feature-updates','driver-updates',
+    'co-management','remote-help'
   ])
   c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
