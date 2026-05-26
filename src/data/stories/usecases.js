@@ -1,7 +1,7 @@
 // Story View · use case narratives for Intune.
 import { pickNodes as pick } from "../storyData.js"
 
-export const STORY_ORDER = ['uc-byod','uc-autopilot','uc-ransomware','uc-lost-mobile','uc-credential-theft','uc-usb-exfil','uc-patch-emergency']
+export const STORY_ORDER = ['uc-byod','uc-autopilot','uc-ransomware','uc-lost-mobile','uc-credential-theft','uc-usb-exfil','uc-patch-emergency','uc-cloud-pki']
 
 export const STORIES = {
   'uc-byod': {
@@ -162,6 +162,45 @@ export const STORIES = {
         insight:'Bloquear sin trazabilidad es regalarle a un incidente futuro la falta de evidencia. ASR + telemetría = control + auditable.',
         introNodes:['endpoint-analytics','defender-xdr'],
         introEdges:[{a:'asr', b:'defender-xdr', t:'data', label:'block event'}],
+        annotations:[]
+      }
+    ]
+  },
+
+  'uc-cloud-pki': {
+    id:'uc-cloud-pki', title:'Cloud PKI: jubilar NDES + ADCS', tag:'Use case',
+    blurb:'Retirar la PKI on-prem entera y entregar certs Wi-Fi, VPN y S/MIME desde la nube.',
+    duration:'3 escenas · ~3 min', primaryCat:'suite',
+    nodes: pick(['cloud-pki','config-profiles','tunnel','entra-ca','compliance-policies']),
+    scenes:[
+      { id:1, chip:'Escena 1 · El dolor on-prem',
+        heading:'NDES + ADCS son frágiles, caros y peligrosos.',
+        narrative:'NDES requiere IIS publicado a internet, un service account que expira, un connector que se rompe en cada patch Tuesday. ADCS son 2-4 servidores que nadie quiere tocar. CRLs colgadas, certs duplicados, renovaciones manuales.',
+        insight:'La PKI on-prem es deuda técnica disfrazada de infraestructura crítica. Si un actor llega al CA, firma cualquier cosa.',
+        introNodes:['cloud-pki'],
+        introEdges:[],
+        annotations:[{x:600, y:155, arrow:'left', tone:'default', body:'<b>Cloud PKI</b><br/><span class="muted">Reemplaza ADCS + NDES + connectors.</span>'}]
+      },
+      { id:2, chip:'Escena 2 · SCEP nativo desde Intune',
+        heading:'Configuration Profile + Cloud PKI = cert en el device sin connectors.',
+        narrative:'En el portal Intune: crear Issuing CA en <i>Cloud PKI</i>, crear un SCEP cert profile en <i>Configuration Profiles</i>, asignarlo al grupo. Cada device recibe su cert al sync. Renovación automática antes del expiry.',
+        insight:'No hay NDES, no hay ADCS, no hay PKI team. Microsoft hace la rotación. El admin solo aprueba la Issuing CA.',
+        introNodes:['config-profiles','compliance-policies'],
+        introEdges:[
+          {a:'cloud-pki', b:'config-profiles', t:'data', label:'SCEP profile'},
+          {a:'compliance-policies', b:'cloud-pki', t:'signal', label:'compliant-only'}
+        ],
+        annotations:[]
+      },
+      { id:3, chip:'Escena 3 · Use cases del mismo cert',
+        heading:'Wi-Fi EAP-TLS · Microsoft Tunnel · S/MIME · client auth.',
+        narrative:'El mismo cert habilita: <i>Wi-Fi</i> con EAP-TLS (adiós PSK rotado cada 90 días), <i>Tunnel</i> para per-app VPN en iOS/Android, <i>S/MIME</i> para firma/cifrado de email, client auth contra apps internas. <i>CA</i> exige que el cert venga de un device compliant.',
+        insight:'Un solo cert, múltiples superficies. Sin Cloud PKI cada uso era un proyecto. Con Cloud PKI es una asignación.',
+        introNodes:['tunnel','entra-ca'],
+        introEdges:[
+          {a:'cloud-pki', b:'tunnel', t:'data', label:'cert auth'},
+          {a:'cloud-pki', b:'entra-ca', t:'data', label:'client cert'}
+        ],
         annotations:[]
       }
     ]

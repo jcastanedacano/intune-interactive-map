@@ -88,6 +88,18 @@ export const SCENARIO_GROUPS = [
         nodes: ['defender-endpoint','scripts','update-rings','security-copilot','compliance-policies']
       },
       {
+        id: 'uc-cloud-pki-retire-ndes', title: 'Cloud PKI: retire on-prem NDES + ADCS',
+        problem: "Legacy NDES connector dies every patch Tuesday. ADCS servers (2 forests, 4 DCs) need certs maintained, CRLs published, and a HA pair just for cert issuance. Service account passwords expire and nobody knows where. Wi-Fi auth, VPN, S/MIME all depend on it.",
+        outcome: 'Microsoft Cloud PKI issues SCEP certs directly to managed devices. No NDES. No ADCS. No connectors. Auto-renewal handled by Microsoft. Wi-Fi EAP-TLS, Microsoft Tunnel, and S/MIME all use the same cloud-issued cert.',
+        nodes: ['cloud-pki','config-profiles','tunnel','entra-ca','compliance-policies']
+      },
+      {
+        id: 'uc-wifi-eaptls', title: 'Corporate Wi-Fi: passwords → certificate auth',
+        problem: 'Corporate SSID still uses a pre-shared password rotated every 90 days. Every rotation triggers 200 helpdesk tickets. Departing employees keep the password in their phones. Auditors flag PSK as weak.',
+        outcome: "Cloud PKI issues per-device SCEP certs via Configuration Profile. Wi-Fi profile pushes EAP-TLS settings + the trusted root. Devices auth silently with the cert — no password ever. Compliance Policy gates the cert issuance: only compliant devices get on the corporate SSID.",
+        nodes: ['cloud-pki','config-profiles','compliance-policies','entra-ca']
+      },
+      {
         id: 'uc-patch-emergency', title: 'Emergency out-of-band patch deployment',
         problem: 'Microsoft releases an out-of-band security update for a critical zero-day. Standard 30-day deferral would leave the fleet exposed for weeks.',
         outcome: 'Expedited Quality Update profile overrides the deferral on the Pilot ring; Endpoint Analytics monitors anomalies; Broad ring follows within 24h; Critical ring within 72h. Compliance Policy enforces minimum OS version after the deadline.',
