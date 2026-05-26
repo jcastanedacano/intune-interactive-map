@@ -410,7 +410,10 @@ COMPONENTS.forEach(c => {
     'app-protection','update-rings','feature-updates','driver-updates',
     'co-management','remote-help',
     // From Intune admin center icon pack (zip) — gradients normalized to flat #0078D4 brand blue.
-    'endpoint-analytics','app-deployment','entra-id','filters'
+    'endpoint-analytics','app-deployment','entra-id','filters',
+    // From mscloudlogos.com (loryanstrant/MicrosoftCloudLogos) — official Microsoft cloud product icons.
+    'firewall','managed-google-play'
+    // (entra-id upgraded to official Entra cube from the same source)
   ])
   c.iconSvg = SVG_ICONS.has(c.id) ? `/icons/${c.id}.svg` : null
 })
