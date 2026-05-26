@@ -585,7 +585,9 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     onClick={(e) => { e.stopPropagation(); setTooltip(null); setSelectedId(selected ? null : n.id) }}
                     onContextMenu={(e) => { e.preventDefault(); dispatch({ type: 'removeNode', id: n.id }) }}
                   >
-                    <img src={c.iconSvg} alt="" style={{ width: 30, height: 30, flexShrink: 0 }} onError={(e)=>{ e.target.style.display='none' }} />
+                    {c.iconSvg
+                      ? <img src={c.iconSvg} alt="" style={{ width: 30, height: 30, flexShrink: 0 }} onError={(e)=>{ e.target.style.display='none' }} />
+                      : (() => { const I = Icons[c.icon] || Icons.Box; return <I size={30} color={cat.color} style={{ flexShrink: 0 }} /> })()}
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.name}</div>
                       <div style={{ fontSize: 8.5, fontWeight: 700, color: cat.color, letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.2, marginTop: 1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{cat.label}</div>
@@ -697,7 +699,9 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     onMouseEnter={(e) => { e.currentTarget.style.background = '#F6F7F9' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                   >
-                    <img src={s.comp.iconSvg} alt="" style={{ width: 26, height: 26, flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                    {s.comp.iconSvg
+                      ? <img src={s.comp.iconSvg} alt="" style={{ width: 26, height: 26, flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                      : (() => { const I = Icons[s.comp.icon] || Icons.Box; const sc = CATEGORIES[s.comp.category]; return <I size={26} color={sc?.color} style={{ flexShrink: 0 }} /> })()}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</div>
                       <div style={{ fontSize: 10.5, color: s.flowColor, marginTop: 2, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
