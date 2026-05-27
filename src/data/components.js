@@ -407,8 +407,9 @@ COMPONENTS.forEach(c => {
     'antivirus','edr','asr','copilot-intune',
     // From official Microsoft Azure SVG stencil pack (Intune family)
     'enrollment','config-profiles','compliance-policies','security-baselines',
-    'app-protection','update-rings','feature-updates','driver-updates',
+    'update-rings','feature-updates','driver-updates',
     'co-management','remote-help',
+    // app-protection removed — Visio pack icon renders poorly at small sizes; lucide ShieldHalf is cleaner
     // From Intune admin center icon pack (zip) — gradients normalized to flat #0078D4 brand blue.
     'endpoint-analytics','app-deployment','entra-id','filters',
     // From mscloudlogos.com (loryanstrant/MicrosoftCloudLogos) — official Microsoft cloud product icons.
