@@ -405,11 +405,9 @@ COMPONENTS.forEach(c => {
     // From sibling Defender / Purview maps
     'defender-endpoint','defender-xdr','security-copilot','entra-ca',
     'antivirus','edr','asr','copilot-intune',
-    // From official Microsoft Azure SVG stencil pack (Intune family)
-    'enrollment','config-profiles','compliance-policies','security-baselines',
-    'update-rings','feature-updates','driver-updates',
-    'co-management','remote-help',
-    // app-protection removed — Visio pack icon renders poorly at small sizes; lucide ShieldHalf is cleaner
+    // Visio Intune pack removed — line-art with internal padding renders washed-out at small sizes.
+    // Lucide outlines (LogIn, Settings, BadgeCheck, BookCheck, CircleDot, TrendingUp, Cpu, GitMerge, Headphones, ShieldHalf)
+    // are cleaner at panel/card sizes and use the category brand color.
     // From Intune admin center icon pack (zip) — gradients normalized to flat #0078D4 brand blue.
     'endpoint-analytics','app-deployment','entra-id','filters',
     // From mscloudlogos.com (loryanstrant/MicrosoftCloudLogos) — official Microsoft cloud product icons.
