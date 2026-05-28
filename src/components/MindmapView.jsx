@@ -209,7 +209,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
             fontFamily: 'Inter, system-ui, sans-serif',
             pointerEvents: 'none', userSelect: 'none'
           }}>
-            {item.iconSvg && <img src={item.iconSvg} alt="" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />}
+            {item.iconSvg && <img src={item.iconSvg} alt="" style={{ width: 34, height: 34, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />}
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{
                 fontSize: 12, fontWeight: 600, color: MP.ink, lineHeight: 1.2,
