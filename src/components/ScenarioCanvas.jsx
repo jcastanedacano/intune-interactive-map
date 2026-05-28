@@ -586,7 +586,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     onContextMenu={(e) => { e.preventDefault(); dispatch({ type: 'removeNode', id: n.id }) }}
                   >
                     {c.iconSvg
-                      ? <img src={c.iconSvg} alt="" style={{ width: 30, height: 30, flexShrink: 0 }} onError={(e)=>{ e.target.style.display='none' }} />
+                      ? <img src={c.iconSvg} alt="" style={{ width: 36, height: 36, flexShrink: 0, objectFit: 'contain' }} onError={(e)=>{ e.target.style.display='none' }} />
                       : (() => { const I = Icons[c.icon] || Icons.Box; return <I size={30} color={cat.color} style={{ flexShrink: 0 }} /> })()}
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.name}</div>

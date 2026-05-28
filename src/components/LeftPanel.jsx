@@ -33,10 +33,10 @@ function Item({ c, cat, onAdd, isPlaced }) {
       onMouseLeave={(e) => { if (!isPlaced) e.currentTarget.style.background = 'transparent' }}
     >
       {c.iconSvg ? (
-        <img src={c.iconSvg} alt="" style={{ width: 28, height: 28, flexShrink: 0, objectFit: 'contain' }}
+        <img src={c.iconSvg} alt="" style={{ width: 36, height: 36, flexShrink: 0, objectFit: 'contain' }}
           onError={(e) => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'inline-block' }} />
       ) : null}
-      <Icon size={24} style={{ color: cat.color, display: c.iconSvg ? 'none' : 'inline-block', flexShrink: 0 }} />
+      <Icon size={26} style={{ color: cat.color, display: c.iconSvg ? 'none' : 'inline-block', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: '#0E1729', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
         {c.sublabel && (

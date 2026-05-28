@@ -433,7 +433,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3
                     }}>
                       {n.iconSvg
-                        ? <img src={n.iconSvg} alt="" style={{ width: r * 0.7, height: r * 0.7, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
+                        ? <img src={n.iconSvg} alt="" style={{ width: r * 0.85, height: r * 0.85, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
                         : (() => { const I = Icons[n.icon] || Icons.Box; return <I size={r * 0.7} color={cat.color} style={{ flexShrink: 0 }} /> })()}
                       <div style={{
                         fontSize: Math.max(8.5, r * 0.18), fontWeight: 600, color: '#0E1729',
