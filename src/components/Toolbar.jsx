@@ -1,9 +1,10 @@
 import React from 'react'
-import { RotateCcw, Search, Layers, Flame, BookOpen, Radio, DollarSign } from 'lucide-react'
+import { RotateCcw, Search, Layers, Flame, BookOpen, Radio, DollarSign, GitCompareArrows } from 'lucide-react'
 import { CATEGORIES } from '../data/components.js'
 import { SCENARIO_GROUPS } from '../data/scenarios.js'
 import { EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius } from '../hooks/useBlastRadius.js'
+import { useCompare } from '../hooks/useCompare.js'
 
 const TABS = ['Story', 'Scenario', 'Grid', 'Graph', 'Mindmap']
 const CAT_FILTER_ORDER = ['governance','security','entra','defender','fabric','shared','compliance']
@@ -26,9 +27,12 @@ export default function Toolbar(props) {
   // Grid + Scenario + Graph + Mindmap have their own self-contained chrome — hide redundant global chrome
   const hideGlobalChrome = isStory || view === 'grid' || view === 'scenario' || view === 'graph' || view === 'mindmap'
 
-  // Blast Radius — only meaningful in analytical views
-  const showBlast = view === 'graph' || view === 'grid' || view === 'mindmap'
+  // Blast Radius / Compare / Cost — only meaningful in analytical views
+  const showAnalytical = view === 'graph' || view === 'grid' || view === 'mindmap'
+  const showBlast = showAnalytical
   const blast = useBlastRadius()
+  const compare = useCompare()
+  const costOn = overlay === 'cost'
 
   return (
     <div className="flex flex-col" style={{ background: '#fff', borderBottom: `1px solid ${SV_DIVIDER}`, fontFamily: 'Inter, system-ui, sans-serif', boxShadow: '0 1px 0 #E4E7EC, 0 2px 8px rgba(15,23,42,0.04)' }}>
@@ -60,22 +64,60 @@ export default function Toolbar(props) {
           })}
         </div>
 
-        {showBlast && (
-          <button
-            onClick={() => blast.toggle()}
-            title={blast.enabled ? 'Disable Blast Radius (Esc)' : 'Enable Blast Radius — select a node to see propagation'}
-            style={{
-              marginLeft: 10,
-              padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6,
-              border: blast.enabled ? '1px solid #DC2626' : `1px solid ${SV_BORDER}`,
-              background: blast.enabled ? '#DC2626' : '#fff',
-              color: blast.enabled ? '#fff' : SV_INK2,
-              fontWeight: blast.enabled ? 600 : 500,
-              transition: 'all .15s'
-            }}>
-            <Radio size={13} /> Blast Radius
-          </button>
+        {showAnalytical && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 10 }}>
+            <button
+              onClick={() => blast.toggle()}
+              title={blast.enabled ? 'Disable Blast Radius (Esc)' : 'Enable Blast Radius — select a node to see propagation'}
+              style={{
+                padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                border: blast.enabled ? '1px solid #DC2626' : `1px solid ${SV_BORDER}`,
+                background: blast.enabled ? '#DC2626' : '#fff',
+                color: blast.enabled ? '#fff' : SV_INK2,
+                fontWeight: blast.enabled ? 600 : 500,
+                transition: 'all .15s'
+              }}>
+              <Radio size={13} /> Blast Radius
+            </button>
+            <button
+              onClick={() => { if (compare.ids.length) compare.clear() }}
+              title={compare.ids.length
+                ? `Cerrar Compare (${compare.ids.length}/2 seleccionados)`
+                : 'Click-derecho en 2 nodos del Graph o Grid para comparar side-by-side'}
+              style={{
+                padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: compare.ids.length ? 'pointer' : 'help',
+                display: 'flex', alignItems: 'center', gap: 6,
+                border: compare.ids.length ? '1px solid #1D4ED8' : `1px solid ${SV_BORDER}`,
+                background: compare.ids.length ? '#1D4ED8' : '#fff',
+                color: compare.ids.length ? '#fff' : SV_INK2,
+                fontWeight: compare.ids.length ? 600 : 500,
+                transition: 'all .15s'
+              }}>
+              <GitCompareArrows size={13} /> Compare {compare.ids.length > 0 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  padding: '1px 6px', borderRadius: 999,
+                  background: '#fff', color: '#1D4ED8',
+                  fontFamily: 'JetBrains Mono, ui-monospace, monospace'
+                }}>{compare.ids.length}/2</span>
+              )}
+            </button>
+            <button
+              onClick={() => setOverlay(costOn ? 'none' : 'cost')}
+              title={costOn ? 'Quitar overlay de costo' : 'Mostrar list-price USD por componente'}
+              style={{
+                padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                border: costOn ? '1px solid #10B981' : `1px solid ${SV_BORDER}`,
+                background: costOn ? '#10B981' : '#fff',
+                color: costOn ? '#fff' : SV_INK2,
+                fontWeight: costOn ? 600 : 500,
+                transition: 'all .15s'
+              }}>
+              <DollarSign size={13} /> Costo
+            </button>
+          </div>
         )}
 
         <div style={{ flex: 1 }}></div>
