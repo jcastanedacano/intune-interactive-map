@@ -1,5 +1,5 @@
 import React from 'react'
-import { RotateCcw, Search, Layers, Flame, BookOpen, Zap } from 'lucide-react'
+import { RotateCcw, Search, Layers, Flame, BookOpen, Radio } from 'lucide-react'
 import { CATEGORIES } from '../data/components.js'
 import { SCENARIO_GROUPS } from '../data/scenarios.js'
 import { EDGE_TYPES } from '../data/edges.js'
@@ -60,6 +60,24 @@ export default function Toolbar(props) {
           })}
         </div>
 
+        {showBlast && (
+          <button
+            onClick={() => blast.toggle()}
+            title={blast.enabled ? 'Disable Blast Radius (Esc)' : 'Enable Blast Radius — select a node to see propagation'}
+            style={{
+              marginLeft: 10,
+              padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6,
+              border: blast.enabled ? '1px solid #DC2626' : `1px solid ${SV_BORDER}`,
+              background: blast.enabled ? '#DC2626' : '#fff',
+              color: blast.enabled ? '#fff' : SV_INK2,
+              fontWeight: blast.enabled ? 600 : 500,
+              transition: 'all .15s'
+            }}>
+            <Radio size={13} /> Blast Radius
+          </button>
+        )}
+
         <div style={{ flex: 1 }}></div>
 
         {/* Story controls portal target — StoryView injects ▶/pace/picker here */}
@@ -89,22 +107,6 @@ export default function Toolbar(props) {
             display: 'flex', alignItems: 'center', gap: 5
           }}>
             <span style={{ fontSize: 12, lineHeight: 1 }}>↓</span> Exportar
-          </button>
-        )}
-        {showBlast && (
-          <button
-            onClick={() => blast.toggle()}
-            title={blast.enabled ? 'Disable Blast Radius (Esc)' : 'Enable Blast Radius — select a node to see propagation'}
-            style={{
-              padding: '5px 10px', borderRadius: 8, fontSize: 11, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6,
-              border: blast.enabled ? '1px solid #DC2626' : `1px solid ${SV_BORDER}`,
-              background: blast.enabled ? '#DC2626' : '#fff',
-              color: blast.enabled ? '#fff' : SV_INK2,
-              fontWeight: blast.enabled ? 600 : 400,
-              transition: 'all .15s'
-            }}>
-            <Zap size={12} fill={blast.enabled ? '#fff' : 'none'} /> Blast Radius
           </button>
         )}
         <button title="Atajos" style={{ padding: '5px 10px', border: `1px solid ${SV_BORDER}`, borderRadius: 8, background: '#fff', color: SV_INK2, fontSize: 11, cursor: 'pointer' }}>?</button>
