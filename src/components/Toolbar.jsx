@@ -1,5 +1,5 @@
 import React from 'react'
-import { RotateCcw, Search, Layers, Flame, BookOpen, Radio } from 'lucide-react'
+import { RotateCcw, Search, Layers, Flame, BookOpen, Radio, DollarSign } from 'lucide-react'
 import { CATEGORIES } from '../data/components.js'
 import { SCENARIO_GROUPS } from '../data/scenarios.js'
 import { EDGE_TYPES } from '../data/edges.js'
@@ -151,7 +151,8 @@ export default function Toolbar(props) {
             {[
               { id: 'none', label: 'None', icon: null },
               { id: 'deployment', label: 'Deployment', icon: Layers },
-              { id: 'heatmap', label: 'Heatmap', icon: Flame }
+              { id: 'heatmap', label: 'Coverage', icon: Flame },
+              { id: 'cost', label: 'Costo', icon: DollarSign }
             ].map(o => {
               const Icon = o.icon
               const active = overlay === o.id

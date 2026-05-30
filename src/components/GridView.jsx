@@ -5,6 +5,7 @@ import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
+import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice } from '../data/pricing.js'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -108,6 +109,10 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
     const s = score
     bg = s >= 80 ? '#DCFAE6' : s >= 60 ? '#FEF0C7' : '#FEE4E2'
     borderColor = s >= 80 ? '#079455' : s >= 60 ? '#B54708' : '#B42318'; borderW = 2
+  } else if (overlay === 'cost') {
+    const tier = getCostTier(item.id)
+    const tc = tier !== null ? COST_TIER_COLOR[tier] : '#94A3B8'
+    bg = `${tc}18`; borderColor = tc; borderW = 2
   } else if (isSelected) {
     bg = `${T.selection}12`; borderColor = T.selection; borderW = 2.5
   } else if (isConnected) {
@@ -190,6 +195,21 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
           <span style={{ fontSize: 8, fontWeight: 700, color: T.ink3, fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontVariantNumeric: 'tabular-nums' }}>{score}</span>
         </div>
       )}
+      {/* Bottom: cost line (replaces coverage when cost overlay active) */}
+      {overlay === 'cost' && (() => {
+        const cp = PRICING[item.id]; const tier = getCostTier(item.id)
+        const tc = tier !== null ? COST_TIER_COLOR[tier] : '#94A3B8'
+        return (
+          <div style={{ marginTop: 7, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
+            <span style={{ fontSize: 9.5, fontWeight: 700, color: tc, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }} title={cp?.note || ''}>
+              {formatPrice(cp)}
+            </span>
+            <span style={{ fontSize: 8, fontWeight: 600, color: tc, padding: '1px 5px', borderRadius: 4, background: `${tc}18`, letterSpacing: '.04em' }}>
+              {tier !== null ? COST_TIER_LABEL[tier] : '?'}
+            </span>
+          </div>
+        )
+      })()}
     </div>
   )
 }

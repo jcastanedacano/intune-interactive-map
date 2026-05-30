@@ -7,6 +7,7 @@ import { COMPONENT_META, PHASES, coverageScore, heatColor } from '../data/worklo
 import Tooltip from './Tooltip.jsx'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
+import { getCostTier, COST_TIER_COLOR } from '../data/pricing.js'
 
 const CARD_W = 130
 const CARD_H = 48
@@ -438,6 +439,9 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
               const deg = degreeMap[n.id] || 1
               const r = Math.max(24, Math.min(40, 22 + deg * 1.3))
               const heat = overlay === 'heatmap' ? heatColor(coverageScore(n.id)) : null
+              const costTier = overlay === 'cost' ? getCostTier(n.id) : null
+              const costFill = costTier !== null ? `${COST_TIER_COLOR[costTier]}30` : null
+              const costStroke = costTier !== null ? COST_TIER_COLOR[costTier] : null
               // Use dragPos override when this node is being dragged
               const nx = (dragPos?.id === n.id) ? dragPos.x : (n.x ?? 0)
               const ny = (dragPos?.id === n.id) ? dragPos.y : (n.y ?? 0)
@@ -484,11 +488,11 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   )}
                   {/* Outer ring (white, or hop-colored under Blast Radius) */}
                   <circle r={r} fill="#fff"
-                    stroke={blastReached ? blastColor : (isSelected ? '#2563EB' : (phaseColor || cat.color))}
-                    strokeWidth={blastReached ? (blastHop === 0 ? 3.5 : 2.8) : (isSelected ? 2.5 : 1.5)}
+                    stroke={blastReached ? blastColor : (isSelected ? '#2563EB' : (costStroke || phaseColor || cat.color))}
+                    strokeWidth={blastReached ? (blastHop === 0 ? 3.5 : 2.8) : (costStroke ? 2.2 : (isSelected ? 2.5 : 1.5))}
                     style={{ filter: 'drop-shadow(0 2px 6px rgba(15,23,42,0.10))', transition: 'stroke .35s, stroke-width .35s' }} />
                   {/* Inner tinted disc */}
-                  <circle r={r - 4} fill={blastReached ? blastColor : (heat || cat.bg)}
+                  <circle r={r - 4} fill={blastReached ? blastColor : (costFill || heat || cat.bg)}
                     fillOpacity={blastReached ? (blastHop === 0 ? 0.28 : 0.18) : 0.55}
                     style={{ transition: 'fill .35s, fill-opacity .35s' }} />
                   {/* Pin indicator (drag or shift+click pins node) */}
