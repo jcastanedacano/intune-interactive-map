@@ -8,7 +8,9 @@ import MindmapView from './components/MindmapView.jsx'
 import StoryView from './components/StoryView.jsx'
 import DetailPanel from './components/DetailPanel.jsx'
 import EdgeLegend from './components/EdgeLegend.jsx'
+import CompareDrawer from './components/CompareDrawer.jsx'
 import { useScenario } from './hooks/useScenario.js'
+import { useCompare } from './hooks/useCompare.js'
 import { EDGE_TYPES } from './data/edges.js'
 
 const ALL_EDGES_ON = Object.fromEntries(Object.keys(EDGE_TYPES).map(k => [k, true]))
@@ -44,6 +46,15 @@ export default function App() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  // Global Esc handler — closes the compare drawer if open
+  const compareGlobal = useCompare()
+  useEffect(() => {
+    if (!compareGlobal.ids.length) return
+    const h = (e) => { if (e.key === 'Escape') compareGlobal.clear() }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [compareGlobal.ids.length])
 
   const setScenario = (next) => dispatch({ type: 'set', payload: next })
 
@@ -138,6 +149,7 @@ export default function App() {
           />
         )}
       </div>
+      <CompareDrawer />
     </div>
   )
 }

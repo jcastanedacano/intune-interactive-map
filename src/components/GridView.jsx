@@ -4,6 +4,7 @@ import { COMPONENTS, COMPONENT_MAP, CATEGORIES } from '../data/components.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
+import { useCompare } from '../hooks/useCompare.js'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -87,7 +88,7 @@ function buildLayout(grouped) {
 }
 
 // ── Card component ────────────────────────────────────────────────────────────
-function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimmed, onSelect, blastHop }) {
+function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimmed, onSelect, blastHop, compareIdx, onCompare }) {
   const cat = CATEGORIES[item.category]
   const rawPhase = COMPONENT_META[item.id]?.phase
   const phase = rawPhase ? Math.min(3, rawPhase) : null
@@ -118,6 +119,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
   return (
     <div
       onClick={e => { e.stopPropagation(); onSelect(isSelected ? null : item) }}
+      onContextMenu={e => { e.preventDefault(); e.stopPropagation(); onCompare?.(item.id) }}
       style={{
         position: 'absolute',
         left: 0, top: 0, width: CARD_W, height: CARD_H,
@@ -141,6 +143,17 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
         if (!isSelected) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = isConnected ? `0 4px 14px ${cat.color}22` : '0 1px 4px rgba(15,23,42,0.07)' }
       }}
     >
+      {/* Compare badge */}
+      {compareIdx >= 0 && (
+        <div style={{
+          position: 'absolute', top: -7, right: -7, zIndex: 6,
+          width: 18, height: 18, borderRadius: '50%',
+          background: '#1D4ED8', border: '2px solid #fff',
+          color: '#fff', fontSize: 10, fontWeight: 700,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 2px 6px rgba(15,23,42,0.18)'
+        }}>{compareIdx + 1}</div>
+      )}
       {/* Top row: atomic num + symbol + phase */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -193,6 +206,7 @@ function bezierPath(sx, sy, tx, ty) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function GridView({ edgeFilter, categoryFilter, search, setSearch, overlay, setOverlay, selectedComponent, onSelectComponent }) {
   const blast = useBlastRadius()
+  const compare = useCompare()
   const blastResult = useMemo(() => {
     const sid = selectedComponent?.id || null
     if (!blast.enabled || !sid) return null
@@ -440,6 +454,8 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
                     isSelected={isSelected}
                     isConnected={isConnected}
                     blastHop={blastHop}
+                    compareIdx={compare.ids.indexOf(item.id)}
+                    onCompare={compare.toggle}
                     isDimmed={isDimmed}
                     onSelect={onSelectComponent}
                   />

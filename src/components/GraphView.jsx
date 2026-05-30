@@ -6,6 +6,7 @@ import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { COMPONENT_META, PHASES, coverageScore, heatColor } from '../data/workloads.js'
 import Tooltip from './Tooltip.jsx'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
+import { useCompare } from '../hooks/useCompare.js'
 
 const CARD_W = 130
 const CARD_H = 48
@@ -54,6 +55,7 @@ function rectHullPath(pts, padding) {
 export default function GraphView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent, toggleEdgeType }) {
   const selectedId = selectedComponent?.id || null
   const blast = useBlastRadius()
+  const compare = useCompare()
   const blastResult = useMemo(() => {
     if (!blast.enabled || !selectedId) return null
     return bfsBlast(selectedId, EDGES)
@@ -446,11 +448,13 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
               const nodeOpacity = blastActive
                 ? (blastReached ? 1 : 0.15)
                 : (dim(n.id) ? 0.15 : 1) * (isDimmedSel ? 0.32 : 1)
+              const cmpIdx = compare.ids.indexOf(n.id)
               return (
                 <g key={n.id} data-id={n.id} className="gn"
                   transform={`translate(${nx},${ny})`}
                   opacity={nodeOpacity}
                   style={{ cursor: 'grab', transition: 'opacity .2s' }}
+                  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setTooltip(null); compare.toggle(n.id) }}
                   onClick={(e) => {
                     e.stopPropagation()
                     setTooltip(null)   // dismiss hover tooltip on click
@@ -490,6 +494,13 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   {/* Pin indicator (drag or shift+click pins node) */}
                   {n.fx != null && (
                     <circle cx={r * 0.7} cy={-r * 0.7} r={4} fill="#0E1729" stroke="#fff" strokeWidth={1.5} />
+                  )}
+                  {/* Compare badge (right-click target) */}
+                  {cmpIdx >= 0 && (
+                    <g transform={`translate(${-r * 0.7},${-r * 0.7})`}>
+                      <circle r={8} fill="#1D4ED8" stroke="#fff" strokeWidth={1.5} />
+                      <text x={0} y={3} fontSize={10} fontWeight={700} fill="#fff" textAnchor="middle">{cmpIdx + 1}</text>
+                    </g>
                   )}
                   <foreignObject x={-r + 6} y={-r + 6} width={2 * r - 12} height={2 * r - 12} style={{ pointerEvents: 'none' }}>
                     <div xmlns="http://www.w3.org/1999/xhtml" style={{
