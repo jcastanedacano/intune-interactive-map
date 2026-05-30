@@ -28,6 +28,7 @@ function init() {
     title: '',
     problem: '',
     outcome: '',
+    mitre: [],        // MITRE ATT&CK technique IDs (e.g. ['T1486','T1003'])
     nodes: [],        // {id, x, y}
     customEdges: []   // {source, target, type, label}
   }
@@ -95,7 +96,7 @@ function reducer(state, action) {
         const angle = (i / s.nodes.length) * Math.PI * 2
         nodes.push({ id, x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius })
       })
-      return { title: s.title, problem: s.problem || '', outcome: s.outcome || '', nodes, customEdges: [] }
+      return { title: s.title, problem: s.problem || '', outcome: s.outcome || '', mitre: s.mitre || [], nodes, customEdges: [] }
     }
     case 'reset': return init()
     default: return state

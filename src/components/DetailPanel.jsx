@@ -1,10 +1,64 @@
 import React, { useState } from 'react'
-import { Share2, Check, BookOpen, FileText, Key } from 'lucide-react'
+import { Share2, Check, BookOpen, FileText, Key, Target, ExternalLink } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { CATEGORIES, COMPONENT_MAP } from '../data/components.js'
 import { EDGES } from '../data/edges.js'
 import { SUBTOPICS } from '../data/subtopics.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
+import { MITRE_TTPS, MITRE_TACTIC_COLORS, resolveMitre } from '../data/mitre.js'
+
+function MitreSection({ mitre }) {
+  const [open, setOpen] = useState(true)
+  if (!mitre || !mitre.length) return null
+  const valid = mitre.map(resolveMitre).filter(Boolean)
+  if (!valid.length) return null
+  // Group by tactic
+  const byTactic = {}
+  valid.forEach(t => { (byTactic[t.tactic] ||= []).push(t) })
+  return (
+    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #EEF0F3' }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: 0, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left'
+        }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <Target size={11} color="#DC2626" /> MITRE ATT&amp;CK · {valid.length} TTPs
+        </span>
+        <span style={{ fontSize: 10, color: '#98A2B3' }}>{open ? '▾' : '▸'}</span>
+      </button>
+      {open && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
+          {Object.entries(byTactic).map(([tactic, ttps]) => {
+            const color = MITRE_TACTIC_COLORS[tactic] || '#475467'
+            return (
+              <div key={tactic}>
+                <div style={{ fontSize: 8.5, fontWeight: 700, color, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 4 }}>{tactic}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {ttps.map(t => (
+                    <a key={t.id} href={t.url} target="_blank" rel="noreferrer"
+                      title={`${t.id} · ${t.name} — Open MITRE ATT&CK page`}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        fontSize: 10, fontWeight: 600,
+                        padding: '2px 7px', borderRadius: 999,
+                        background: `${color}14`, color, border: `1px solid ${color}40`,
+                        textDecoration: 'none', fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                        cursor: 'pointer'
+                      }}>
+                      {t.id}<span style={{ fontWeight: 500, fontFamily: 'Inter, system-ui, sans-serif', opacity: 0.85 }}>· {t.name}</span>
+                      <ExternalLink size={9} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const EFFORT_COLOR = { Low: '#059669', Medium: '#D97706', High: '#DC2626' }
 const MT_COLOR = { Yes: '#059669', Partial: '#D97706', No: '#DC2626' }
@@ -148,6 +202,7 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
             </div>
           </div>
         </details>
+        <MitreSection mitre={scenario.mitre} />
       </div>
     </>
   )

@@ -49,7 +49,8 @@ export const SCENARIO_GROUPS = [
         id: 'uc-ransomware', title: 'Ransomware-resilient endpoint posture',
         problem: 'Recent IR engagements show ransomware actors leveraging script execution, credential theft, and lateral movement. Need defense-in-depth on every managed Windows endpoint without per-device tuning.',
         outcome: "ASR rules block the kill chain primitives. Controlled Folder Access protects user data. Defender AV + EDR detect and respond. EPM eliminates local admins. Account Protection (LAPS) randomizes the local admin password.",
-        nodes: ['asr','antivirus','edr','epm','account-protection','defender-endpoint']
+        nodes: ['asr','antivirus','edr','epm','account-protection','defender-endpoint'],
+        mitre: ['T1486','T1490','T1059','T1003','T1098','T1562','T1491']
       },
       {
         id: 'uc-lost-mobile', title: 'Lost or stolen mobile device',
@@ -67,25 +68,29 @@ export const SCENARIO_GROUPS = [
         id: 'uc-credential-theft', title: 'Credential theft / lateral movement detected',
         problem: 'Defender for Identity / MDE detect Pass-the-Hash or Kerberoasting on a managed Windows endpoint. The attacker has valid creds; standard MFA already passed. Need to contain the device without paging the user out of bed.',
         outcome: 'MDE risk score flips to High → Compliance Policy marks non-compliant → CA blocks new tokens. EPM prevents elevation of further tools. Defender XDR auto-isolates. Security Copilot drafts the incident summary.',
-        nodes: ['defender-endpoint','compliance-policies','entra-ca','epm','defender-xdr','security-copilot']
+        nodes: ['defender-endpoint','compliance-policies','entra-ca','epm','defender-xdr','security-copilot'],
+        mitre: ['T1003','T1558','T1078','T1550','T1021','T1068']
       },
       {
         id: 'uc-usb-exfil', title: 'USB exfiltration attempt blocked',
         problem: 'Departing employee inserts a personal USB to copy SharePoint downloads. Traditional DLP catches network exfil but not local copy.',
         outcome: 'ASR Device Control blocks the write at the kernel layer. EDR raises an alert. Endpoint Analytics flags the anomalous pattern. Audit log feeds XDR for the eventual investigation.',
-        nodes: ['asr','edr','defender-endpoint','defender-xdr','endpoint-analytics']
+        nodes: ['asr','edr','defender-endpoint','defender-xdr','endpoint-analytics'],
+        mitre: ['T1052','T1005','T1083']
       },
       {
         id: 'uc-jailbreak', title: 'Jailbroken iOS detected on managed device',
         problem: 'A user-owned, App Protection-managed iPhone is jailbroken. The user can now exfiltrate corporate data outside the managed app sandbox.',
         outcome: 'App Protection Conditional Launch blocks app launch. MDE Mobile reports threat → Compliance flips → CA denies. Selective wipe removes corporate data. User notified via Company Portal.',
-        nodes: ['app-protection','defender-endpoint','compliance-policies','entra-ca']
+        nodes: ['app-protection','defender-endpoint','compliance-policies','entra-ca'],
+        mitre: ['M1404','M1444','T1041','T1005']
       },
       {
         id: 'uc-tvm-cve', title: 'Critical CVE: fleet-wide vulnerability hunt',
         problem: "A high-severity CVE publishes for Chrome / OpenSSL / a popular agent. CISO wants exposure + remediation status by EOD — across 12,000 mixed endpoints.",
         outcome: 'MDE TVM finds vulnerable devices in minutes. Intune Remediation script targets the affected group, deploys the patch (or workaround), then re-runs detection. Security Copilot Vulnerability Remediation Agent prioritizes by blast radius. Update Rings push the official patch as it lands.',
-        nodes: ['defender-endpoint','scripts','update-rings','security-copilot','compliance-policies']
+        nodes: ['defender-endpoint','scripts','update-rings','security-copilot','compliance-policies'],
+        mitre: ['T1190','T1059','T1068']
       },
       {
         id: 'uc-cloud-pki-retire-ndes', title: 'Cloud PKI: retire on-prem NDES + ADCS',
@@ -103,7 +108,8 @@ export const SCENARIO_GROUPS = [
         id: 'uc-patch-emergency', title: 'Emergency out-of-band patch deployment',
         problem: 'Microsoft releases an out-of-band security update for a critical zero-day. Standard 30-day deferral would leave the fleet exposed for weeks.',
         outcome: 'Expedited Quality Update profile overrides the deferral on the Pilot ring; Endpoint Analytics monitors anomalies; Broad ring follows within 24h; Critical ring within 72h. Compliance Policy enforces minimum OS version after the deadline.',
-        nodes: ['update-rings','feature-updates','endpoint-analytics','compliance-policies','entra-ca']
+        nodes: ['update-rings','feature-updates','endpoint-analytics','compliance-policies','entra-ca'],
+        mitre: ['T1190','T1068']
       }
     ]
   },
@@ -138,13 +144,15 @@ export const SCENARIO_GROUPS = [
         id: 'dp-zero-trust', title: 'Deployment: Zero Trust endpoint',
         problem: 'CISO mandate to align endpoint operations with the Zero Trust model: verify explicitly, least privilege, assume breach. Need a coherent deployment that maps to those pillars.',
         outcome: 'Verify explicitly: Compliance Policies + CA + MDE risk score. Least privilege: EPM + LAPS + App Protection. Assume breach: ASR + EDR in Block Mode + Sentinel via XDR.',
-        nodes: ['compliance-policies','entra-ca','defender-endpoint','epm','account-protection','app-protection','asr','edr','defender-xdr']
+        nodes: ['compliance-policies','entra-ca','defender-endpoint','epm','account-protection','app-protection','asr','edr','defender-xdr'],
+        mitre: ['T1078','T1098','T1068','T1003','T1021','T1562','T1041']
       },
       {
         id: 'dp-privileged-workstation', title: 'Deployment: Privileged Access Workstation (PAW)',
         problem: 'Admins for Entra, Azure, M365 must operate from hardened, segregated devices. No web browsing, no personal mail, no unsigned binaries, no local admin. Audit every elevation.',
         outcome: 'Dedicated Autopilot profile + restrictive Security Baseline + EPM "deny by default" + LAPS + Tunnel-only egress + Remote Help logged. Conditional Access requires this exact device for admin scopes.',
-        nodes: ['autopilot','security-baselines','epm','account-protection','tunnel','remote-help','entra-ca','compliance-policies']
+        nodes: ['autopilot','security-baselines','epm','account-protection','tunnel','remote-help','entra-ca','compliance-policies'],
+        mitre: ['T1078','T1098','T1068','T1003','T1547']
       },
       {
         id: 'dp-mdm-attached-mecm', title: 'Deployment: MECM Tenant Attach progressive uplift',
