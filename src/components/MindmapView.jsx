@@ -4,6 +4,7 @@ import { COMPONENTS, COMPONENT_MAP, CATEGORIES } from '../data/components.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { MINDMAP_PRESETS, resolveItem } from '../data/mindmaps.js'
 import Tooltip from './Tooltip.jsx'
+import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 
 // Design package palette
 const MP = {
@@ -121,6 +122,20 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
   const [tooltip, setTooltip] = useState(null)
   const layout = useMemo(() => buildLayoutFromPreset(preset), [preset])
   const selectedId = selectedComponent?.id || null
+  const blast = useBlastRadius()
+  const blastResult = useMemo(() => {
+    if (!blast.enabled || !selectedId) return null
+    return bfsBlast(selectedId, EDGES)
+  }, [blast.enabled, selectedId])
+  const blastActive = !!blastResult
+  useEffect(() => {
+    if (!blast.enabled) return
+    const h = (e) => {
+      if (e.key === 'Escape') { blast.setEnabled(false); onSelectComponent?.(null) }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [blast.enabled])
 
   // Pan/zoom
   useEffect(() => {
@@ -172,7 +187,12 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
     const dimSel = selectedId && !isSel && !isConn
     const dimSearch = !matchesSearch(item)
     const dimCat = !catActive(item.cat)
-    const op = dimCat ? 0.18 : (dimSearch ? 0.20 : (dimSel ? 0.30 : 1))
+    const blastHop = blastActive ? blastResult.reachable.get(item.id) : undefined
+    const blastReached = blastHop !== undefined
+    const blastClr = blastReached ? hopColor(blastHop) : null
+    const op = blastActive
+      ? (blastReached ? 1 : 0.13)
+      : (dimCat ? 0.18 : (dimSearch ? 0.20 : (dimSel ? 0.30 : 1)))
     return (
       <g
         transform={`translate(${x - CARD_W/2},${y - CARD_H/2})`}
@@ -193,16 +213,19 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
       >
         <rect
           x={0} y={0} width={CARD_W} height={CARD_H} rx={9}
-          fill={isConn ? `${c.color}22` : '#FFFFFF'}
-          stroke={isSel ? MP.selection : c.color}
-          strokeOpacity={isSel ? 1 : (isConn ? 0.95 : 0.55)}
-          strokeWidth={isSel ? 2 : (isConn ? 1.8 : 1.2)}
-          strokeDasharray={dashed && !isSel && !isConn ? '5 3' : undefined}
-          style={{ filter: isSel
-            ? `drop-shadow(0 4px 12px ${MP.selection}33)`
-            : (isConn ? `drop-shadow(0 3px 8px ${c.color}40)` : 'drop-shadow(0 1px 2px rgba(15,23,42,0.04))') }}
+          fill={blastReached ? `${blastClr}${blastHop === 0 ? '2A' : '18'}` : (isConn ? `${c.color}22` : '#FFFFFF')}
+          stroke={blastReached ? blastClr : (isSel ? MP.selection : c.color)}
+          strokeOpacity={blastReached ? 1 : (isSel ? 1 : (isConn ? 0.95 : 0.55))}
+          strokeWidth={blastReached ? (blastHop === 0 ? 2.5 : 2) : (isSel ? 2 : (isConn ? 1.8 : 1.2))}
+          strokeDasharray={dashed && !isSel && !isConn && !blastReached ? '5 3' : undefined}
+          style={{ filter: blastReached
+            ? `drop-shadow(0 3px 10px ${blastClr}55)`
+            : (isSel
+              ? `drop-shadow(0 4px 12px ${MP.selection}33)`
+              : (isConn ? `drop-shadow(0 3px 8px ${c.color}40)` : 'drop-shadow(0 1px 2px rgba(15,23,42,0.04))')),
+            transition: 'fill .35s, stroke .35s, stroke-width .35s' }}
         />
-        <circle cx={CARD_W - 9} cy={9} r={3} fill={c.color} />
+        <circle cx={CARD_W - 9} cy={9} r={3} fill={blastReached ? blastClr : c.color} />
         <foreignObject x={10} y={6} width={CARD_W - 18} height={CARD_H - 12}>
           <div xmlns="http://www.w3.org/1999/xhtml" style={{
             height: '100%', display: 'flex', alignItems: 'center', gap: 10,

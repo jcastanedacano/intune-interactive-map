@@ -5,6 +5,7 @@ import { COMPONENTS, COMPONENT_MAP, CATEGORIES } from '../data/components.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { COMPONENT_META, PHASES, coverageScore, heatColor } from '../data/workloads.js'
 import Tooltip from './Tooltip.jsx'
+import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 
 const CARD_W = 130
 const CARD_H = 48
@@ -52,6 +53,23 @@ function rectHullPath(pts, padding) {
 
 export default function GraphView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent, toggleEdgeType }) {
   const selectedId = selectedComponent?.id || null
+  const blast = useBlastRadius()
+  const blastResult = useMemo(() => {
+    if (!blast.enabled || !selectedId) return null
+    return bfsBlast(selectedId, EDGES)
+  }, [blast.enabled, selectedId])
+  const blastActive = !!blastResult
+  useEffect(() => {
+    if (!blast.enabled) return
+    const h = (e) => {
+      if (e.key === 'Escape') {
+        blast.setEnabled(false)
+        onSelectComponent && onSelectComponent(null)
+      }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [blast.enabled])
 
   // Degree map for node size + centrality panel
   const degreeMap = useMemo(() => {
@@ -260,6 +278,30 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
 
   return (
     <div className="relative flex-1 bg-slate-50 overflow-hidden">
+      {blastActive && (
+        <div style={{
+          position: 'absolute', right: 16, bottom: 16, zIndex: 20,
+          background: '#fff', border: '1px solid #E4E7EC', borderRadius: 10,
+          padding: '10px 14px', boxShadow: '0 4px 16px rgba(15,23,42,0.10)',
+          fontFamily: 'Inter, system-ui, sans-serif', minWidth: 220
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <span style={{ marginRight: 5 }}>⚡</span>Blast Radius
+          </div>
+          <div style={{ fontSize: 13, color: '#0E1729', fontWeight: 600, marginBottom: 8 }}>
+            {blastResult.count} componentes alcanzados · {blastResult.maxHops} hops máx
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+            {[0, 1, 2, 3, 4, 5].map(h => (
+              <div key={h} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <div style={{ width: 22, height: 6, borderRadius: 2, background: hopColor(h) }} />
+                <span style={{ fontSize: 8, color: '#667085', fontVariantNumeric: 'tabular-nums' }}>{h === 0 ? 'src' : h}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 9.5, color: '#98A2B3', marginTop: 4 }}>Esc para salir</div>
+        </div>
+      )}
       <svg ref={svgRef} className="w-full h-full" onClick={(e) => { if (e.target.tagName === 'svg' || e.target.tagName === 'rect' && e.target.getAttribute('fill')?.includes('graph-dot-grid')) onSelectComponent && onSelectComponent(null) }}>
         <defs>
           {Object.entries(EDGE_TYPES).map(([k, v]) => (
@@ -351,7 +393,13 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
               let opacity = dimmed ? 0.05 : baseOpacity
               if (otherSelected) opacity = 0.04
               else if (isSelectionEdge) opacity = 1.0
-              const strokeW = et.strokeWidth * (isPrimary ? 1 : 0.75) * (isSelectionEdge ? 1.8 : 1)
+              let strokeW = et.strokeWidth * (isPrimary ? 1 : 0.75) * (isSelectionEdge ? 1.8 : 1)
+              // Blast Radius overrides — only edges in the BFS tree light up
+              if (blastActive) {
+                const inBlast = blastResult.traversedEdgeKeys.has(srcId + '→' + tgtId)
+                opacity = inBlast ? 1.0 : 0.07
+                strokeW = et.strokeWidth * (inBlast ? 2.2 : 0.7)
+              }
               // Quadratic bezier with 18px perpendicular offset (design package)
               const dx = tx - sx, dy = ty - sy
               const len = Math.sqrt(dx * dx + dy * dy) || 1
@@ -391,10 +439,17 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
               // Use dragPos override when this node is being dragged
               const nx = (dragPos?.id === n.id) ? dragPos.x : (n.x ?? 0)
               const ny = (dragPos?.id === n.id) ? dragPos.y : (n.y ?? 0)
+              // Blast Radius — per-node visual state
+              const blastHop = blastActive ? blastResult.reachable.get(n.id) : undefined
+              const blastReached = blastHop !== undefined
+              const blastColor = blastReached ? hopColor(blastHop) : null
+              const nodeOpacity = blastActive
+                ? (blastReached ? 1 : 0.15)
+                : (dim(n.id) ? 0.15 : 1) * (isDimmedSel ? 0.32 : 1)
               return (
                 <g key={n.id} data-id={n.id} className="gn"
                   transform={`translate(${nx},${ny})`}
-                  opacity={(dim(n.id) ? 0.15 : 1) * (isDimmedSel ? 0.32 : 1)}
+                  opacity={nodeOpacity}
                   style={{ cursor: 'grab', transition: 'opacity .2s' }}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -416,13 +471,22 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   {isSelected && (
                     <circle r={r + 8} fill="none" stroke="#2563EB" strokeWidth={3} strokeOpacity={0.25} />
                   )}
-                  {/* Outer ring (white) */}
+                  {/* Blast Radius — pulse on origin, glow ring on reached nodes */}
+                  {blastActive && blastHop === 0 && (
+                    <circle r={r + 6} fill="none" stroke="#7C3AED" strokeWidth={2} opacity={0.6}>
+                      <animate attributeName="r" values={`${r + 4};${r + 14};${r + 4}`} dur="1.6s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.7;0;0.7" dur="1.6s" repeatCount="indefinite" />
+                    </circle>
+                  )}
+                  {/* Outer ring (white, or hop-colored under Blast Radius) */}
                   <circle r={r} fill="#fff"
-                    stroke={isSelected ? '#2563EB' : (phaseColor || cat.color)}
-                    strokeWidth={isSelected ? 2.5 : 1.5}
-                    style={{ filter: 'drop-shadow(0 2px 6px rgba(15,23,42,0.10))' }} />
+                    stroke={blastReached ? blastColor : (isSelected ? '#2563EB' : (phaseColor || cat.color))}
+                    strokeWidth={blastReached ? (blastHop === 0 ? 3.5 : 2.8) : (isSelected ? 2.5 : 1.5)}
+                    style={{ filter: 'drop-shadow(0 2px 6px rgba(15,23,42,0.10))', transition: 'stroke .35s, stroke-width .35s' }} />
                   {/* Inner tinted disc */}
-                  <circle r={r - 4} fill={heat || cat.bg} fillOpacity={0.55} />
+                  <circle r={r - 4} fill={blastReached ? blastColor : (heat || cat.bg)}
+                    fillOpacity={blastReached ? (blastHop === 0 ? 0.28 : 0.18) : 0.55}
+                    style={{ transition: 'fill .35s, fill-opacity .35s' }} />
                   {/* Pin indicator (drag or shift+click pins node) */}
                   {n.fx != null && (
                     <circle cx={r * 0.7} cy={-r * 0.7} r={4} fill="#0E1729" stroke="#fff" strokeWidth={1.5} />

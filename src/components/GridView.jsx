@@ -3,6 +3,7 @@ import * as Icons from 'lucide-react'
 import { COMPONENTS, COMPONENT_MAP, CATEGORIES } from '../data/components.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
+import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -86,16 +87,21 @@ function buildLayout(grouped) {
 }
 
 // ── Card component ────────────────────────────────────────────────────────────
-function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimmed, onSelect }) {
+function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimmed, onSelect, blastHop }) {
   const cat = CATEGORIES[item.category]
   const rawPhase = COMPONENT_META[item.id]?.phase
   const phase = rawPhase ? Math.min(3, rawPhase) : null
   const phaseTone = phase ? PHASES[phase] : null
   const score = Math.round((coverageScore(item.id) || 0) * 100)
   const sym = SYMBOLS[item.id] || item.name.slice(0, 2)
+  const blastActive = blastHop !== undefined && blastHop !== null
+  const blastClr = blastActive ? hopColor(blastHop) : null
 
   let bg, borderColor, borderW
-  if (overlay === 'deployment' && phaseTone) {
+  if (blastActive) {
+    bg = blastHop === 0 ? `${blastClr}22` : `${blastClr}14`
+    borderColor = blastClr; borderW = blastHop === 0 ? 2.5 : 2
+  } else if (overlay === 'deployment' && phaseTone) {
     bg = phaseTone.bg; borderColor = phaseTone.color; borderW = 2
   } else if (overlay === 'heatmap') {
     const s = score
@@ -186,6 +192,21 @@ function bezierPath(sx, sy, tx, ty) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function GridView({ edgeFilter, categoryFilter, search, setSearch, overlay, setOverlay, selectedComponent, onSelectComponent }) {
+  const blast = useBlastRadius()
+  const blastResult = useMemo(() => {
+    const sid = selectedComponent?.id || null
+    if (!blast.enabled || !sid) return null
+    return bfsBlast(sid, EDGES)
+  }, [blast.enabled, selectedComponent?.id])
+  const blastActive = !!blastResult
+  useEffect(() => {
+    if (!blast.enabled) return
+    const h = (e) => {
+      if (e.key === 'Escape') { blast.setEnabled(false); onSelectComponent?.(null) }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [blast.enabled])
   const selectedId = selectedComponent?.id || null
   const containerRef = useRef(null)
 
@@ -397,14 +418,20 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
               const dimBySel = !!(connectedIds && !connectedIds.has(item.id) && !isSelected)
               const sym = SYMBOLS[item.id] || item.name.slice(0, 2)
               const matchesSearch = !lower || item.name.toLowerCase().includes(lower) || sym.toLowerCase().includes(lower)
-              const isDimmed = dimByCat || dimBySel || (!!lower && !matchesSearch)
+              const blastHop = blastActive ? blastResult.reachable.get(item.id) : undefined
+              const blastReached = blastHop !== undefined
+              const isDimmed = blastActive
+                ? !blastReached
+                : (dimByCat || dimBySel || (!!lower && !matchesSearch))
 
               return (
                 <div key={item.id} style={{
                   position: 'absolute',
                   left: ROW_PAD_X + col * (CARD_W + CARD_GAP_X),
                   top: ROW_HDR_H + ROW_PAD_Y + r * (CARD_H + CARD_GAP_Y),
-                  zIndex: isSelected ? 5 : (isConnected ? 4 : 3)
+                  zIndex: blastActive ? (blastHop === 0 ? 5 : (blastReached ? 4 : 3)) : (isSelected ? 5 : (isConnected ? 4 : 3)),
+                  opacity: blastActive && !blastReached ? 0.13 : 1,
+                  transition: 'opacity .35s'
                 }}>
                   <DomainCard
                     item={item}
@@ -412,6 +439,7 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
                     overlay={overlay}
                     isSelected={isSelected}
                     isConnected={isConnected}
+                    blastHop={blastHop}
                     isDimmed={isDimmed}
                     onSelect={onSelectComponent}
                   />
