@@ -573,25 +573,18 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             const borderColor = flowing ? flowHueForNode : (selected ? SC_SELECTION : (phaseColor || cat.color))
             return (
               <g key={n.id} data-id={n.id} className="node" transform={`translate(${n.x - CARD_W/2},${n.y - CARD_H/2})`} opacity={opacity}>
-                {/* Flow halo — concentric ring at 3px offset (rx=23 = card rx 20 + offset 3) so corners follow the card curvature cleanly */}
-                {flowing && (
-                  <rect x={-3} y={-3} width={CARD_W + 6} height={CARD_H + 6} rx={23}
-                    fill="none" stroke={flowHueForNode} strokeOpacity={0.22} strokeWidth={3.5}
-                    style={{ transition: 'stroke-opacity .3s ease' }} />
-                )}
-                {/* Selection halo (suppressed during flow so the flow color dominates) */}
-                {selected && !flowing && (
-                  <rect x={-3} y={-3} width={CARD_W + 6} height={CARD_H + 6} rx={23}
-                    fill="none" stroke={SC_SELECTION} strokeOpacity={0.20} strokeWidth={1.6} />
-                )}
+                {/* Halos removed — concentric rings were creating "double border" artifacts when edges crossed them.
+                    Visual state is communicated entirely through the main border (color + width + drop-shadow). */}
                 <rect width={CARD_W} height={CARD_H} rx={20}
                   fill={cardFill}
                   stroke={borderColor}
-                  strokeWidth={flowing ? 2.5 : (selected ? 2.8 : 2.2)}
+                  strokeWidth={flowing ? 3 : (selected ? 3.2 : 2.2)}
                   style={{
                     filter: flowing
-                      ? `drop-shadow(0 0 12px ${flowHueForNode}66)`
-                      : 'drop-shadow(0 2px 6px rgba(15,23,42,0.06))',
+                      ? `drop-shadow(0 0 14px ${flowHueForNode}55)`
+                      : (selected
+                          ? `drop-shadow(0 0 10px ${SC_SELECTION}55)`
+                          : 'drop-shadow(0 2px 6px rgba(15,23,42,0.06))'),
                     transition: 'stroke .3s ease, stroke-width .3s ease, filter .3s ease'
                   }} />
                 {/* Phase stripe (top) — only when deployment overlay is active; preserves rounded corners */}
