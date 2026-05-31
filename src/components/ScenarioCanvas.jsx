@@ -553,16 +553,16 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             const borderColor = flowing ? flowHueForNode : (selected ? SC_SELECTION : (phaseColor || cat.color))
             return (
               <g key={n.id} data-id={n.id} className="node" transform={`translate(${n.x - CARD_W/2},${n.y - CARD_H/2})`} opacity={opacity}>
-                {/* Flow halo — uses the dominant edge color around each card */}
+                {/* Flow halo — concentric ring at 3px offset (rx=23 = card rx 20 + offset 3) so corners follow the card curvature cleanly */}
                 {flowing && (
-                  <rect x={-4} y={-4} width={CARD_W + 8} height={CARD_H + 8} rx={22}
-                    fill="none" stroke={flowHueForNode} strokeOpacity={0.28} strokeWidth={5}
+                  <rect x={-3} y={-3} width={CARD_W + 6} height={CARD_H + 6} rx={23}
+                    fill="none" stroke={flowHueForNode} strokeOpacity={0.22} strokeWidth={3.5}
                     style={{ transition: 'stroke-opacity .3s ease' }} />
                 )}
                 {/* Selection halo (suppressed during flow so the flow color dominates) */}
                 {selected && !flowing && (
-                  <rect x={-4} y={-4} width={CARD_W + 8} height={CARD_H + 8} rx={22}
-                    fill="none" stroke={SC_SELECTION} strokeOpacity={0.22} strokeWidth={2} />
+                  <rect x={-3} y={-3} width={CARD_W + 6} height={CARD_H + 6} rx={23}
+                    fill="none" stroke={SC_SELECTION} strokeOpacity={0.20} strokeWidth={1.6} />
                 )}
                 <rect width={CARD_W} height={CARD_H} rx={20}
                   fill={cardFill}
