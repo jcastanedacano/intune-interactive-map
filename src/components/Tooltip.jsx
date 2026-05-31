@@ -36,7 +36,7 @@ export default function Tooltip({ x, y, component, onClose }) {
       {component.learnUrl && (
         <a href={component.learnUrl} target="_blank" rel="noopener noreferrer"
           className="inline-block mt-2 text-[11px] text-sky-600 hover:underline">
-          Learn more →
+          Saber más →
         </a>
       )}
     </div>

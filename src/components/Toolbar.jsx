@@ -134,7 +134,7 @@ export default function Toolbar(props) {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search components & sub-comp..."
+                placeholder="Buscar componentes y sub-componentes…"
                 style={{ flex: 1, border: 'none', outline: 'none', fontSize: 11, color: SV_INK, fontFamily: 'inherit', background: 'transparent' }}
               />
             </div>

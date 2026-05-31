@@ -12,9 +12,9 @@ export const WORKLOADS = {
 export const WORKLOAD_ORDER = ['windows','ios','android','macos','linux','cloudpc']
 
 export const PHASES = {
-  1: { id: 1, label: 'Phase 1 · Foundations', color: '#06B6D4', bg: '#CFFAFE', pillBg: '#E0F2FE', pillFg: '#0284C7' },
-  2: { id: 2, label: 'Phase 2 · Scale',       color: '#8B5CF6', bg: '#EDE9FE', pillBg: '#EDE9FE', pillFg: '#7C3AED' },
-  3: { id: 3, label: 'Phase 3 · Advanced',    color: '#F97316', bg: '#FFEDD5', pillBg: '#FEF3C7', pillFg: '#D97706' }
+  1: { id: 1, label: 'Fase 1 · Cimientos', color: '#06B6D4', bg: '#CFFAFE', pillBg: '#E0F2FE', pillFg: '#0284C7' },
+  2: { id: 2, label: 'Fase 2 · Escala',    color: '#8B5CF6', bg: '#EDE9FE', pillBg: '#EDE9FE', pillFg: '#7C3AED' },
+  3: { id: 3, label: 'Fase 3 · Avanzado',  color: '#F97316', bg: '#FFEDD5', pillBg: '#FEF3C7', pillFg: '#D97706' }
 }
 
 // Coverage values: 0 (none) | 1 (light/partial) | 2 (full)

@@ -601,10 +601,10 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
         </section>
       )}
 
-      {/* Effort + Multi-Tenant */}
+      {/* Esfuerzo + Multi-Tenant */}
       <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
         <span style={{ fontSize:11, padding:'3px 8px', borderRadius:6, background:'#F3F4F6', color:'#374151' }}>
-          Effort <strong style={{ color: effortColor }}>{component.effort}</strong>
+          Esfuerzo <strong style={{ color: effortColor }}>{component.effort}</strong>
         </span>
         <span style={{ fontSize:11, padding:'3px 8px', borderRadius:6, background:'#F3F4F6', color:'#374151' }}>
           Multi-Tenant <strong style={{ color: mtColor }}>{component.multiTenant}</strong>
@@ -622,13 +622,13 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
         {component.links?.licensing && (
           <a href={component.links.licensing} target="_blank" rel="noopener noreferrer"
             style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'#374151', padding:'4px 8px', border:'1px solid #E5E7EB', borderRadius:6, textDecoration:'none' }}>
-            <FileText size={12} /> Licensing · m365maps.com
+            <FileText size={12} /> Licenciamiento · m365maps.com
           </a>
         )}
         {component.links?.permissions && (
           <a href={component.links.permissions} target="_blank" rel="noopener noreferrer"
             style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'#374151', padding:'4px 8px', border:'1px solid #E5E7EB', borderRadius:6, textDecoration:'none' }}>
-            <Key size={12} /> Permissions · rbacmap.com
+            <Key size={12} /> Permisos · rbacmap.com
           </a>
         )}
       </div>
@@ -642,7 +642,7 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
         return (
           <section>
             <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:8 }}>
-              Sub-Components
+              Sub-Componentes
             </h3>
             <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
               {list.map(sc => {
@@ -674,7 +674,7 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
       {related.length > 0 && (
         <section>
           <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:6 }}>
-            Related Components <span style={{ fontSize:9, fontWeight:400, marginLeft:4, color:'#9CA3AF' }}>— chip colors show compatibility</span>
+            Componentes Relacionados <span style={{ fontSize:9, fontWeight:400, marginLeft:4, color:'#9CA3AF' }}>— los colores indican compatibilidad</span>
           </h3>
           {related.map(rel => {
             const rc = CATEGORIES[rel.comp.category]
@@ -732,11 +732,11 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
         </section>
       )}
 
-      {/* Known limitations */}
+      {/* Limitaciones conocidas */}
       {component.knownLimitations?.length > 0 && (
         <section>
           <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:6 }}>
-            Known Limitations
+            Limitaciones Conocidas
           </h3>
           <ul style={{ paddingLeft:14, margin:0 }}>
             {component.knownLimitations.map((lim, i) => (

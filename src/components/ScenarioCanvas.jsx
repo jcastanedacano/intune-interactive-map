@@ -646,7 +646,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
           <input
             id="edge-label-input"
             type="text"
-            placeholder="Label (optional)"
+            placeholder="Etiqueta (opcional)"
             className="w-full text-xs border border-slate-300 rounded px-2 py-1 mb-1.5"
           />
           {Object.entries(EDGE_TYPES).map(([k, v]) => (
