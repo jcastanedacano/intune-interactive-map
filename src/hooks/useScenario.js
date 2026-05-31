@@ -107,7 +107,12 @@ export function useScenario() {
   const [state, dispatch] = useReducer(reducer, undefined, init)
   const idSet = new Set(state.nodes.map(n => n.id))
   const catalogEdges = edgesBetween(idSet).map(e => ({ ...e, custom: false }))
-  const customEdges = state.customEdges.map(e => ({ ...e, custom: true }))
+  // Guard: drop custom edges whose source or target node isn't on the canvas anymore.
+  // This prevents "orphan" connections from accidental state corruption or future regressions
+  // — the catalog set above is already filtered by edgesBetween().
+  const customEdges = state.customEdges
+    .filter(e => idSet.has(e.source) && idSet.has(e.target))
+    .map(e => ({ ...e, custom: true }))
   // Dedupe — custom takes precedence if same source/target/type
   const seen = new Set(customEdges.map(e => `${e.source}|${e.target}|${e.type}`))
   const merged = [...customEdges, ...catalogEdges.filter(e => !seen.has(`${e.source}|${e.target}|${e.type}`))]
