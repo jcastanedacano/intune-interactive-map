@@ -410,7 +410,8 @@ COMPONENTS.forEach(c => {
     'update-rings','feature-updates','driver-updates','co-management','remote-help','app-protection',
     // From Intune admin center icon pack (zip) — gradients normalized to flat #0078D4 brand blue.
     // endpoint-analytics removed — Informes.svg has a white rect background that disappears on the violet 'suite' tinted card circle; lucide Activity renders crisp.
-    'app-deployment','entra-id','filters',
+    // app-deployment removed — Aplicaciones.svg 9-tile grid disappears visually on the very light indigo 'apps' cat.bg circle; lucide PackagePlus is crisp.
+    'entra-id','filters',
     // From mscloudlogos.com (loryanstrant/MicrosoftCloudLogos) — official Microsoft cloud product icons.
     'firewall','managed-google-play',
     // (entra-id upgraded to official Entra cube from the same source)
