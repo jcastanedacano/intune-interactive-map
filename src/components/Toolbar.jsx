@@ -27,9 +27,9 @@ export default function Toolbar(props) {
   // Grid + Scenario + Graph + Mindmap have their own self-contained chrome — hide redundant global chrome
   const hideGlobalChrome = isStory || view === 'grid' || view === 'scenario' || view === 'graph' || view === 'mindmap'
 
-  // Blast Radius / Compare / Cost — only meaningful in analytical views
+  // Blast Radius / Compare — Graph/Grid/Mindmap (analytical); Cost — Grid only (per cost overlay design)
   const showAnalytical = view === 'graph' || view === 'grid' || view === 'mindmap'
-  const showBlast = showAnalytical
+  const showCost = view === 'grid'
   const blast = useBlastRadius()
   const compare = useCompare()
   const costOn = overlay === 'cost'
@@ -103,20 +103,22 @@ export default function Toolbar(props) {
                 }}>{compare.ids.length}/2</span>
               )}
             </button>
-            <button
-              onClick={() => setOverlay(costOn ? 'none' : 'cost')}
-              title={costOn ? 'Quitar overlay de costo' : 'Mostrar list-price USD por componente'}
-              style={{
-                padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                border: costOn ? '1px solid #10B981' : `1px solid ${SV_BORDER}`,
-                background: costOn ? '#10B981' : '#fff',
-                color: costOn ? '#fff' : SV_INK2,
-                fontWeight: costOn ? 600 : 500,
-                transition: 'all .15s'
-              }}>
-              <DollarSign size={13} /> Costo
-            </button>
+            {showCost && (
+              <button
+                onClick={() => setOverlay(costOn ? 'none' : 'cost')}
+                title={costOn ? 'Quitar overlay de costo' : 'Mostrar list-price USD por componente'}
+                style={{
+                  padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  border: costOn ? '1px solid #10B981' : `1px solid ${SV_BORDER}`,
+                  background: costOn ? '#10B981' : '#fff',
+                  color: costOn ? '#fff' : SV_INK2,
+                  fontWeight: costOn ? 600 : 500,
+                  transition: 'all .15s'
+                }}>
+                <DollarSign size={13} /> Costo
+              </button>
+            )}
           </div>
         )}
 

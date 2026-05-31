@@ -554,16 +554,16 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
               <g key={n.id} data-id={n.id} className="node" transform={`translate(${n.x - CARD_W/2},${n.y - CARD_H/2})`} opacity={opacity}>
                 {/* Flow halo — uses the dominant edge color around each card */}
                 {flowing && (
-                  <rect x={-4} y={-4} width={CARD_W + 8} height={CARD_H + 8} rx={12}
+                  <rect x={-4} y={-4} width={CARD_W + 8} height={CARD_H + 8} rx={22}
                     fill="none" stroke={flowHueForNode} strokeOpacity={0.28} strokeWidth={5}
                     style={{ transition: 'stroke-opacity .3s ease' }} />
                 )}
                 {/* Selection halo (suppressed during flow so the flow color dominates) */}
                 {selected && !flowing && (
-                  <rect x={-4} y={-4} width={CARD_W + 8} height={CARD_H + 8} rx={12}
+                  <rect x={-4} y={-4} width={CARD_W + 8} height={CARD_H + 8} rx={22}
                     fill="none" stroke={SC_SELECTION} strokeOpacity={0.22} strokeWidth={2} />
                 )}
-                <rect width={CARD_W} height={CARD_H} rx={10}
+                <rect width={CARD_W} height={CARD_H} rx={20}
                   fill={cardFill}
                   stroke={borderColor}
                   strokeWidth={flowing ? 2 : (selected ? 2 : 1)}
@@ -573,7 +573,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                       : 'drop-shadow(0 2px 6px rgba(15,23,42,0.06))',
                     transition: 'stroke .3s ease, filter .3s ease'
                   }} />
-                {/* Left 4px category stripe */}
+                {/* Left 4px category stripe (rounded to match card) */}
                 <rect x={0} y={0} width={4} height={CARD_H} rx={2} fill={cat.color} />
                 {phaseColor && <rect x={4} y={0} width={CARD_W - 4} height={3} fill={phaseColor} />}
                 <foreignObject x={10} y={6} width={CARD_W - 18} height={CARD_H - 12}>
@@ -585,9 +585,17 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     onClick={(e) => { e.stopPropagation(); setTooltip(null); setSelectedId(selected ? null : n.id) }}
                     onContextMenu={(e) => { e.preventDefault(); dispatch({ type: 'removeNode', id: n.id }) }}
                   >
-                    {c.iconSvg
-                      ? <img src={c.iconSvg} alt="" style={{ width: 36, height: 36, flexShrink: 0, objectFit: 'contain' }} onError={(e)=>{ e.target.style.display='none' }} />
-                      : (() => { const I = Icons[c.icon] || Icons.Box; return <I size={30} color={cat.color} style={{ flexShrink: 0 }} /> })()}
+                    {/* Icon encapsulated in its own circle (n8n-style separation) */}
+                    <div style={{
+                      width: 44, height: 44, borderRadius: '50%',
+                      background: cat.bg, border: `1.5px solid ${cat.color}40`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, transition: 'background .25s, border-color .25s'
+                    }}>
+                      {c.iconSvg
+                        ? <img src={c.iconSvg} alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} onError={(e)=>{ e.target.style.display='none' }} />
+                        : (() => { const I = Icons[c.icon] || Icons.Box; return <I size={22} color={cat.color} /> })()}
+                    </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.name}</div>
                       <div style={{ fontSize: 8.5, fontWeight: 700, color: cat.color, letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.2, marginTop: 1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{cat.label}</div>

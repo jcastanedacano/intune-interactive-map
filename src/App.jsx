@@ -56,6 +56,12 @@ export default function App() {
     return () => window.removeEventListener('keydown', h)
   }, [compareGlobal.ids.length])
 
+  // Cost overlay is Grid-only — auto-reset to 'none' when leaving Grid so it
+  // doesn't "stick" between views and pollute other overlays the user didn't pick.
+  useEffect(() => {
+    if (view !== 'grid' && overlay === 'cost') setOverlay('none')
+  }, [view])
+
   const setScenario = (next) => dispatch({ type: 'set', payload: next })
 
   const onOverlay = (id) => {
