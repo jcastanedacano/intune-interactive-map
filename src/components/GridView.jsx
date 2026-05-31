@@ -41,7 +41,7 @@ const SYMBOLS = {
 // ── Layout constants ──────────────────────────────────────────────────────────
 const COLS        = 4      // max cards per row
 const CARD_W      = 210
-const CARD_H      = 102   // bumped from 88 to fit cost-overlay bottom line cleanly
+const CARD_H      = 88
 const CARD_GAP_X  = 14
 const CARD_GAP_Y  = 12
 const ROW_PAD_X   = 28
@@ -169,11 +169,25 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
             {sym}
           </span>
         </div>
-        {phase && (
+        {overlay === 'cost' ? (() => {
+          const cp = PRICING[item.id]; const tier = getCostTier(item.id)
+          const tc = tier !== null ? COST_TIER_COLOR[tier] : '#94A3B8'
+          return (
+            <span title={cp?.note || ''} style={{
+              fontSize: 9.5, fontWeight: 700, color: tc,
+              background: `${tc}1A`, border: `1px solid ${tc}45`,
+              padding: '2px 7px', borderRadius: 999,
+              fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+              whiteSpace: 'nowrap', maxWidth: 124, overflow: 'hidden', textOverflow: 'ellipsis'
+            }}>
+              {formatPrice(cp)}
+            </span>
+          )
+        })() : (phase && (
           <span style={{ fontSize: 8, fontWeight: 700, color: phaseTone ? phaseTone.color : cat.color, background: phaseTone ? `${phaseTone.color}18` : `${cat.color}14`, padding: '2px 6px', borderRadius: 4, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
             P{phase}
           </span>
-        )}
+        ))}
       </div>
 
       {/* Middle: icon + name */}
@@ -195,24 +209,6 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
           <span style={{ fontSize: 8, fontWeight: 700, color: T.ink3, fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontVariantNumeric: 'tabular-nums' }}>{score}</span>
         </div>
       )}
-      {/* Bottom: cost line (replaces coverage when cost overlay active) */}
-      {overlay === 'cost' && (() => {
-        const cp = PRICING[item.id]; const tier = getCostTier(item.id)
-        const tc = tier !== null ? COST_TIER_COLOR[tier] : '#94A3B8'
-        return (
-          <div style={{
-            marginTop: 'auto', paddingTop: 6, borderTop: `1px solid ${tc}30`,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 5
-          }}>
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: tc, fontFamily: 'JetBrains Mono, ui-monospace, monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={cp?.note || ''}>
-              {formatPrice(cp)}
-            </span>
-            <span style={{ fontSize: 8.5, fontWeight: 700, color: tc, padding: '2px 6px', borderRadius: 4, background: `${tc}22`, letterSpacing: '.04em', flexShrink: 0 }}>
-              {tier !== null ? COST_TIER_LABEL[tier] : '?'}
-            </span>
-          </div>
-        )
-      })()}
     </div>
   )
 }
