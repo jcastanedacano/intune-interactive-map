@@ -33,14 +33,34 @@ const FLOW_MARKER = {
 
 const CARD_W = 188, CARD_H = 78
 
+// Trim the line endpoint from a card center toward an external direction (dx,dy)
+// so it lands exactly on the card's border rectangle (CARD_W × CARD_H, centered).
+// Eliminates the "edge stub" that used to protrude into card corners.
+function trimToCardBorder(cx, cy, dx, dy) {
+  const hw = CARD_W / 2 + 2  // +2px buffer so border stroke fully hides the line tip
+  const hh = CARD_H / 2 + 2
+  const len = Math.sqrt(dx*dx + dy*dy) || 1
+  const ux = dx / len, uy = dy / len
+  // Parametric: how far along (ux,uy) until we hit one of the rect edges
+  const tx = ux !== 0 ? hw / Math.abs(ux) : Infinity
+  const ty = uy !== 0 ? hh / Math.abs(uy) : Infinity
+  const t = Math.min(tx, ty)
+  return { x: cx + ux * t, y: cy + uy * t }
+}
+
 // Curved Q-path between two centers — perpendicular offset for gentle arc
 function edgePath(ax, ay, bx, by, curve = 22) {
-  const mx = (ax + bx) / 2, my = (ay + by) / 2
+  // Trim endpoints from each card center toward the other so the line terminates
+  // exactly at the card border (instead of penetrating the card all the way to its center).
   const dx = bx - ax, dy = by - ay
-  const len = Math.sqrt(dx*dx + dy*dy) || 1
-  const ox = -dy / len * curve
-  const oy =  dx / len * curve
-  return `M ${ax} ${ay} Q ${mx + ox} ${my + oy} ${bx} ${by}`
+  const s = trimToCardBorder(ax, ay, dx, dy)
+  const t = trimToCardBorder(bx, by, -dx, -dy)
+  const mx = (s.x + t.x) / 2, my = (s.y + t.y) / 2
+  const segDx = t.x - s.x, segDy = t.y - s.y
+  const len = Math.sqrt(segDx*segDx + segDy*segDy) || 1
+  const ox = -segDy / len * curve
+  const oy =  segDx / len * curve
+  return `M ${s.x} ${s.y} Q ${mx + ox} ${my + oy} ${t.x} ${t.y}`
 }
 function edgeMid(ax, ay, bx, by, curve = 22) {
   const mx = (ax + bx) / 2, my = (ay + by) / 2
