@@ -8,13 +8,14 @@ import { COMPONENT_META, PHASES, coverageScore, heatColor } from '../data/worklo
 import { SCENARIO_GROUPS } from '../data/scenarios.js'
 import WorkloadChips from './WorkloadChips.jsx'
 import Tooltip from './Tooltip.jsx'
+import { useLocale } from '../hooks/useLocale.js'
 
 // Design package palette — white card + 4px left stripe + EDGE_TYPES colors for edges
-const SC_BORDER = '#E4E7EC'
-const SC_BORDER_STRONG = '#D0D5DD'
-const SC_INK = '#0E1729'
-const SC_INK2 = '#475467'
-const SC_INK3 = '#98A2B3'
+const SC_BORDER = 'var(--border)'
+const SC_BORDER_STRONG = 'var(--border-strong)'
+const SC_INK = 'var(--text-primary)'
+const SC_INK2 = 'var(--text-secondary)'
+const SC_INK3 = 'var(--text-tertiary)'
 const SC_SELECTION = '#2563EB'
 
 // Flow → color (uses EDGE_TYPES palette from design package)
@@ -130,7 +131,7 @@ function findSuggestions(nodeId, placedNodeIds) {
       edgeLabel: e.label,
       direction,
       flow,
-      flowColor: FLOW_COLOR[flow] || '#475569',
+      flowColor: FLOW_COLOR[flow] || 'var(--text-secondary)',
       comp
     })
   })
@@ -138,6 +139,7 @@ function findSuggestions(nodeId, placedNodeIds) {
 }
 
 function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, categoryFilter, search, selectedComponent, onSelectComponent, flowKey, toggleEdgeType, onOverlay }, ref) {
+  const { t: tr } = useLocale()
   const svgRef = useRef(null)
   const gRef = useRef(null)
   const containerRef = useRef(null)
@@ -382,7 +384,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
   }
 
   return (
-    <div ref={containerRef} className="relative flex-1 bg-slate-50 overflow-hidden"
+    <div ref={containerRef} className="relative flex-1 overflow-hidden" style={{ background: 'var(--bg-canvas)' }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onMouseMove={onCanvasMouseMove}
@@ -397,13 +399,13 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             defaultValue=""
             style={{
               fontSize: 10.5, border: `1px solid ${SC_BORDER}`, borderRadius: 8,
-              padding: '6px 24px 6px 10px', background: '#fff', color: SC_INK2,
+              padding: '6px 24px 6px 10px', background: 'var(--bg-surface)', color: SC_INK2,
               cursor: 'pointer', fontFamily: 'inherit',
               appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
               backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23475467' stroke-width='1.5' stroke-linecap='round'/></svg>")`,
               backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center'
             }}>
-            <option value="" disabled>Cargar escenario…</option>
+            <option value="" disabled>{tr('scenario.load.placeholder')}</option>
             {SCENARIO_GROUPS.map(group => (
               <optgroup key={group.label} label={group.label}>
                 {group.scenarios.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
@@ -411,46 +413,46 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             ))}
           </select>
         )}
-        <div style={{ background: '#fff', border: `1px solid ${SC_BORDER}`, borderRadius: 8, padding: '6px 10px', display: 'flex', gap: 10, fontSize: 10.5, alignItems: 'center' }}>
+        <div style={{ background: 'var(--bg-surface)', border: `1px solid ${SC_BORDER}`, borderRadius: 8, padding: '6px 10px', display: 'flex', gap: 10, fontSize: 10.5, alignItems: 'center' }}>
           <span style={{ color: SC_INK2, fontWeight: 600 }}>{scenario.nodes.length}</span>
-          <span style={{ color: SC_INK3 }}>componentes</span>
+          <span style={{ color: SC_INK3 }}>{tr('panel.composition.components')}</span>
           <span style={{ color: '#CBD0DA' }}>·</span>
           <span style={{ color: SC_INK2, fontWeight: 600 }}>{edges.length}</span>
-          <span style={{ color: SC_INK3 }}>conexiones</span>
+          <span style={{ color: SC_INK3 }}>{tr('panel.composition.edges')}</span>
         </div>
         <div
           onClick={() => { if (scenario.nodes.length > 0) dispatch({ type: 'reset' }) }}
-          title={scenario.nodes.length === 0 ? 'Canvas ya está vacío' : 'Vaciar canvas'}
+          title={scenario.nodes.length === 0 ? tr('scenario.action.clear.title.empty') : tr('scenario.action.clear.title')}
           style={{
-            background: '#fff', border: `1px solid ${SC_BORDER}`, borderRadius: 8,
+            background: 'var(--bg-surface)', border: `1px solid ${SC_BORDER}`, borderRadius: 8,
             padding: '6px 10px', display: 'flex', gap: 6, fontSize: 11, alignItems: 'center',
             color: scenario.nodes.length === 0 ? '#CBD0DA' : SC_INK2,
             cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer',
             userSelect: 'none', opacity: scenario.nodes.length === 0 ? 0.55 : 1, transition: 'opacity .2s, color .2s'
           }}>
           <span style={{ fontSize: 13, lineHeight: 1 }}>↻</span>
-          <span style={{ fontWeight: 500 }}>Vaciar canvas</span>
+          <span style={{ fontWeight: 500 }}>{tr('scenario.canvas.clear')}</span>
         </div>
       </div>
 
       {/* Flow pace pill — top center */}
-      <div style={{position:'absolute', top:14, left:'50%', transform:'translateX(-50%)', zIndex:10, display:'flex', alignItems:'center', gap:4, background:'#fff', border:`1px solid ${SC_BORDER}`, borderRadius:999, padding:'4px 8px', fontFamily:'Inter, system-ui, sans-serif', fontSize:10.5, boxShadow:'0 1px 4px rgba(15,23,42,0.07)'}}>
-        <span style={{color:'#94A3B8', fontWeight:600, marginRight:2, fontSize:9.5, letterSpacing:'.05em', textTransform:'uppercase'}}>Flow</span>
+      <div style={{position:'absolute', top:14, left:'50%', transform:'translateX(-50%)', zIndex:10, display:'flex', alignItems:'center', gap:4, background:'var(--bg-surface)', border:`1px solid ${SC_BORDER}`, borderRadius:999, padding:'4px 8px', fontFamily:'Inter, system-ui, sans-serif', fontSize:10.5, boxShadow:'0 1px 4px rgba(var(--shadow-rgb),0.07)'}}>
+        <span style={{color:'var(--text-tertiary)', fontWeight:600, marginRight:2, fontSize:9.5, letterSpacing:'.05em', textTransform:'uppercase'}}>{tr('scenario.flow.label')}</span>
         {['slow','normal','fast'].map(p => (
           <button key={p} onClick={() => setFlowPace(p)} style={{
             padding:'2px 8px', borderRadius:999, border:'none', cursor:'pointer', fontSize:10.5,
             fontWeight: flowPace === p ? 700 : 500,
-            background: flowPace === p ? '#0E1729' : 'transparent',
+            background: flowPace === p ? 'var(--text-primary)' : 'transparent',
             color: flowPace === p ? '#fff' : '#64748B'
-          }}>{p.charAt(0).toUpperCase() + p.slice(1)}</button>
+          }}>{tr('scenario.flow.' + p)}</button>
         ))}
       </div>
 
       {/* Bottom edge type legend — interactive toggles (click to filter) */}
       <div style={{
         position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-        display: 'flex', gap: 6, background: '#fff', padding: 6, borderRadius: 999,
-        boxShadow: '0 4px 14px rgba(15,23,42,0.08)', border: `1px solid ${SC_BORDER}`,
+        display: 'flex', gap: 6, background: 'var(--bg-surface)', padding: 6, borderRadius: 999,
+        boxShadow: '0 4px 14px rgba(var(--shadow-rgb),0.08)', border: `1px solid ${SC_BORDER}`,
         zIndex: 10, fontFamily: 'Inter, system-ui, sans-serif'
       }}>
         {Object.entries(EDGE_TYPES).map(([k, v]) => {
@@ -458,10 +460,10 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
           return (
             <div key={k}
               onClick={() => toggleEdgeType && toggleEdgeType(k)}
-              title={on ? `Ocultar ${k}` : `Mostrar ${k}`}
+              title={on ? tr('scenario.edge.hide', { k }) : tr('scenario.edge.show', { k })}
               style={{
                 padding: '4px 11px', borderRadius: 999, fontSize: 10.5, fontWeight: 500,
-                color: v.color, background: on ? `${v.color}10` : '#F6F7F9',
+                color: v.color, background: on ? `${v.color}10` : 'var(--bg-canvas)',
                 display: 'flex', alignItems: 'center', gap: 6,
                 cursor: 'pointer', userSelect: 'none',
                 opacity: on ? 1 : 0.45, transition: 'opacity .2s, background .2s',
@@ -480,14 +482,14 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
         fontSize: 10, color: SC_INK3, lineHeight: 1.5, textAlign: 'right',
         fontFamily: 'Inter, system-ui, sans-serif'
       }}>
-        Arrastra desde <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: SC_INK, verticalAlign: 'middle', margin: '0 2px' }}></span> para conectar · Click derecho elimina
+        {tr('scenario.connectHint')}
       </div>
 
       {scenario.nodes.length === 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none">
           <Cog size={56} className="mb-3" />
-          <div className="text-sm">Arrastra componentes desde la librería</div>
-          <div className="text-sm">para construir tu escenario</div>
+          <div className="text-sm">{tr('scenario.empty.line1')}</div>
+          <div className="text-sm">{tr('scenario.empty.line2')}</div>
         </div>
       )}
 
@@ -502,7 +504,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             </marker>
           ))}
           <pattern id="sc-dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="#E5E7EB" />
+            <circle cx="1" cy="1" r="1" fill="var(--border)" />
           </pattern>
         </defs>
         <g ref={gRef}>
@@ -514,7 +516,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             const t = scenario.nodes.find(n => n.id === e.target)
             if (!s || !t) return null
             const flow = e.flow || e.type?.toLowerCase()
-            const color = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || '#94A3B8'
+            const color = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || 'var(--text-tertiary)'
             const marker = FLOW_MARKER[flow] || null
             const op = edgeOpacity(e)
             const showLabel = op >= 0.3 && e.label
@@ -550,7 +552,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                 {showLabel && !sDim && !tDim && (
                   <g transform={`translate(${labelPos.x},${labelPos.y})`} style={{ pointerEvents: 'none', userSelect: 'none' }}>
                     <rect x={-labelW/2} y={-9} width={labelW} height={18} rx={9}
-                      fill="#fff" stroke={color} strokeOpacity={0.45} strokeWidth={1} />
+                      fill="var(--bg-surface)" stroke={color} strokeOpacity={0.45} strokeWidth={1} />
                     <text x={0} y={4} textAnchor="middle" fontSize={10.5} fontWeight={600} fill={color}>{e.label}</text>
                   </g>
                 )}
@@ -568,7 +570,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             // While flowing, tint border with the color of THIS node's dominant flow
             // (cyan/violet/orange/dark) — falls back to category color if no edge.
             const flowHueForNode = flowColorByNode[n.id] || cat.color
-            const cardFill = heat || '#FFFFFF'
+            const cardFill = heat || 'var(--bg-surface)'
             // n8n-style: category color is the primary visual identity — full rounded border in cat.color
             const borderColor = flowing ? flowHueForNode : (selected ? SC_SELECTION : (phaseColor || cat.color))
             return (
@@ -584,7 +586,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                       ? `drop-shadow(0 0 14px ${flowHueForNode}55)`
                       : (selected
                           ? `drop-shadow(0 0 10px ${SC_SELECTION}55)`
-                          : 'drop-shadow(0 2px 6px rgba(15,23,42,0.06))'),
+                          : 'drop-shadow(0 2px 6px rgba(var(--shadow-rgb),0.06))'),
                     transition: 'stroke .3s ease, stroke-width .3s ease, filter .3s ease'
                   }} />
                 {/* Phase stripe (top) — only when deployment overlay is active; preserves rounded corners */}
@@ -624,7 +626,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                   onClick={(e) => openAddMenu(n, e)}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <circle r={11} fill="#fff" stroke={SC_BORDER_STRONG} strokeWidth={1} style={{ filter: 'drop-shadow(0 1px 2px rgba(15,23,42,0.08))' }} />
+                  <circle r={11} fill="var(--bg-surface)" stroke={SC_BORDER_STRONG} strokeWidth={1} style={{ filter: 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.08))' }} />
                   <text x={0} y={4} textAnchor="middle" fill={SC_INK2} fontSize={14} fontWeight={600} style={{ pointerEvents: 'none', userSelect: 'none' }}>+</text>
                 </g>
                 {/* Delete via right-click (per design package — no red X overlay) */}
@@ -632,8 +634,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                 <g transform={`translate(${CARD_W},${CARD_H/2})`} style={{ cursor: 'crosshair' }}
                   onMouseDown={(e) => startWire(n.id, e)}
                 >
-                  <circle r={6} fill="white" stroke="#0F172A" strokeWidth={1.5} />
-                  <circle r={2.5} fill="#0F172A" />
+                  <circle r={6} fill="var(--bg-surface)" stroke="var(--text-primary)" strokeWidth={1.5} />
+                  <circle r={2.5} fill="var(--text-primary)" />
                 </g>
               </g>
             )
@@ -643,23 +645,23 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             if (!from) return null
             return (
               <line x1={from.x + CARD_W/2} y1={from.y} x2={wiring.mouseX} y2={wiring.mouseY}
-                stroke="#0F172A" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" />
+                stroke="var(--text-primary)" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" />
             )
           })()}
         </g>
       </svg>
 
       {edgePicker && (
-        <div className="absolute z-30 bg-white border border-slate-200 rounded-md shadow-xl p-2 w-56"
-          style={{ left: edgePicker.screenX + 8, top: edgePicker.screenY + 8 }}>
+        <div className="absolute z-30 border rounded-md shadow-xl p-2 w-56"
+          style={{ left: edgePicker.screenX + 8, top: edgePicker.screenY + 8, background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}>
           <div className="text-[10px] font-semibold text-slate-500 mb-1 flex items-center justify-between">
-            <span>CONNECTION TYPE</span>
+            <span>{tr('scenario.connectionType')}</span>
             <button onClick={() => setEdgePicker(null)} className="text-slate-400">×</button>
           </div>
           <input
             id="edge-label-input"
             type="text"
-            placeholder="Etiqueta (opcional)"
+            placeholder={tr('scenario.edgeLabel.placeholder')}
             className="w-full text-xs border border-slate-300 rounded px-2 py-1 mb-1.5"
           />
           {Object.entries(EDGE_TYPES).map(([k, v]) => (
@@ -685,8 +687,9 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
         return (
           <div
             ref={menuRef}
-            className="absolute z-20 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden"
+            className="absolute z-20 border rounded-lg shadow-xl overflow-hidden"
             style={{
+              background: 'var(--bg-elevated)', borderColor: 'var(--border)',
               left: Math.max(8, addMenu.screenX - 150),
               top: addMenu.screenY,
               width: 300,
@@ -698,14 +701,14 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
               letterSpacing: '0.06em', textTransform: 'uppercase',
               borderBottom: `1px solid ${SC_BORDER}`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              background: '#fff'
+              background: 'var(--bg-surface)'
             }}>
-              <span>CONECTAR CON…</span>
+              <span>{tr('scenario.connectWith')}</span>
               <span onClick={() => setAddMenu(null)} style={{ color: SC_INK3, cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: '0 4px' }}>×</span>
             </div>
             <div className="overflow-y-auto" style={{ maxHeight: 280 }}>
               {suggestions.length === 0 && (
-                <div style={{ padding: '14px 14px', fontSize: 11, color: SC_INK3 }}>No quedan vecinos del catálogo</div>
+                <div style={{ padding: '14px 14px', fontSize: 11, color: SC_INK3 }}>{tr('scenario.noNeighbors')}</div>
               )}
               {suggestions.map(s => {
                 const arrow = s.direction === 'out' ? '→' : '←'
@@ -714,10 +717,10 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     onClick={() => addNeighbor(addMenu.fromId, s.nodeId)}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px',
-                      cursor: 'pointer', borderBottom: '1px solid #F4F6F8',
+                      cursor: 'pointer', borderBottom: '1px solid var(--bg-muted)',
                       transition: 'background .15s'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#F6F7F9' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-canvas)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                   >
                     {s.comp.iconSvg

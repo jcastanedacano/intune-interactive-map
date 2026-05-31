@@ -5,12 +5,13 @@ import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
+import { useLocale } from '../hooks/useLocale.js'
 import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice } from '../data/pricing.js'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
-  ink: '#0E1729', ink2: '#344054', ink3: '#667085',
-  border: '#D0D5DD', divider: '#E4E7EC', appBg: '#F2F4F7', white: '#FFFFFF',
+  ink: 'var(--text-primary)', ink2: 'var(--text-secondary)', ink3: 'var(--text-tertiary)',
+  border: 'var(--border-strong)', divider: 'var(--border)', appBg: 'var(--bg-muted)', white: 'var(--bg-surface)',
   selection: '#1D4ED8'
 }
 
@@ -111,7 +112,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
     borderColor = s >= 80 ? '#079455' : s >= 60 ? '#B54708' : '#B42318'; borderW = 2
   } else if (overlay === 'cost') {
     const tier = getCostTier(item.id)
-    const tc = tier !== null ? COST_TIER_COLOR[tier] : '#94A3B8'
+    const tc = tier !== null ? COST_TIER_COLOR[tier] : 'var(--text-tertiary)'
     bg = `${tc}18`; borderColor = tc; borderW = 2
   } else if (isSelected) {
     bg = `${T.selection}12`; borderColor = T.selection; borderW = 2.5
@@ -137,15 +138,15 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
         transform: isSelected ? 'scale(1.025)' : 'scale(1)',
         boxShadow: isSelected
           ? `0 0 0 3px ${T.selection}35, 0 12px 32px ${T.selection}22`
-          : isConnected ? `0 4px 14px ${cat.color}22` : '0 1px 4px rgba(15,23,42,0.07)',
+          : isConnected ? `0 4px 14px ${cat.color}22` : '0 1px 4px rgba(var(--shadow-rgb),0.07)',
         display: 'flex', flexDirection: 'column', padding: '9px 11px 10px',
         userSelect: 'none', overflow: 'hidden'
       }}
       onMouseEnter={e => {
-        if (!isSelected) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 22px rgba(15,23,42,0.14)' }
+        if (!isSelected) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 22px rgba(var(--shadow-rgb),0.14)' }
       }}
       onMouseLeave={e => {
-        if (!isSelected) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = isConnected ? `0 4px 14px ${cat.color}22` : '0 1px 4px rgba(15,23,42,0.07)' }
+        if (!isSelected) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = isConnected ? `0 4px 14px ${cat.color}22` : '0 1px 4px rgba(var(--shadow-rgb),0.07)' }
       }}
     >
       {/* Compare badge */}
@@ -156,7 +157,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
           background: '#1D4ED8', border: '2px solid #fff',
           color: '#fff', fontSize: 10, fontWeight: 700,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 6px rgba(15,23,42,0.18)'
+          boxShadow: '0 2px 6px rgba(var(--shadow-rgb),0.18)'
         }}>{compareIdx + 1}</div>
       )}
       {/* Top row: atomic num + symbol + phase */}
@@ -171,7 +172,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
         </div>
         {overlay === 'cost' ? (() => {
           const cp = PRICING[item.id]; const tier = getCostTier(item.id)
-          const tc = tier !== null ? COST_TIER_COLOR[tier] : '#94A3B8'
+          const tc = tier !== null ? COST_TIER_COLOR[tier] : 'var(--text-tertiary)'
           return (
             <span title={cp?.note || ''} style={{
               fontSize: 9.5, fontWeight: 700, color: tc,
@@ -224,6 +225,7 @@ function bezierPath(sx, sy, tx, ty) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function GridView({ edgeFilter, categoryFilter, search, setSearch, overlay, setOverlay, selectedComponent, onSelectComponent }) {
+  const { t } = useLocale()
   const blast = useBlastRadius()
   const compare = useCompare()
   const blastResult = useMemo(() => {
@@ -305,7 +307,7 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
                 <span key={o.id} onClick={() => setOverlay?.(o.id)} style={{
                   padding: '4px 11px', borderRadius: 5, fontSize: 11, fontWeight: active ? 600 : 400,
                   background: active ? T.white : 'transparent', color: active ? T.ink : T.ink3,
-                  boxShadow: active ? '0 1px 3px rgba(15,23,42,0.08)' : 'none',
+                  boxShadow: active ? '0 1px 3px rgba(var(--shadow-rgb),0.08)' : 'none',
                   cursor: 'pointer', userSelect: 'none', transition: 'all .13s'
                 }}>{o.label}</span>
               )
@@ -339,7 +341,7 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
         {/* Search */}
         <div style={{ height: 32, display: 'flex', alignItems: 'center', gap: 7, padding: '0 12px', background: T.appBg, borderRadius: 8, border: `1px solid ${T.border}`, minWidth: 210 }}>
           <span style={{ color: T.ink3, fontSize: 13 }}>⌕</span>
-          <input value={search || ''} onChange={e => setSearch?.(e.target.value)} placeholder="Filtrar por nombre…"
+          <input value={search || ''} onChange={e => setSearch?.(e.target.value)} placeholder={t('gridview.filter')}
             style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 11, color: T.ink, fontFamily: 'inherit' }} />
           {search && <span onClick={() => setSearch?.('')} style={{ cursor: 'pointer', color: T.ink3, fontSize: 14 }}>×</span>}
         </div>
@@ -400,7 +402,7 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
                   <g transform={`translate(${lx},${ly})`}>
                     <rect x={-(e.label.length * 3 + 10)} y={-9} width={e.label.length * 6 + 20} height={17} rx={8.5}
                       fill={T.white} stroke={et.color} strokeOpacity={0.5} strokeWidth={1}
-                      style={{ filter: 'drop-shadow(0 1px 3px rgba(15,23,42,0.09))' }} />
+                      style={{ filter: 'drop-shadow(0 1px 3px rgba(var(--shadow-rgb),0.09))' }} />
                     <text x="0" y="4.5" fontSize="9.5" fontWeight="600" fill={et.color} textAnchor="middle"
                       style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{e.label}</text>
                   </g>

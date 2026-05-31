@@ -2,20 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light theme (default) tokens ───────────────────────────────────────── */
+:root {
+  --bg-base:        #F8FAFC;
+  --bg-canvas:      #F6F7F9;
+  --bg-surface:     #FFFFFF;
+  --bg-elevated:    #FFFFFF;
+  --bg-muted:       #F2F4F7;
+  --text-primary:   #0F172A;
+  --text-secondary: #475467;
+  --text-tertiary:  #98A2B3;
+  --text-inverse:   #FFFFFF;
+  --border:         #E4E7EC;
+  --border-strong:  #D0D5DD;
+  --divider:        #EEF0F3;
+  --shadow-rgb:     15,23,42;
+}
+
+/* ── Dark theme tokens — Deep Slate ──────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-base:        #0B0F1A;
+  --bg-canvas:      #0E1320;
+  --bg-surface:     #151B2B;
+  --bg-elevated:    #1C2436;
+  --bg-muted:       #121826;
+  --text-primary:   #EAEEF6;
+  --text-secondary: #A9B4C7;
+  --text-tertiary:  #6E7A92;
+  --text-inverse:   #0B0F1A;
+  --border:         #242E44;
+  --border-strong:  #34415B;
+  --divider:        #1A2132;
+  --shadow-rgb:     0,0,0;
+  color-scheme: dark;
+}
+
 html, body, #root { height: 100%; margin: 0; }
-body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #F8FAFC; color: #0F172A; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  transition: background 0.2s ease, color 0.2s ease;
+}
 
 .node-card { transition: box-shadow 120ms ease, transform 120ms ease; }
-.node-card:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.12); }
+.node-card:hover { box-shadow: 0 8px 20px rgba(var(--shadow-rgb), 0.12); }
 
-.edge-label { font-size: 10px; fill: #475569; pointer-events: none; }
+.edge-label { font-size: 10px; fill: var(--text-secondary); pointer-events: none; }
 .edge-path { fill: none; stroke-width: 1.5; }
 
-.tab-active { background: #0F172A; color: white; }
-.tab-inactive { background: white; color: #0F172A; }
+.tab-active { background: var(--text-primary); color: var(--text-inverse); }
+.tab-inactive { background: var(--bg-surface); color: var(--text-primary); }
 
 .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 6px; }
 
 /* Node selection — dim non-connected nodes when a selection is active */
 .fw-dim { opacity: 0.15; transition: opacity 120ms ease; }
@@ -23,3 +63,22 @@ body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 .fw-edge-dim { opacity: 0.06 !important; }
 .fw-edge-hi { opacity: 0.9 !important; }
 .fw-selected-card { filter: drop-shadow(0 0 8px rgba(37,99,235,0.5)); }
+
+/* Hover background that follows theme tokens */
+.hover-bg-canvas:hover { background: var(--bg-canvas); }
+
+/* StoryView · narrative + insight body emphasis */
+.sv-narrative b,
+.sv-narrative strong,
+.sv-insight-body b,
+.sv-insight-body strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sv-narrative i,
+.sv-narrative em,
+.sv-insight-body i,
+.sv-insight-body em {
+  color: var(--text-secondary);
+  font-style: italic;
+}

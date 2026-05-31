@@ -6,8 +6,10 @@ import { EDGES } from '../data/edges.js'
 import { SUBTOPICS } from '../data/subtopics.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { MITRE_TTPS, MITRE_TACTIC_COLORS, resolveMitre } from '../data/mitre.js'
+import { useLocale } from '../hooks/useLocale.js'
 
 function MitreSection({ mitre }) {
+  const { t } = useLocale()
   const [open, setOpen] = useState(true)
   if (!mitre || !mitre.length) return null
   const valid = mitre.map(resolveMitre).filter(Boolean)
@@ -16,21 +18,21 @@ function MitreSection({ mitre }) {
   const byTactic = {}
   valid.forEach(t => { (byTactic[t.tactic] ||= []).push(t) })
   return (
-    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #EEF0F3' }}>
+    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
       <button onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: 0, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left'
         }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.08em', textTransform: 'uppercase' }}>
-          <Target size={11} color="#DC2626" /> MITRE ATT&amp;CK · {valid.length} TTPs
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          <Target size={11} color="#DC2626" /> {t('panel.mitre.label')} · {valid.length} TTPs
         </span>
-        <span style={{ fontSize: 10, color: '#98A2B3' }}>{open ? '▾' : '▸'}</span>
+        <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
           {Object.entries(byTactic).map(([tactic, ttps]) => {
-            const color = MITRE_TACTIC_COLORS[tactic] || '#475467'
+            const color = MITRE_TACTIC_COLORS[tactic] || 'var(--text-secondary)'
             return (
               <div key={tactic}>
                 <div style={{ fontSize: 8.5, fontWeight: 700, color, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 4 }}>{tactic}</div>
@@ -84,6 +86,7 @@ function copyToClipboard(text) {
 }
 
 function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, onReset, onAnimateFlow }) {
+  const { t } = useLocale()
   // Per-category breakdown
   const byCat = {}
   nodes.forEach(n => {
@@ -101,35 +104,35 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
   return (
     <>
       {/* Workspace header (design package) */}
-      <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid #EEF0F3', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475467', letterSpacing: '.08em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ display: 'inline-block', width: 9, height: 9, transform: 'rotate(45deg)', background: '#0E1729' }}></span>
-          Workspace
+      <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--divider)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: 'Inter, system-ui, sans-serif' }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '.08em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ display: 'inline-block', width: 9, height: 9, transform: 'rotate(45deg)', background: 'var(--text-primary)' }}></span>
+          {t('panel.workspace')}
         </div>
         <button onClick={onShare}
           className={`text-[10px] px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${copied ? 'bg-emerald-600 text-white' : ''}`}
-          style={{ border: copied ? 'none' : '1px solid #E4E7EC', background: copied ? '#059669' : '#fff', color: copied ? '#fff' : '#475467', fontFamily: 'inherit', cursor: 'pointer' }}>
-          {copied ? <><Check size={11} /> Copiado</> : <>↓ Exportar</>}
+          style={{ border: copied ? 'none' : '1px solid var(--border)', background: copied ? '#059669' : 'var(--bg-surface)', color: copied ? '#fff' : 'var(--text-secondary)', fontFamily: 'inherit', cursor: 'pointer' }}>
+          {copied ? <><Check size={11} /> {t('panel.copied')}</> : <>{t('panel.export')}</>}
         </button>
       </div>
 
       <div style={{ padding: '14px 18px 18px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.01em', lineHeight: 1.15 }}>Tu composición</div>
-        <div style={{ fontSize: 11.5, color: '#475467', marginTop: 6, lineHeight: 1.5 }}>
-          Arrastra componentes desde la librería y conéctalos arrastrando desde el puerto <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#0E1729', verticalAlign: 'middle', margin: '0 1px' }}></span> de cada nodo.
+        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em', lineHeight: 1.15 }}>{t('panel.composition')}</div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
+          {t('panel.composition.intro')}
         </div>
 
         {/* Composition header + counts */}
-        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #EEF0F3' }}>
-          <div style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 10 }}>Composición</div>
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 10 }}>{t('panel.composition.label')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-            <div style={{ padding: '10px 12px', background: '#F6F7F9', borderRadius: 7 }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{nodes.length}</div>
-              <div style={{ fontSize: 9.5, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 4 }}>componentes</div>
+            <div style={{ padding: '10px 12px', background: 'var(--bg-canvas)', borderRadius: 7 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{nodes.length}</div>
+              <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 4 }}>{t('panel.composition.components')}</div>
             </div>
-            <div style={{ padding: '10px 12px', background: '#F6F7F9', borderRadius: 7 }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{edges.length}</div>
-              <div style={{ fontSize: 9.5, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 4 }}>conexiones</div>
+            <div style={{ padding: '10px 12px', background: 'var(--bg-canvas)', borderRadius: 7 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{edges.length}</div>
+              <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 4 }}>{t('panel.composition.edges')}</div>
             </div>
           </div>
 
@@ -142,11 +145,11 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
                 return (
                   <div key={catId} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
-                    <span style={{ color: '#0E1729', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.label}</span>
-                    <div style={{ width: 70, height: 4, background: '#EEF0F3', borderRadius: 2, overflow: 'hidden' }}>
+                    <span style={{ color: 'var(--text-primary)', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.label}</span>
+                    <div style={{ width: 70, height: 4, background: 'var(--divider)', borderRadius: 2, overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: cat.color }}></div>
                     </div>
-                    <span style={{ color: '#475467', fontWeight: 600, fontVariantNumeric: 'tabular-nums', width: 16, textAlign: 'right' }}>{n}</span>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontVariantNumeric: 'tabular-nums', width: 16, textAlign: 'right' }}>{n}</span>
                   </div>
                 )
               })}
@@ -158,47 +161,47 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
         <div style={{ marginTop: 18, display: 'flex', gap: 8 }}>
           <button onClick={() => onAnimateFlow && onAnimateFlow()} disabled={nodes.length === 0 || edges.length === 0} style={{
             flex: 1, padding: '9px 12px',
-            background: (nodes.length === 0 || edges.length === 0) ? '#CBD0DA' : '#0E1729',
+            background: (nodes.length === 0 || edges.length === 0) ? '#CBD0DA' : 'var(--text-primary)',
             color: '#fff', border: 'none',
             borderRadius: 8, fontSize: 12, fontWeight: 600,
             cursor: (nodes.length === 0 || edges.length === 0) ? 'not-allowed' : 'pointer',
             fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
           }}>
-            ▶ Animar flujo
+            {t('panel.animate')}
           </button>
           <button onClick={onReset} disabled={nodes.length === 0} style={{
-            padding: '9px 14px', background: '#fff', color: nodes.length === 0 ? '#CBD0DA' : '#475467',
-            border: '1px solid #E4E7EC', borderRadius: 8, fontSize: 12, fontWeight: 500,
+            padding: '9px 14px', background: 'var(--bg-surface)', color: nodes.length === 0 ? '#CBD0DA' : 'var(--text-secondary)',
+            border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, fontWeight: 500,
             cursor: nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
           }}>
-            ↻ Vaciar
+            {t('panel.clear')}
           </button>
         </div>
 
         {/* Scenario metadata (collapsible-feel) */}
-        <details style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid #EEF0F3' }}>
-          <summary style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', marginBottom: 10 }}>
-            Detalles del escenario
+        <details style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
+          <summary style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', marginBottom: 10 }}>
+            {t('panel.scenario.details')}
           </summary>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
             <div>
-              <label style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.06em' }}>TÍTULO</label>
+              <label style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.06em' }}>{t('panel.scenario.title.label')}</label>
               <input value={scenario.title} onChange={(e) => setScenario({ ...scenario, title: e.target.value })}
-                placeholder="ej. Flujo de clasificación"
-                style={{ width: '100%', fontSize: 12, border: '1px solid #E4E7EC', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: '#0E1729', outline: 'none', fontFamily: 'inherit' }} />
+                placeholder={t('panel.scenario.title.placeholder')}
+                style={{ width: '100%', fontSize: 12, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
             </div>
             <div>
-              <label style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.06em' }}>PROBLEMA</label>
+              <label style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.06em' }}>{t('panel.scenario.problem.label')}</label>
               <textarea value={scenario.problem} onChange={(e) => setScenario({ ...scenario, problem: e.target.value })}
-                placeholder="¿Qué problema resuelve?" rows={3}
-                style={{ width: '100%', fontSize: 12, border: '1px solid #E4E7EC', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: '#0E1729', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
+                placeholder={t('panel.scenario.problem.placeholder')} rows={3}
+                style={{ width: '100%', fontSize: 12, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: 'var(--text-primary)', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
             </div>
             <div>
-              <label style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.06em' }}>RESULTADO ESPERADO</label>
+              <label style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.06em' }}>{t('panel.scenario.outcome.label')}</label>
               <textarea value={scenario.outcome} onChange={(e) => setScenario({ ...scenario, outcome: e.target.value })}
-                placeholder="¿Cuál es el resultado deseado?" rows={3}
-                style={{ width: '100%', fontSize: 12, border: '1px solid #E4E7EC', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: '#0E1729', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
+                placeholder={t('panel.scenario.outcome.placeholder')} rows={3}
+                style={{ width: '100%', fontSize: 12, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: 'var(--text-primary)', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
             </div>
           </div>
         </details>
@@ -219,7 +222,7 @@ const FLOW_TONES = {
 function ConnectionRow({ direction, edge, neighbor, onSelectComponent }) {
   const cat = CATEGORIES[neighbor.category]
   const flow = edge.flow || (edge.type || '').toLowerCase()
-  const tone = FLOW_TONES[flow] || { color: '#475467', label: (flow || 'EDGE').toUpperCase() }
+  const tone = FLOW_TONES[flow] || { color: 'var(--text-secondary)', label: (flow || 'EDGE').toUpperCase() }
   const arrow = direction === 'out' ? '→' : '←'
   return (
     <div
@@ -245,10 +248,10 @@ function ConnectionRow({ direction, edge, neighbor, onSelectComponent }) {
         : <div style={{ width: 18, height: 18, borderRadius: 4, background: cat.bg, flexShrink: 0 }} />}
       {/* Name + sub-label */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 11.5, fontWeight: 600, color: '#0E1729', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {neighbor.name}
         </div>
-        <div style={{ fontSize: 9.5, color: '#98A2B3', lineHeight: 1.2, marginTop: 1,
+        <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', lineHeight: 1.2, marginTop: 1,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {edge.label || tone.label.toLowerCase()}
         </div>
@@ -260,6 +263,7 @@ function ConnectionRow({ direction, edge, neighbor, onSelectComponent }) {
 }
 
 function ComponentProfile({ component, onSelectComponent }) {
+  const { t } = useLocale()
   if (!component) return null
   const cat = CATEGORIES[component.category]
   const Icon = Icons[component.icon] || Icons.Box
@@ -285,18 +289,18 @@ function ComponentProfile({ component, onSelectComponent }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif', height: '100%' }}>
       {/* Header with category tint + close */}
-      <div style={{ borderBottom: '1px solid #EEF0F3' }}>
+      <div style={{ borderBottom: '1px solid var(--divider)' }}>
         <div style={{ background: cat.bg, padding: '14px 18px 12px', borderBottom: `1px solid ${cat.color}22` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
             <div style={{ fontSize: 9, fontWeight: 700, color: cat.color, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{cat.label}</div>
             <div onClick={() => onSelectComponent && onSelectComponent(null)}
-              style={{ fontSize: 10, color: '#475467', cursor: 'pointer', border: '1px solid #E4E7EC', borderRadius: 6, background: '#fff', padding: '2px 8px', userSelect: 'none' }}>
-              × cerrar
+              style={{ fontSize: 10, color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-surface)', padding: '2px 8px', userSelect: 'none' }}>
+              {t('profile.close')}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 50, height: 50, borderRadius: 10, background: '#fff',
+              width: 50, height: 50, borderRadius: 10, background: 'var(--bg-surface)',
               border: `1px solid ${cat.color}33`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
             }}>
@@ -305,9 +309,9 @@ function ComponentProfile({ component, onSelectComponent }) {
                 : <Icon size={24} color={cat.color} />}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 17, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.01em', lineHeight: 1.15 }}>{component.name}</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em', lineHeight: 1.15 }}>{component.name}</div>
               {component.sublabel && (
-                <div style={{ fontSize: 10.5, color: '#475467', marginTop: 3, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
+                <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginTop: 3, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
                   {component.sublabel}
                 </div>
               )}
@@ -319,28 +323,28 @@ function ComponentProfile({ component, onSelectComponent }) {
       {/* Scrolling body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 24px' }}>
         {/* Description */}
-        <div style={{ fontSize: 12.5, color: '#0E1729', lineHeight: 1.55, marginBottom: 14 }}>
+        <div style={{ fontSize: 12.5, color: 'var(--text-primary)', lineHeight: 1.55, marginBottom: 14 }}>
           {component.description}
         </div>
 
         {/* GRADO · I/O — always shown when there are edges (design package GrDetailRail) */}
         {(salida.length + entrada.length) > 0 && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            <div style={{ flex: 1, padding: '10px 12px', background: '#F6F7F9', borderRadius: 7 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Grado</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#0E1729', marginTop: 3, letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+            <div style={{ flex: 1, padding: '10px 12px', background: 'var(--bg-canvas)', borderRadius: 7 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t('profile.connections.degree')}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginTop: 3, letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                 {salida.length + entrada.length}
               </div>
-              <div style={{ fontSize: 9, color: '#98A2B3', marginTop: 3 }}>conexiones totales</div>
+              <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 3 }}>{t('profile.connections.total')}</div>
             </div>
-            <div style={{ flex: 1, padding: '10px 12px', background: '#F6F7F9', borderRadius: 7 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '0.06em', textTransform: 'uppercase' }}>I/O</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#0E1729', marginTop: 3 }}>
+            <div style={{ flex: 1, padding: '10px 12px', background: 'var(--bg-canvas)', borderRadius: 7 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t('profile.connections.io')}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginTop: 3 }}>
                 <span style={{ color: '#059669' }}>↑{salida.length}</span>
                 <span style={{ color: '#CBD0DA', margin: '0 5px' }}>·</span>
                 <span style={{ color: '#3B5DD9' }}>↓{entrada.length}</span>
               </div>
-              <div style={{ fontSize: 9, color: '#98A2B3', marginTop: 3 }}>salida · entrada</div>
+              <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 3 }}>{t('profile.connections.outIn')}</div>
             </div>
           </div>
         )}
@@ -348,16 +352,16 @@ function ComponentProfile({ component, onSelectComponent }) {
         {/* FASE + COBERTURA */}
         {(phase || coverage > 0) && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-            <div style={{ padding: '10px 12px', background: '#F6F7F9', borderRadius: 7 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Fase</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: phaseTone?.color || '#0E1729', marginTop: 4, lineHeight: 1 }}>
+            <div style={{ padding: '10px 12px', background: 'var(--bg-canvas)', borderRadius: 7 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('profile.phase')}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: phaseTone?.color || 'var(--text-primary)', marginTop: 4, lineHeight: 1 }}>
                 {phase ? `${phase} · ${phaseLabel}` : '—'}
               </div>
             </div>
-            <div style={{ padding: '10px 12px', background: '#F6F7F9', borderRadius: 7 }}>
-              <div style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Cobertura</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#0E1729', marginTop: 4, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                {coverage} <span style={{ fontSize: 11, color: '#98A2B3', fontWeight: 500 }}>/ 100</span>
+            <div style={{ padding: '10px 12px', background: 'var(--bg-canvas)', borderRadius: 7 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('profile.coverage')}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                {coverage} <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 500 }}>/ 100</span>
               </div>
             </div>
           </div>
@@ -366,9 +370,9 @@ function ComponentProfile({ component, onSelectComponent }) {
         {/* SALIDA · N */}
         {salida.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475467', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
-              <span>Salida</span>
-              <span style={{ color: '#98A2B3', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>· {salida.length}</span>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+              <span>{t('profile.out')}</span>
+              <span style={{ color: 'var(--text-tertiary)', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>· {salida.length}</span>
             </div>
             {salida.map((r, i) => (
               <ConnectionRow key={`out-${i}`} direction="out" edge={r.edge} neighbor={r.neighbor} onSelectComponent={onSelectComponent} />
@@ -379,9 +383,9 @@ function ComponentProfile({ component, onSelectComponent }) {
         {/* ENTRADA · N */}
         {entrada.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475467', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
-              <span>Entrada</span>
-              <span style={{ color: '#98A2B3', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>· {entrada.length}</span>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+              <span>{t('profile.in')}</span>
+              <span style={{ color: 'var(--text-tertiary)', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>· {entrada.length}</span>
             </div>
             {entrada.map((r, i) => (
               <ConnectionRow key={`in-${i}`} direction="in" edge={r.edge} neighbor={r.neighbor} onSelectComponent={onSelectComponent} />
@@ -392,8 +396,8 @@ function ComponentProfile({ component, onSelectComponent }) {
         {/* Microsoft Learn link */}
         {component.learnUrl && (
           <a href={component.learnUrl} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#475467', padding: '5px 10px', border: '1px solid #E4E7EC', borderRadius: 6, textDecoration: 'none', marginTop: 4 }}>
-            <BookOpen size={11} /> Microsoft Learn
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)', padding: '5px 10px', border: '1px solid var(--border)', borderRadius: 6, textDecoration: 'none', marginTop: 4 }}>
+            <BookOpen size={11} /> {t('profile.link.learn')}
           </a>
         )}
       </div>
@@ -407,6 +411,7 @@ function ComponentProfile({ component, onSelectComponent }) {
 // - CONEXIONES EN ESTE ESCENARIO · N (only edges between placed nodes)
 // - VECINOS EN CATÁLOGO · SUGERIDOS (catalog neighbors NOT yet placed, with + añadir)
 function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], onSelectComponent, onAddNode }) {
+  const { t } = useLocale()
   if (!component) return null
   const cat = CATEGORIES[component.category]
   const Icon = Icons[component.icon] || Icons.Box
@@ -447,13 +452,13 @@ function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
           <div style={{ fontSize: 9, fontWeight: 700, color: cat.color, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{cat.label}</div>
           <div onClick={() => onSelectComponent && onSelectComponent(null)}
-            style={{ fontSize: 10, color: '#475467', cursor: 'pointer', border: '1px solid #E4E7EC', borderRadius: 6, background: '#fff', padding: '2px 8px', userSelect: 'none' }}>
-            × cerrar
+            style={{ fontSize: 10, color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-surface)', padding: '2px 8px', userSelect: 'none' }}>
+            {t('profile.close')}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
-            width: 50, height: 50, borderRadius: 10, background: '#fff',
+            width: 50, height: 50, borderRadius: 10, background: 'var(--bg-surface)',
             border: `1px solid ${cat.color}33`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
           }}>
@@ -462,9 +467,9 @@ function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], 
               : <Icon size={24} color={cat.color} />}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.01em', lineHeight: 1.15 }}>{component.name}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em', lineHeight: 1.15 }}>{component.name}</div>
             {component.sublabel && (
-              <div style={{ fontSize: 10.5, color: '#475467', marginTop: 3, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
+              <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginTop: 3, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
                 {component.sublabel}
               </div>
             )}
@@ -474,19 +479,19 @@ function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], 
 
       {/* Body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px 24px' }}>
-        <div style={{ fontSize: 12.5, color: '#0E1729', lineHeight: 1.55, marginBottom: 16 }}>
+        <div style={{ fontSize: 12.5, color: 'var(--text-primary)', lineHeight: 1.55, marginBottom: 16 }}>
           {component.description}
         </div>
 
         {/* CONEXIONES EN ESTE ESCENARIO */}
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475467', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-            <span>Conexiones en este escenario</span>
-            <span style={{ color: '#98A2B3', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>{placedConnections.length}</span>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+            <span>{t('profile.connectionsInScenario')}</span>
+            <span style={{ color: 'var(--text-tertiary)', fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>{placedConnections.length}</span>
           </div>
           {placedConnections.length === 0 ? (
-            <div style={{ fontSize: 10.5, color: '#98A2B3', lineHeight: 1.5, fontStyle: 'italic' }}>
-              No tiene conexiones. Arrastra desde el puerto <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#0E1729', verticalAlign: 'middle' }}></span> para conectarlo.
+            <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', lineHeight: 1.5, fontStyle: 'italic' }}>
+              {t('profile.noConnections')}
             </div>
           ) : (
             placedConnections.map((c, i) => (
@@ -498,12 +503,12 @@ function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], 
         {/* VECINOS EN CATÁLOGO · SUGERIDOS */}
         {suggestions.length > 0 && (
           <div>
-            <div style={{ fontSize: 9.5, fontWeight: 700, color: '#475467', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
-              Vecinos en catálogo · sugeridos
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
+              {t('profile.suggestedNeighbors')}
             </div>
             {suggestions.map((s, i) => {
               const flow = s.edge.flow || (s.edge.type || '').toLowerCase()
-              const tone = FLOW_TONES[flow] || { color: '#475467' }
+              const tone = FLOW_TONES[flow] || { color: 'var(--text-secondary)' }
               const arrow = s.direction === 'out' ? '→' : '←'
               const ncat = CATEGORIES[s.neighbor.category]
               return (
@@ -516,12 +521,12 @@ function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], 
                   {s.neighbor.iconSvg
                     ? <img src={s.neighbor.iconSvg} alt="" style={{ width: 18, height: 18, flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
                     : <div style={{ width: 18, height: 18, borderRadius: 4, background: ncat.bg, flexShrink: 0 }} />}
-                  <div style={{ flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: 600, color: '#0E1729', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <div style={{ flex: 1, minWidth: 0, fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {s.neighbor.name}
                   </div>
                   <span onClick={() => onAddNode && onAddNode(s.neighbor.id)}
                     style={{ fontSize: 10, color: tone.color, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', padding: '2px 4px' }}>
-                    + añadir
+                    {t('profile.add')}
                   </span>
                 </div>
               )
@@ -538,8 +543,8 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
   if (!component) return null
   const cat = CATEGORIES[component.category]
   const Icon = Icons[component.icon] || Icons.Box
-  const effortColor = EFFORT_COLOR[component.effort] || '#6B7280'
-  const mtColor = MT_COLOR[component.multiTenant] || '#6B7280'
+  const effortColor = EFFORT_COLOR[component.effort] || 'var(--text-tertiary)'
+  const mtColor = MT_COLOR[component.multiTenant] || 'var(--text-tertiary)'
 
   // Find related components from EDGES catalog
   const related = []
@@ -571,12 +576,12 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
       </div>
 
       {/* Description */}
-      <p style={{ fontSize:12.5, color:'#374151', lineHeight:1.55, margin:0 }}>{component.description}</p>
+      <p style={{ fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.55, margin:0 }}>{component.description}</p>
 
       {/* Prerequisites */}
       {component.prereqs?.length > 0 && (
         <section>
-          <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:6 }}>
+          <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'var(--text-tertiary)', marginBottom:6 }}>
             Prerequisites
           </h3>
           <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
@@ -588,9 +593,9 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
                   onClick={() => prereq && onSelectComponent && onSelectComponent(prereq)}
                   style={{
                     fontSize: 11, padding: '3px 10px', borderRadius: 12,
-                    background: (prereqCat?.color ?? '#6B7280') + '15',
-                    color: prereqCat?.color ?? '#6B7280',
-                    border: `0.5px solid ${(prereqCat?.color ?? '#6B7280')}40`,
+                    background: (prereqCat?.color ?? 'var(--text-tertiary)') + '15',
+                    color: prereqCat?.color ?? 'var(--text-tertiary)',
+                    border: `0.5px solid ${(prereqCat?.color ?? 'var(--text-tertiary)')}40`,
                     cursor: 'pointer'
                   }}>
                   {prereq?.name ?? pId}
@@ -603,10 +608,10 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
 
       {/* Esfuerzo + Multi-Tenant */}
       <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-        <span style={{ fontSize:11, padding:'3px 8px', borderRadius:6, background:'#F3F4F6', color:'#374151' }}>
+        <span style={{ fontSize:11, padding:'3px 8px', borderRadius:6, background:'var(--bg-muted)', color:'var(--text-secondary)' }}>
           Esfuerzo <strong style={{ color: effortColor }}>{component.effort}</strong>
         </span>
-        <span style={{ fontSize:11, padding:'3px 8px', borderRadius:6, background:'#F3F4F6', color:'#374151' }}>
+        <span style={{ fontSize:11, padding:'3px 8px', borderRadius:6, background:'var(--bg-muted)', color:'var(--text-secondary)' }}>
           Multi-Tenant <strong style={{ color: mtColor }}>{component.multiTenant}</strong>
         </span>
       </div>
@@ -615,19 +620,19 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
       <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
         {component.learnUrl && (
           <a href={component.learnUrl} target="_blank" rel="noopener noreferrer"
-            style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'#374151', padding:'4px 8px', border:'1px solid #E5E7EB', borderRadius:6, textDecoration:'none' }}>
+            style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'var(--text-secondary)', padding:'4px 8px', border:'1px solid var(--border)', borderRadius:6, textDecoration:'none' }}>
             <BookOpen size={12} /> Microsoft Learn
           </a>
         )}
         {component.links?.licensing && (
           <a href={component.links.licensing} target="_blank" rel="noopener noreferrer"
-            style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'#374151', padding:'4px 8px', border:'1px solid #E5E7EB', borderRadius:6, textDecoration:'none' }}>
+            style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'var(--text-secondary)', padding:'4px 8px', border:'1px solid var(--border)', borderRadius:6, textDecoration:'none' }}>
             <FileText size={12} /> Licenciamiento · m365maps.com
           </a>
         )}
         {component.links?.permissions && (
           <a href={component.links.permissions} target="_blank" rel="noopener noreferrer"
-            style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'#374151', padding:'4px 8px', border:'1px solid #E5E7EB', borderRadius:6, textDecoration:'none' }}>
+            style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'var(--text-secondary)', padding:'4px 8px', border:'1px solid var(--border)', borderRadius:6, textDecoration:'none' }}>
             <Key size={12} /> Permisos · rbacmap.com
           </a>
         )}
@@ -641,19 +646,19 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
         if (list.length === 0) return null
         return (
           <section>
-            <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:8 }}>
+            <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'var(--text-tertiary)', marginBottom:8 }}>
               Sub-Componentes
             </h3>
             <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
               {list.map(sc => {
-                const tagBg = sc.tagColor ? sc.tagColor + '22' : '#F3F4F6'
+                const tagBg = sc.tagColor ? sc.tagColor + '22' : 'var(--bg-muted)'
                 const tagFg = sc.tagColor || cat.color
                 const url = sc.url
                 const Wrapper = url ? 'a' : 'div'
                 const wrapperProps = url ? { href: url, target: '_blank', rel: 'noopener noreferrer' } : {}
                 return (
                   <Wrapper key={sc.id || sc.tag} {...wrapperProps}
-                    style={{ padding:'8px 10px', borderRadius:8, border:'1px solid #E5E7EB', background:'#fff',
+                    style={{ padding:'8px 10px', borderRadius:8, border:'1px solid var(--border)', background:'var(--bg-surface)',
                       cursor: url ? 'pointer' : 'default', textDecoration: 'none', color: 'inherit', display: 'block' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:3 }}>
                       <span style={{ fontSize:9.5, fontWeight:700, padding:'1px 6px', borderRadius:5, background: tagBg, color: tagFg, fontFamily: 'ui-monospace, monospace' }}>
@@ -661,7 +666,7 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
                       </span>
                       <span style={{ fontSize:11.5, fontWeight:600, color:'#1F2937' }}>{sc.label || sc.name}</span>
                     </div>
-                    <p style={{ fontSize:10.5, color:'#6B7280', lineHeight:1.5, paddingLeft:0, margin:0 }}>{sc.desc || sc.description}</p>
+                    <p style={{ fontSize:10.5, color:'var(--text-tertiary)', lineHeight:1.5, paddingLeft:0, margin:0 }}>{sc.desc || sc.description}</p>
                   </Wrapper>
                 )
               })}
@@ -673,8 +678,8 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
       {/* Related components */}
       {related.length > 0 && (
         <section>
-          <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:6 }}>
-            Componentes Relacionados <span style={{ fontSize:9, fontWeight:400, marginLeft:4, color:'#9CA3AF' }}>— los colores indican compatibilidad</span>
+          <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'var(--text-tertiary)', marginBottom:6 }}>
+            Componentes Relacionados <span style={{ fontSize:9, fontWeight:400, marginLeft:4, color:'var(--text-tertiary)' }}>— los colores indican compatibilidad</span>
           </h3>
           {related.map(rel => {
             const rc = CATEGORIES[rel.comp.category]
@@ -688,7 +693,7 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
                       {rel.comp.name}
                     </span>
                   </div>
-                  <span style={{ fontSize:10, color:'#9CA3AF', textAlign:'right', flexShrink:0 }}>{rel.label}</span>
+                  <span style={{ fontSize:10, color:'var(--text-tertiary)', textAlign:'right', flexShrink:0 }}>{rel.label}</span>
                 </div>
                 {/* Compatibility chips — SUBTOPICS catalog > component.subComponents > sublabel split */}
                 {(() => {
@@ -735,12 +740,12 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
       {/* Limitaciones conocidas */}
       {component.knownLimitations?.length > 0 && (
         <section>
-          <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'#6B7280', marginBottom:6 }}>
+          <h3 style={{ fontSize:10, fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase', color:'var(--text-tertiary)', marginBottom:6 }}>
             Limitaciones Conocidas
           </h3>
           <ul style={{ paddingLeft:14, margin:0 }}>
             {component.knownLimitations.map((lim, i) => (
-              <li key={i} style={{ fontSize:11, color:'#6B7280', lineHeight:1.5, marginBottom:4 }}>{lim}</li>
+              <li key={i} style={{ fontSize:11, color:'var(--text-tertiary)', lineHeight:1.5, marginBottom:4 }}>{lim}</li>
             ))}
           </ul>
         </section>
@@ -780,7 +785,7 @@ export default function DetailPanel(props) {
 
   if (mode === 'detail') {
     return (
-      <div className="shrink-0 border-l flex flex-col" style={{ width: 340, borderColor: '#EEF0F3', background: '#fff', overflow: 'hidden' }}>
+      <div className="shrink-0 border-l flex flex-col" style={{ width: 340, borderColor: 'var(--divider)', background: 'var(--bg-surface)', overflow: 'hidden' }}>
         {selectedComponent
           ? <ComponentProfile component={selectedComponent} onSelectComponent={onSelectComponent} />
           : null}
@@ -793,7 +798,7 @@ export default function DetailPanel(props) {
   // Otherwise → Workspace (composición + animar flujo + vaciar)
   if (selectedComponent) {
     return (
-      <div className="shrink-0 border-l flex flex-col" style={{ width: 340, borderColor: '#EEF0F3', background: '#fff', overflow: 'hidden' }}>
+      <div className="shrink-0 border-l flex flex-col" style={{ width: 340, borderColor: 'var(--divider)', background: 'var(--bg-surface)', overflow: 'hidden' }}>
         <ScenarioInspector
           component={selectedComponent}
           scenarioNodes={nodes}
@@ -805,7 +810,7 @@ export default function DetailPanel(props) {
     )
   }
   return (
-    <div className="w-80 shrink-0 border-l border-slate-200 bg-white flex flex-col overflow-y-auto">
+    <div className="w-80 shrink-0 border-l flex flex-col overflow-y-auto" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
       <ScenarioFields scenario={scenario} setScenario={setScenario} nodes={nodes} edges={edges} copied={copied} onShare={onShare} onReset={onReset} onAnimateFlow={onAnimateFlow} />
     </div>
   )

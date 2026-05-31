@@ -8,6 +8,7 @@ import Tooltip from './Tooltip.jsx'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
 import { getCostTier, COST_TIER_COLOR } from '../data/pricing.js'
+import { useLocale } from '../hooks/useLocale.js'
 
 const CARD_W = 130
 const CARD_H = 48
@@ -54,6 +55,7 @@ function rectHullPath(pts, padding) {
 }
 
 export default function GraphView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent, toggleEdgeType }) {
+  const { t: tr } = useLocale()
   const selectedId = selectedComponent?.id || null
   const blast = useBlastRadius()
   const compare = useCompare()
@@ -280,29 +282,29 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
   }, [tick, data, dragPos])
 
   return (
-    <div className="relative flex-1 bg-slate-50 overflow-hidden">
+    <div className="relative flex-1 overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
       {blastActive && (
         <div style={{
           position: 'absolute', right: 16, bottom: 16, zIndex: 20,
-          background: '#fff', border: '1px solid #E4E7EC', borderRadius: 10,
-          padding: '10px 14px', boxShadow: '0 4px 16px rgba(15,23,42,0.10)',
+          background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10,
+          padding: '10px 14px', boxShadow: '0 4px 16px rgba(var(--shadow-rgb),0.10)',
           fontFamily: 'Inter, system-ui, sans-serif', minWidth: 220
         }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 6 }}>
             <span style={{ marginRight: 5 }}>⚡</span>Blast Radius
           </div>
-          <div style={{ fontSize: 13, color: '#0E1729', fontWeight: 600, marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, marginBottom: 8 }}>
             {blastResult.count} componentes alcanzados · {blastResult.maxHops} hops máx
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
             {[0, 1, 2, 3, 4, 5].map(h => (
               <div key={h} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                 <div style={{ width: 22, height: 6, borderRadius: 2, background: hopColor(h) }} />
-                <span style={{ fontSize: 8, color: '#667085', fontVariantNumeric: 'tabular-nums' }}>{h === 0 ? 'src' : h}</span>
+                <span style={{ fontSize: 8, color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums' }}>{h === 0 ? 'src' : h}</span>
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 9.5, color: '#98A2B3', marginTop: 4 }}>Esc para salir</div>
+          <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', marginTop: 4 }}>Esc para salir</div>
         </div>
       )}
       <svg ref={svgRef} className="w-full h-full" onClick={(e) => { if (e.target.tagName === 'svg' || e.target.tagName === 'rect' && e.target.getAttribute('fill')?.includes('graph-dot-grid')) onSelectComponent && onSelectComponent(null) }}>
@@ -313,7 +315,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
             </marker>
           ))}
           <pattern id="graph-dot-grid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="#E5E7EB" />
+            <circle cx="1" cy="1" r="1" fill="var(--border)" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#graph-dot-grid)" />
@@ -354,8 +356,8 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   style={{ pointerEvents: 'none' }}>
                   {/* Banner pill — white bg + cat color border + 4px left stripe */}
                   <rect x={0} y={0} width={labelW} height={bannerH} rx={6}
-                    fill="#fff" stroke={c.color} strokeWidth={1.2}
-                    style={{ filter: 'drop-shadow(0 2px 6px rgba(15,23,42,0.06))' }} />
+                    fill="var(--bg-surface)" stroke={c.color} strokeWidth={1.2}
+                    style={{ filter: 'drop-shadow(0 2px 6px rgba(var(--shadow-rgb),0.06))' }} />
                   <rect x={0} y={0} width={4} height={bannerH} rx={2} fill={c.color} />
                   {/* Top row: category name big */}
                   <text x={10} y={14} fontSize={11} fontWeight={700}
@@ -368,7 +370,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   </text>
                   {/* Tiny triangle pointing down to cluster */}
                   <polygon points={`${labelW/2 - 5},${bannerH} ${labelW/2 + 5},${bannerH} ${labelW/2},${bannerH + 6}`}
-                    fill="#fff" stroke={c.color} strokeWidth={1} />
+                    fill="var(--bg-surface)" stroke={c.color} strokeWidth={1} />
                 </g>
               )
             })}
@@ -417,8 +419,8 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   {isSelectionEdge && e.label && (
                     <g transform={`translate(${lmx},${lmy})`}>
                       <rect x={-(e.label.length * 3.2 + 10)} y={-9} width={e.label.length * 6.4 + 20} height={18} rx={9}
-                        fill="#fff" stroke={et.color} strokeOpacity={0.55} strokeWidth={1.2}
-                        style={{ filter: 'drop-shadow(0 1px 3px rgba(15,23,42,0.10))' }} />
+                        fill="var(--bg-surface)" stroke={et.color} strokeOpacity={0.55} strokeWidth={1.2}
+                        style={{ filter: 'drop-shadow(0 1px 3px rgba(var(--shadow-rgb),0.10))' }} />
                       <text x="0" y="5" fontSize="10" fontWeight="600" fill={et.color} textAnchor="middle"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{e.label}</text>
                     </g>
@@ -487,17 +489,17 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                     </circle>
                   )}
                   {/* Outer ring (white, or hop-colored under Blast Radius) */}
-                  <circle r={r} fill="#fff"
+                  <circle r={r} fill="var(--bg-surface)"
                     stroke={blastReached ? blastColor : (isSelected ? '#2563EB' : (costStroke || phaseColor || cat.color))}
                     strokeWidth={blastReached ? (blastHop === 0 ? 3.5 : 2.8) : (costStroke ? 2.2 : (isSelected ? 2.5 : 1.5))}
-                    style={{ filter: 'drop-shadow(0 2px 6px rgba(15,23,42,0.10))', transition: 'stroke .35s, stroke-width .35s' }} />
+                    style={{ filter: 'drop-shadow(0 2px 6px rgba(var(--shadow-rgb),0.10))', transition: 'stroke .35s, stroke-width .35s' }} />
                   {/* Inner tinted disc */}
                   <circle r={r - 4} fill={blastReached ? blastColor : (costFill || heat || cat.bg)}
                     fillOpacity={blastReached ? (blastHop === 0 ? 0.28 : 0.18) : 0.55}
                     style={{ transition: 'fill .35s, fill-opacity .35s' }} />
                   {/* Pin indicator (drag or shift+click pins node) */}
                   {n.fx != null && (
-                    <circle cx={r * 0.7} cy={-r * 0.7} r={4} fill="#0E1729" stroke="#fff" strokeWidth={1.5} />
+                    <circle cx={r * 0.7} cy={-r * 0.7} r={4} fill="var(--text-primary)" stroke="#fff" strokeWidth={1.5} />
                   )}
                   {/* Compare badge (right-click target) */}
                   {cmpIdx >= 0 && (
@@ -515,7 +517,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                         ? <img src={n.iconSvg} alt="" style={{ width: r * 0.85, height: r * 0.85, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
                         : (() => { const I = Icons[n.icon] || Icons.Box; return <I size={r * 0.7} color={cat.color} style={{ flexShrink: 0 }} /> })()}
                       <div style={{
-                        fontSize: Math.max(8.5, r * 0.18), fontWeight: 600, color: '#0E1729',
+                        fontSize: Math.max(8.5, r * 0.18), fontWeight: 600, color: 'var(--text-primary)',
                         lineHeight: 1.15, textAlign: 'center', fontFamily: 'Inter, sans-serif',
                         maxWidth: '100%', overflow: 'hidden',
                         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'
@@ -535,8 +537,8 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
         position: 'absolute', top: 12, left: 14, right: 14, zIndex: 10,
         display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
         fontFamily: 'Inter, system-ui, sans-serif',
-        background: '#fff', borderRadius: 10, padding: '8px 14px',
-        border: '1px solid #E4E7EC', boxShadow: '0 1px 4px rgba(15,23,42,0.06)'
+        background: 'var(--bg-surface)', borderRadius: 10, padding: '8px 14px',
+        border: '1px solid var(--border)', boxShadow: '0 1px 4px rgba(var(--shadow-rgb),0.06)'
       }}>
         {/* Left section: hero stats — swaps between global and per-node on selection */}
         {selectedId ? (() => {
@@ -544,18 +546,18 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
           const outs = EDGES.filter(e => e.source === selectedId)
           const sel  = COMPONENT_MAP[selectedId]
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 12, borderRight: '1px solid #EEF0F3', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 12, borderRight: '1px solid var(--divider)', flexShrink: 0 }}>
               {sel && (sel.iconSvg
                 ? <img src={sel.iconSvg} alt="" style={{ width: 18, height: 18, flexShrink: 0 }} onError={e => { e.target.style.display='none' }} />
                 : (() => { const I = Icons[sel.icon] || Icons.Box; return <I size={18} color={CATEGORIES[sel.category]?.color} style={{ flexShrink: 0 }} /> })())}
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#0E1729', lineHeight: 1.1, maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sel?.name}</div>
-                <div style={{ fontSize: 9, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 1 }}>{CATEGORIES[sel?.category]?.label}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1, maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sel?.name}</div>
+                <div style={{ fontSize: 9, color: 'var(--text-tertiary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 1 }}>{CATEGORIES[sel?.category]?.label}</div>
               </div>
-              <div style={{ width: 1, background: '#EEF0F3', height: 28 }}></div>
+              <div style={{ width: 1, background: 'var(--divider)', height: 28 }}></div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{ins.length + outs.length}</div>
-                <div style={{ fontSize: 8.5, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>grado</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{ins.length + outs.length}</div>
+                <div style={{ fontSize: 8.5, color: 'var(--text-tertiary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>grado</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1 }}>
@@ -563,20 +565,20 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                   <span style={{ color: '#CBD0DA', margin: '0 3px' }}>·</span>
                   <span style={{ color: '#3B5DD9' }}>↓{ins.length}</span>
                 </div>
-                <div style={{ fontSize: 8.5, color: '#98A2B3', letterSpacing: '.04em', textTransform: 'uppercase', marginTop: 2 }}>sal · ent</div>
+                <div style={{ fontSize: 8.5, color: 'var(--text-tertiary)', letterSpacing: '.04em', textTransform: 'uppercase', marginTop: 2 }}>sal · ent</div>
               </div>
             </div>
           )
         })() : (
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, paddingRight: 12, borderRight: '1px solid #EEF0F3', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, paddingRight: 12, borderRight: '1px solid var(--divider)', flexShrink: 0 }}>
             {[
               { v: COMPONENTS.length, l: 'nodos' },
               { v: EDGES.length, l: 'aristas' },
               { v: new Set(COMPONENTS.map(c => c.category)).size, l: 'clusters' }
             ].map(s => (
               <div key={s.l}>
-                <div style={{ fontSize: 20, fontWeight: 700, color: '#0E1729', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
-                <div style={{ fontSize: 9, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{s.l}</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
+                <div style={{ fontSize: 9, color: 'var(--text-tertiary)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{s.l}</div>
               </div>
             ))}
           </div>
@@ -584,8 +586,8 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
 
         {/* Reorganizar layout — always visible */}
         <button onClick={reorganizeLayout} title="Re-ejecutar force sim" style={{
-          background: '#F6F7F9', border: '1px solid #E4E7EC', borderRadius: 7,
-          padding: '5px 10px', fontSize: 11, fontWeight: 500, color: '#475467',
+          background: 'var(--bg-canvas)', border: '1px solid var(--border)', borderRadius: 7,
+          padding: '5px 10px', fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
           fontFamily: 'inherit', flexShrink: 0
         }}>
@@ -594,7 +596,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
 
         {/* Territorio toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 9.5, fontWeight: 700, color: '#98A2B3', letterSpacing: '.08em', textTransform: 'uppercase' }}>Territorio</span>
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>Territorio</span>
           <span onClick={() => setShowHulls(v => !v)}
             title={showHulls ? 'Ocultar territorios' : 'Mostrar territorios'}
             style={{
@@ -604,7 +606,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
             }}>
             <span style={{
               position: 'absolute', top: 2, left: showHulls ? 14 : 2,
-              width: 12, height: 12, borderRadius: '50%', background: '#fff', transition: 'left .15s'
+              width: 12, height: 12, borderRadius: '50%', background: 'var(--bg-surface)', transition: 'left .15s'
             }}></span>
           </span>
         </div>
@@ -616,17 +618,17 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
         {/* Search */}
         <div style={{
           height: 30, display: 'flex', alignItems: 'center', gap: 6, padding: '0 10px',
-          background: '#F6F7F9', borderRadius: 7, fontSize: 11, color: '#0E1729', minWidth: 200
+          background: 'var(--bg-canvas)', borderRadius: 7, fontSize: 11, color: 'var(--text-primary)', minWidth: 200
         }}>
-          <span style={{ color: '#98A2B3' }}>⌕</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>⌕</span>
           <input
             value={search || ''}
             onChange={(e) => setSearch && setSearch(e.target.value)}
-            placeholder="Buscar nodo…"
-            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 11, color: '#0E1729', fontFamily: 'inherit' }}
+            placeholder={tr('mindmap.search')}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 11, color: 'var(--text-primary)', fontFamily: 'inherit' }}
           />
           {search && (
-            <span onClick={() => setSearch && setSearch('')} style={{ cursor: 'pointer', color: '#98A2B3', fontSize: 14, userSelect: 'none' }}>×</span>
+            <span onClick={() => setSearch && setSearch('')} style={{ cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 14, userSelect: 'none' }}>×</span>
           )}
         </div>
       </div>
@@ -634,7 +636,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
       {/* Hint: shift+click to toggle pin */}
       <div style={{
         position: 'absolute', bottom: 14, left: 18, zIndex: 10,
-        fontSize: 10, color: '#98A2B3', fontFamily: 'Inter, system-ui, sans-serif'
+        fontSize: 10, color: 'var(--text-tertiary)', fontFamily: 'Inter, system-ui, sans-serif'
       }}>
         Tamaño del nodo = grado · <b>Shift+click</b> fija/libera · Arrastra para reposicionar
       </div>
@@ -642,8 +644,8 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
       {/* Bottom legend pill — click each chip to toggle that edge type on/off */}
       <div style={{
         position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-        display: 'flex', gap: 6, background: '#fff', padding: 6, borderRadius: 999,
-        boxShadow: '0 4px 14px rgba(15,23,42,0.08)', border: '1px solid #E4E7EC',
+        display: 'flex', gap: 6, background: 'var(--bg-surface)', padding: 6, borderRadius: 999,
+        boxShadow: '0 4px 14px rgba(var(--shadow-rgb),0.08)', border: '1px solid var(--border)',
         zIndex: 10, fontFamily: 'Inter, system-ui, sans-serif'
       }}>
         {Object.entries(EDGE_TYPES).map(([k, v]) => {
@@ -651,10 +653,10 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
           return (
             <div key={k}
               onClick={() => toggleEdgeType && toggleEdgeType(k)}
-              title={on ? `Ocultar ${k}` : `Mostrar ${k}`}
+              title={on ? tr('scenario.edge.hide', { k }) : tr('scenario.edge.show', { k })}
               style={{
                 padding: '4px 11px', borderRadius: 999, fontSize: 10.5, fontWeight: 500,
-                color: v.color, background: on ? `${v.color}10` : '#F6F7F9',
+                color: v.color, background: on ? `${v.color}10` : 'var(--bg-canvas)',
                 display: 'flex', alignItems: 'center', gap: 6,
                 cursor: 'pointer', userSelect: 'none',
                 opacity: on ? 1 : 0.45, transition: 'opacity .2s, background .2s'
@@ -669,14 +671,14 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
       {/* Centralidad · Top 5 panel (design package) */}
       <div style={{
         position: 'absolute', top: 18, right: 18, zIndex: 10,
-        background: '#fff', border: '1px solid #E4E7EC', borderRadius: 10,
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10,
         padding: '12px 14px', minWidth: 240,
-        boxShadow: '0 4px 14px rgba(15,23,42,0.06)',
+        boxShadow: '0 4px 14px rgba(var(--shadow-rgb),0.06)',
         fontFamily: 'Inter, system-ui, sans-serif'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 9.5, fontWeight: 700, color: '#475467', letterSpacing: '.08em', textTransform: 'uppercase' }}>Centralidad · Top 5</span>
-          <span style={{ fontSize: 9, color: '#98A2B3', letterSpacing: '.06em', textTransform: 'uppercase' }}>Grado</span>
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr('graph.centralityTop5')}</span>
+          <span style={{ fontSize: 9, color: 'var(--text-tertiary)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{tr('graph.degree')}</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {topCentrality.map((t, i) => {
@@ -685,15 +687,15 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
             return (
               <div key={t.comp.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, cursor: 'pointer' }}
                 onClick={() => onSelectComponent && onSelectComponent(t.comp)}>
-                <span style={{ fontSize: 9, color: '#98A2B3', fontVariantNumeric: 'tabular-nums', fontFamily: 'JetBrains Mono, ui-monospace, monospace', width: 16 }}>{String(i + 1).padStart(2, '0')}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums', fontFamily: 'JetBrains Mono, ui-monospace, monospace', width: 16 }}>{String(i + 1).padStart(2, '0')}</span>
                 {t.comp.iconSvg
                   ? <img src={t.comp.iconSvg} alt="" style={{ width: 16, height: 16, objectFit: 'contain', flexShrink: 0 }} onError={(e) => { e.target.style.display = 'none' }} />
                   : (() => { const I = Icons[t.comp.icon] || Icons.Box; return <I size={16} color={cat.color} style={{ flexShrink: 0 }} /> })()}
-                <span style={{ color: '#0E1729', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>{t.comp.name}</span>
-                <div style={{ width: 50, height: 3, background: '#EEF0F3', borderRadius: 2, overflow: 'hidden' }}>
+                <span style={{ color: 'var(--text-primary)', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 500 }}>{t.comp.name}</span>
+                <div style={{ width: 50, height: 3, background: 'var(--divider)', borderRadius: 2, overflow: 'hidden' }}>
                   <div style={{ width: `${(t.deg / maxDeg) * 100}%`, height: '100%', background: cat.color }}></div>
                 </div>
-                <span style={{ color: '#475467', fontWeight: 600, fontSize: 10, fontVariantNumeric: 'tabular-nums', width: 14, textAlign: 'right' }}>{t.deg}</span>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: 10, fontVariantNumeric: 'tabular-nums', width: 14, textAlign: 'right' }}>{t.deg}</span>
               </div>
             )
           })}

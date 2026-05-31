@@ -5,11 +5,12 @@ import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { MINDMAP_PRESETS, resolveItem } from '../data/mindmaps.js'
 import Tooltip from './Tooltip.jsx'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
+import { useLocale } from '../hooks/useLocale.js'
 
 // Design package palette
 const MP = {
-  ink: '#0E1729', ink2: '#475467', ink3: '#98A2B3',
-  border: '#E4E7EC', divider: '#EEF0F3', selection: '#2563EB'
+  ink: 'var(--text-primary)', ink2: 'var(--text-secondary)', ink3: 'var(--text-tertiary)',
+  border: 'var(--border)', divider: 'var(--divider)', selection: '#2563EB'
 }
 
 // Layout dims (horizontal tree)
@@ -93,6 +94,7 @@ function buildLayoutFromPreset(preset) {
 }
 
 export default function MindmapView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent }) {
+  const { t } = useLocale()
   const [presetId, setPresetId] = useState(MINDMAP_PRESETS[0].id)
   const preset = useMemo(() => MINDMAP_PRESETS.find(p => p.id === presetId) || MINDMAP_PRESETS[0], [presetId])
 
@@ -181,7 +183,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
 
   function Card({ item, x, y, dashed }) {
     if (!item) return null
-    const c = CATS[item.cat] || { color: MP.ink3, bg: '#F2F4F7' }
+    const c = CATS[item.cat] || { color: MP.ink3, bg: 'var(--bg-muted)' }
     const isSel = selectedId === item.id
     const isConn = connected.set.has(item.id)
     const dimSel = selectedId && !isSel && !isConn
@@ -213,7 +215,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
       >
         <rect
           x={0} y={0} width={CARD_W} height={CARD_H} rx={9}
-          fill={blastReached ? `${blastClr}${blastHop === 0 ? '2A' : '18'}` : (isConn ? `${c.color}22` : '#FFFFFF')}
+          fill={blastReached ? `${blastClr}${blastHop === 0 ? '2A' : '18'}` : (isConn ? `${c.color}22` : 'var(--bg-surface)')}
           stroke={blastReached ? blastClr : (isSel ? MP.selection : c.color)}
           strokeOpacity={blastReached ? 1 : (isSel ? 1 : (isConn ? 0.95 : 0.55))}
           strokeWidth={blastReached ? (blastHop === 0 ? 2.5 : 2) : (isSel ? 2 : (isConn ? 1.8 : 1.2))}
@@ -222,7 +224,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
             ? `drop-shadow(0 3px 10px ${blastClr}55)`
             : (isSel
               ? `drop-shadow(0 4px 12px ${MP.selection}33)`
-              : (isConn ? `drop-shadow(0 3px 8px ${c.color}40)` : 'drop-shadow(0 1px 2px rgba(15,23,42,0.04))')),
+              : (isConn ? `drop-shadow(0 3px 8px ${c.color}40)` : 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.04))')),
             transition: 'fill .35s, stroke .35s, stroke-width .35s' }}
         />
         <circle cx={CARD_W - 9} cy={9} r={3} fill={blastReached ? blastClr : c.color} />
@@ -260,7 +262,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
   const totalBranches = layout.families.length
 
   return (
-    <div className="relative flex-1 overflow-hidden" style={{ background: '#FAFBFC' }}>
+    <div className="relative flex-1 overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
       {/* Top strip: preset picker + stats + category filter chips */}
       <div style={{
         position: 'absolute', top: 14, left: 18, right: 18, zIndex: 10,
@@ -270,7 +272,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
         {/* Preset picker */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
-          background: '#fff', border: `1px solid ${MP.border}`, borderRadius: 8
+          background: 'var(--bg-surface)', border: `1px solid ${MP.border}`, borderRadius: 8
         }}>
           <span style={{ fontSize: 9.5, fontWeight: 700, color: MP.ink3, letterSpacing: '.08em', textTransform: 'uppercase' }}>Mindmap</span>
           <select
@@ -301,14 +303,14 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
         {(activeCats || selectedId) && (
           <div onClick={clearFilters} title="Limpiar selección y filtros"
             style={{
-              padding: '5px 10px', background: '#fff', border: `1px solid ${MP.border}`, borderRadius: 8,
+              padding: '5px 10px', background: 'var(--bg-surface)', border: `1px solid ${MP.border}`, borderRadius: 8,
               fontSize: 11, color: MP.ink2, cursor: 'pointer', display: 'flex', gap: 6, alignItems: 'center',
               userSelect: 'none', fontWeight: 500
             }}>
             <span style={{ fontSize: 13, lineHeight: 1 }}>↻</span> Limpiar
           </div>
         )}
-        <span style={{ fontSize: 9.5, fontWeight: 700, color: MP.ink3, letterSpacing: '.08em', textTransform: 'uppercase' }}>Filtrar</span>
+        <span style={{ fontSize: 9.5, fontWeight: 700, color: MP.ink3, letterSpacing: '.08em', textTransform: 'uppercase' }}>{t('mindmap.filter')}</span>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
           {Object.entries(catCounts).map(([k, ct]) => {
             const c = CATS[k]
@@ -335,13 +337,13 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
         <div style={{ flex: 1, minWidth: 12 }}></div>
         <div style={{
           height: 30, display: 'flex', alignItems: 'center', gap: 6, padding: '0 10px',
-          background: '#F6F7F9', borderRadius: 7, fontSize: 11, color: MP.ink, minWidth: 220
+          background: 'var(--bg-canvas)', borderRadius: 7, fontSize: 11, color: MP.ink, minWidth: 220
         }}>
           <span style={{ color: MP.ink3 }}>⌕</span>
           <input
             value={search || ''}
             onChange={(e) => setSearch && setSearch(e.target.value)}
-            placeholder="Buscar nodo…"
+            placeholder={t('mindmap.search')}
             style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 11, color: MP.ink, fontFamily: 'inherit' }}
           />
           {search && (
@@ -399,7 +401,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
 
           {/* Family pills */}
           {layout.families.map(f => {
-            const c = CATS[f.cat] || { color: MP.ink3, bg: '#F2F4F7', label: f.cat }
+            const c = CATS[f.cat] || { color: MP.ink3, bg: 'var(--bg-muted)', label: f.cat }
             const dim = !catActive(f.cat)
             const label = f.label || c.label || f.cat
             return (
@@ -421,7 +423,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {/* Ecosystem hub */}
           <g transform={`translate(${ECO_HUB.x - ECO_HUB.w/2},${ECO_HUB.y - ECO_HUB.h/2})`}>
             <rect x={0} y={0} width={ECO_HUB.w} height={ECO_HUB.h} rx={ECO_HUB.h/2}
-              fill="#fff" stroke={MP.ink3} strokeWidth={1.3} strokeDasharray="5 3" />
+              fill="var(--bg-surface)" stroke={MP.ink3} strokeWidth={1.3} strokeDasharray="5 3" />
             <text x={ECO_HUB.w/2} y={ECO_HUB.h/2 + 3.5}
               textAnchor="middle" fontSize="10" fontWeight="700"
               fill={MP.ink2} letterSpacing="0.12em"
@@ -433,7 +435,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {/* Root pill */}
           <g transform={`translate(${ROOT.x - ROOT.w/2},${ROOT.y - ROOT.h/2})`}>
             <rect x={0} y={0} width={ROOT.w} height={ROOT.h} rx={10}
-              fill="#fff" stroke={MP.selection} strokeWidth={1.5}
+              fill="var(--bg-surface)" stroke={MP.selection} strokeWidth={1.5}
               style={{ filter: 'drop-shadow(0 4px 14px rgba(37,99,235,0.16))' }} />
             <text x={ROOT.w/2} y={ROOT.h/2 - 8}
               textAnchor="middle" fontSize="9" fontWeight="600"
@@ -513,7 +515,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
               return (
                 <g key={'line-'+i}>
                   <path d={smoothPath(ax, ay, bx, by)}
-                    fill="none" stroke="#fff" strokeWidth={6} strokeOpacity={0.85} />
+                    fill="none" stroke="var(--bg-canvas)" strokeWidth={6} strokeOpacity={0.85} />
                   <path d={smoothPath(ax, ay, bx, by)}
                     fill="none" stroke={et.color}
                     strokeOpacity={0.95} strokeWidth={2.6}
@@ -529,9 +531,9 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
               const lp = labelPos[vi]
               return (
                 <g key={'lbl-'+i} transform={`translate(${lp.x},${lp.y})`} style={{ pointerEvents: 'none' }}>
-                  <rect x={-labelW/2 - 2} y={-10} width={labelW + 4} height={20} rx={10} fill="#fff" />
+                  <rect x={-labelW/2 - 2} y={-10} width={labelW + 4} height={20} rx={10} fill="var(--bg-surface)" />
                   <rect x={-labelW/2} y={-9} width={labelW} height={18} rx={9}
-                    fill="#fff" stroke={et.color} strokeOpacity={0.7} strokeWidth={1.2} />
+                    fill="var(--bg-surface)" stroke={et.color} strokeOpacity={0.7} strokeWidth={1.2} />
                   <text x={0} y={4} textAnchor="middle" fontSize={10.5} fontWeight={600} fill={et.color}>
                     {e.label}
                   </text>

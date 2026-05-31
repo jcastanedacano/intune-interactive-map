@@ -10,7 +10,7 @@ export default function WorkloadChips({ componentId, size = 'sm' }) {
   const meta = COMPONENT_META[componentId]
   if (!meta) return null
   const comp = COMPONENT_MAP[componentId]
-  const catColor = comp ? CATEGORIES[comp.category].color : '#475569'
+  const catColor = comp ? CATEGORIES[comp.category].color : 'var(--text-secondary)'
   const px = size === 'xs' ? 9 : size === 'sm' ? 10 : 11
   return (
     <div className="flex items-center gap-1 flex-wrap">

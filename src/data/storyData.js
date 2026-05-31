@@ -2,13 +2,13 @@
 // Canvas viewBox 920×480, 5 vertical columns by role.
 
 export const SV_PALETTE = {
-  appBg:    '#F6F7F9',
-  cardBg:   '#FFFFFF',
-  border:   '#E4E7EC',
-  divider:  '#EEF0F3',
-  ink:      '#0E1729',
-  ink2:     '#475467',
-  ink3:     '#98A2B3',
+  appBg:    'var(--bg-canvas)',
+  cardBg:   'var(--bg-surface)',
+  border:   'var(--border)',
+  divider:  'var(--divider)',
+  ink:      'var(--text-primary)',
+  ink2:     'var(--text-secondary)',
+  ink3:     'var(--text-tertiary)',
   selection:'#2563EB',
   cats: {
     devices:   { color:'#0891A6', bg:'#E0F4F7', ring:'#066C7E', label:'Device Mgmt' },

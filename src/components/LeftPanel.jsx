@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import * as Icons from 'lucide-react'
 import { ChevronDown, ChevronRight, Layers } from 'lucide-react'
 import { COMPONENTS, GROUPS_LEFT_PANEL, CATEGORIES } from '../data/components.js'
+import { useLocale } from '../hooks/useLocale.js'
 
 const GROUP_ICONS = {
   shared:     'Sparkles',
@@ -29,7 +30,7 @@ function Item({ c, cat, onAdd, isPlaced }) {
         transition: 'background .15s',
         userSelect: 'none', position: 'relative'
       }}
-      onMouseEnter={(e) => { if (!isPlaced) e.currentTarget.style.background = '#F6F7F9' }}
+      onMouseEnter={(e) => { if (!isPlaced) e.currentTarget.style.background = 'var(--bg-canvas)' }}
       onMouseLeave={(e) => { if (!isPlaced) e.currentTarget.style.background = 'transparent' }}
     >
       {c.iconSvg ? (
@@ -38,9 +39,9 @@ function Item({ c, cat, onAdd, isPlaced }) {
       ) : null}
       <Icon size={26} style={{ color: cat.color, display: c.iconSvg ? 'none' : 'inline-block', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#0E1729', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
         {c.sublabel && (
-          <div style={{ fontSize: 10, color: '#98A2B3', lineHeight: 1.25, marginTop: 1,
+          <div style={{ fontSize: 10, color: 'var(--text-tertiary)', lineHeight: 1.25, marginTop: 1,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
             {c.sublabel}
@@ -51,13 +52,14 @@ function Item({ c, cat, onAdd, isPlaced }) {
       {isPlaced ? (
         <span style={{ width: 8, height: 8, borderRadius: '50%', background: cat.color, flexShrink: 0 }}></span>
       ) : (
-        <span style={{ color: '#98A2B3', fontSize: 16, fontWeight: 400, flexShrink: 0, lineHeight: 1 }}>+</span>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 16, fontWeight: 400, flexShrink: 0, lineHeight: 1 }}>+</span>
       )}
     </div>
   )
 }
 
 export default function LeftPanel({ search, setSearch, collapsed, placedIds = new Set(), onAdd }) {
+  const { t } = useLocale()
   const [open, setOpen] = useState(() => Object.fromEntries(GROUPS_LEFT_PANEL.map(g => [g.key, true])))
   const [isNarrow, setIsNarrow] = useState(window.innerWidth < 1024)
   const [flyoutKey, setFlyoutKey] = useState(null)
@@ -90,7 +92,8 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
     const flyoutIdx = flyoutKey ? GROUPS_LEFT_PANEL.findIndex(g => g.key === flyoutKey) : -1
     return (
       <div className="relative shrink-0">
-        <div className="w-12 border-r border-slate-200 bg-white flex flex-col items-center py-2 gap-1.5 h-full"
+        <div className="w-12 border-r flex flex-col items-center py-2 gap-1.5 h-full"
+          style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
           onMouseLeave={() => setFlyoutKey(null)}>
           {GROUPS_LEFT_PANEL.map(g => {
             const cat = CATEGORIES[g.key]
@@ -115,8 +118,8 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
           <div
             onMouseEnter={() => setFlyoutKey(flyoutGroup.key)}
             onMouseLeave={() => setFlyoutKey(null)}
-            className="absolute z-40 bg-white border border-slate-200 rounded-md shadow-xl py-2"
-            style={{ left: 48, top: 8 + flyoutIdx * 42, width: 220 }}
+            className="absolute z-40 border rounded-md shadow-xl py-2"
+            style={{ left: 48, top: 8 + flyoutIdx * 42, width: 220, background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}
           >
             <div className="px-3 py-1.5 text-[10px] font-semibold border-b border-slate-100"
               style={{ color: flyoutCat.color, background: flyoutCat.bg }}>
@@ -139,28 +142,28 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
   const totalAll = COMPONENTS.length
 
   return (
-    <div className="shrink-0 border-r flex flex-col" style={{ width: 268, borderColor: '#EEF0F3', background: '#fff' }}>
-      <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid #EEF0F3' }}>
+    <div className="shrink-0 border-r flex flex-col" style={{ width: 268, borderColor: 'var(--divider)', background: 'var(--bg-surface)' }}>
+      <div style={{ padding: '14px 14px 10px', borderBottom: '1px solid var(--divider)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#475467', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Librería</div>
-          <div style={{ fontSize: 10, color: '#98A2B3' }}>
-            <span style={{ color: '#475467', fontWeight: 600 }}>{totalPlaced}</span> / {totalAll}
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('leftpanel.library')}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
+            <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{totalPlaced}</span> / {totalAll}
           </div>
         </div>
         {/* Search input — local to library (design package) */}
         <div style={{
           height: 28, display: 'flex', alignItems: 'center', gap: 6, padding: '0 10px',
-          background: '#F6F7F9', borderRadius: 8, fontSize: 11, color: '#0E1729'
+          background: 'var(--bg-canvas)', borderRadius: 8, fontSize: 11, color: 'var(--text-primary)'
         }}>
-          <span style={{ color: '#98A2B3' }}>⌕</span>
+          <span style={{ color: 'var(--text-tertiary)' }}>⌕</span>
           <input
             value={search || ''}
             onChange={(e) => setSearch && setSearch(e.target.value)}
-            placeholder="Filtrar componentes…"
-            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 11, color: '#0E1729', fontFamily: 'inherit' }}
+            placeholder={t('leftpanel.filter')}
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 11, color: 'var(--text-primary)', fontFamily: 'inherit' }}
           />
           {search && (
-            <span onClick={() => setSearch && setSearch('')} style={{ cursor: 'pointer', color: '#98A2B3', fontSize: 14, userSelect: 'none' }}>×</span>
+            <span onClick={() => setSearch && setSearch('')} style={{ cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 14, userSelect: 'none' }}>×</span>
           )}
         </div>
       </div>
@@ -169,7 +172,7 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
           const cat = CATEGORIES[g.key]
           const Chev = open[g.key] ? ChevronDown : ChevronRight
           return (
-            <div key={g.key} style={{ borderBottom: '1px solid #F4F6F8' }}>
+            <div key={g.key} style={{ borderBottom: '1px solid var(--bg-muted)' }}>
               <button
                 onClick={() => setOpen({ ...open, [g.key]: !open[g.key] })}
                 className="w-full flex items-center justify-between"

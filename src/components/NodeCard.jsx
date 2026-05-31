@@ -15,9 +15,10 @@ export default function NodeCard({ component, small = false, selected = false, o
       style={{
         width: w, height: h,
         borderLeft: `3px solid ${cat.color}`,
-        outline: selected ? `2px solid #2563EB` : 'none'
+        outline: selected ? `2px solid #2563EB` : 'none',
+        background: 'var(--bg-surface)'
       }}
-      className="node-card group relative bg-white rounded-md shadow-sm flex items-center gap-2 px-2 py-1 cursor-pointer select-none"
+      className="node-card group relative rounded-md shadow-sm flex items-center gap-2 px-2 py-1 cursor-pointer select-none"
       title={component.name}
     >
       <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: cat.color }} />

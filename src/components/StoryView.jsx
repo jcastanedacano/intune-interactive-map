@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffe
 import { createPortal } from 'react-dom'
 import { SV_PALETTE } from '../data/storyData.js'
 import { STORIES, STORY_ORDER } from '../data/stories.js'
+import { useLocale } from '../hooks/useLocale.js'
 
 const SV = SV_PALETTE
 
@@ -34,6 +35,7 @@ const kbdStyle = {
 }
 
 function StoryPicker({ storyId, onPick, open, onToggle }) {
+  const { t } = useLocale()
   const ref = useRef(null)
   const [filter, setFilter] = useState('')
 
@@ -75,12 +77,12 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
         style={{
           padding:'5px 12px', borderRadius:8, fontSize:11, border:`1px solid ${SV.border}`,
           color:SV.ink, display:'flex', alignItems:'center', gap:8, cursor:'pointer',
-          background: open ? SV.appBg : '#fff', userSelect:'none', maxWidth:340
+          background: open ? SV.appBg : 'var(--bg-surface)', userSelect:'none', maxWidth:340
         }}
       >
         <span style={{fontSize:13}}>📚</span>
         <div style={{display:'flex', flexDirection:'column', lineHeight:1.15, minWidth:0}}>
-          <span style={{fontSize:9, color:SV.ink3, fontWeight:600, letterSpacing:'.05em', textTransform:'uppercase'}}>HISTORIA · {story.tag}</span>
+          <span style={{fontSize:9, color:SV.ink3, fontWeight:600, letterSpacing:'.05em', textTransform:'uppercase'}}>{t('story.picker.eyebrow')} · {story.tag}</span>
           <span style={{fontWeight:600, color:SV.ink, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{story.title}</span>
         </div>
         <span style={{color:SV.ink3, marginLeft:6}}>▾</span>
@@ -88,16 +90,16 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
       {open && (
         <div style={{
           position:'absolute', top:'calc(100% + 6px)', right:0,
-          width:440, background:'#fff', borderRadius:12,
-          boxShadow:'0 18px 40px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.04)',
+          width:440, background:'var(--bg-surface)', borderRadius:12,
+          boxShadow:'0 18px 40px rgba(var(--shadow-rgb),0.18), 0 0 0 1px rgba(var(--shadow-rgb),0.04)',
           padding:0, zIndex:100, maxHeight:560, display:'flex', flexDirection:'column'
         }}>
           <div style={{padding:'12px 14px 10px', borderBottom:`1px solid ${SV.divider}`}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:8}}>
               <div style={{fontSize:10, fontWeight:700, color:SV.ink2, letterSpacing:'.08em', textTransform:'uppercase'}}>
-                Cambiar historia
+                {t('story.picker.title')}
               </div>
-              <div style={{fontSize:10, color:SV.ink3}}>{STORY_ORDER.length} disponibles</div>
+              <div style={{fontSize:10, color:SV.ink3}}>{t('story.picker.available', { n: STORY_ORDER.length })}</div>
             </div>
             <div style={{height:28, display:'flex', alignItems:'center', gap:6, padding:'0 10px', background:SV.appBg, borderRadius:8, fontSize:11, color:SV.ink}}>
               <span style={{color:SV.ink3}}>⌕</span>
@@ -105,7 +107,7 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
                 value={filter}
                 autoFocus
                 onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filtrar por título o tema…"
+                placeholder={t('story.picker.filter')}
                 style={{flex:1, border:'none', outline:'none', background:'transparent', fontSize:11, color:SV.ink, fontFamily:'inherit'}}
               />
               {filter && <span onClick={() => setFilter('')} style={{cursor:'pointer', color:SV.ink3, fontSize:14}}>×</span>}
@@ -114,7 +116,7 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
           <div style={{flex:1, overflowY:'auto', padding:8}}>
             {filteredGroups.length === 0 && (
               <div style={{padding:'20px 12px', textAlign:'center', fontSize:11, color:SV.ink3}}>
-                Sin coincidencias para "<b>{filter}</b>"
+                {t('story.picker.noMatch', { q: filter })}
               </div>
             )}
             {filteredGroups.map(group => (
@@ -131,7 +133,7 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
                       onClick={() => { onPick(s.id); onToggle(false) }}
                       style={{
                         padding:10, borderRadius:8, cursor:'pointer',
-                        background: active ? c.bg : '#fff',
+                        background: active ? c.bg : 'var(--bg-surface)',
                         border: active ? `1px solid ${c.color}` : `1px solid transparent`,
                         marginBottom:3, display:'flex', gap:10, alignItems:'flex-start'
                       }}
@@ -146,7 +148,7 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
                       <div style={{flex:1, minWidth:0}}>
                         <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:8}}>
                           <div style={{fontSize:12, fontWeight:600, color:SV.ink}}>{s.title}</div>
-                          {active && <span style={{fontSize:9, color:c.ring, fontWeight:700, flexShrink:0}}>● ACTIVA</span>}
+                          {active && <span style={{fontSize:9, color:c.ring, fontWeight:700, flexShrink:0}}>{t('story.picker.active')}</span>}
                         </div>
                         <div style={{fontSize:9, color:c.ring, fontWeight:600, marginTop:2, letterSpacing:'.03em'}}>{s.duration}</div>
                         <div style={{fontSize:11, color:SV.ink2, lineHeight:1.45, marginTop:4}}>{s.blurb}</div>
@@ -158,7 +160,7 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
             ))}
           </div>
           <div style={{padding:'10px 14px', borderTop:`1px solid ${SV.divider}`, fontSize:10, color:SV.ink3, lineHeight:1.5, background:SV.appBg}}>
-            💡 La URL incluye la historia + escena. Comparte un link a un punto específico.
+            {t('story.picker.hint')}
           </div>
         </div>
       )}
@@ -167,11 +169,12 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
 }
 
 function SceneStepper({ story, idx, onJump }) {
+  const { t } = useLocale()
   const scenes = story.scenes
   return (
-    <div style={{padding:'14px 24px', borderBottom:`1px solid ${SV.divider}`, background:'#fff', display:'flex', alignItems:'center', gap:24}}>
+    <div style={{padding:'14px 24px', borderBottom:`1px solid ${SV.divider}`, background:'var(--bg-surface)', display:'flex', alignItems:'center', gap:24}}>
       <div style={{minWidth:220}}>
-        <div style={{fontSize:9, fontWeight:600, color:SV.ink3, letterSpacing:'.08em', textTransform:'uppercase'}}>HISTORIA · {story.tag.toUpperCase()}</div>
+        <div style={{fontSize:9, fontWeight:600, color:SV.ink3, letterSpacing:'.08em', textTransform:'uppercase'}}>{t('story.picker.eyebrow')} · {story.tag.toUpperCase()}</div>
         <div style={{fontSize:13, fontWeight:600, color:SV.ink, marginTop:3}}>{story.title}</div>
       </div>
       <div style={{flex:1, display:'flex', alignItems:'center'}}>
@@ -187,7 +190,7 @@ function SceneStepper({ story, idx, onJump }) {
               >
                 <div style={{
                   width:26, height:26, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
-                  background: active ? SV.selection : done ? primaryColor : '#fff',
+                  background: active ? SV.selection : done ? primaryColor : 'var(--bg-surface)',
                   color: active || done ? '#fff' : SV.ink3,
                   border: !active && !done ? `1.5px solid ${SV.border}` : 'none',
                   fontSize:11, fontWeight:700,
@@ -216,13 +219,14 @@ function SceneStepper({ story, idx, onJump }) {
 }
 
 function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
+  const { t } = useLocale()
   const total = story.scenes.length
   const primaryRing = SV.cats[story.primaryCat].ring
   const primaryBg = SV.cats[story.primaryCat].bg
   const primaryColor = SV.cats[story.primaryCat].color
 
   return (
-    <div style={{width:380, background:'#fff', borderRight:`1px solid ${SV.divider}`, display:'flex', flexDirection:'column', overflow:'hidden'}}>
+    <div style={{width:380, background:'var(--bg-surface)', borderRight:`1px solid ${SV.divider}`, display:'flex', flexDirection:'column', overflow:'hidden'}}>
       <div style={{padding:'22px 24px 14px', flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:14}}>
         <div style={{fontSize:10, fontWeight:700, color:primaryRing, letterSpacing:'.08em', textTransform:'uppercase'}}>
           {scene.chip}
@@ -240,12 +244,12 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
         <div style={{fontSize:13, color:SV.ink2, lineHeight:1.65}} dangerouslySetInnerHTML={{__html: scene.narrative}}></div>
         <div style={{padding:14, background:primaryBg, borderRadius:10, fontSize:12, color:primaryRing, lineHeight:1.6}}>
           <div style={{fontWeight:700, marginBottom:5, display:'flex', alignItems:'center', gap:6}}>
-            <span style={{fontSize:14}}>💡</span> Por qué importa
+            <span style={{fontSize:14}}>💡</span> {t('story.insight.header')}
           </div>
           <div dangerouslySetInnerHTML={{__html: scene.insight}}></div>
         </div>
         <div style={{marginTop:4}}>
-          <div style={{fontSize:9, fontWeight:700, color:SV.ink2, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:8}}>Nuevo en esta escena</div>
+          <div style={{fontSize:9, fontWeight:700, color:SV.ink2, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:8}}>{t('story.newInScene')}</div>
           <div style={{display:'flex', flexDirection:'column', gap:5}}>
             {scene.introNodes.map(nid => {
               const n = story.nodes[nid]
@@ -273,25 +277,25 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
               )
             })}
             {scene.introNodes.length === 0 && scene.introEdges.length === 0 && (
-              <div style={{fontSize:11, color:SV.ink3, fontStyle:'italic', padding:'4px 10px'}}>— sin cambios estructurales —</div>
+              <div style={{fontSize:11, color:SV.ink3, fontStyle:'italic', padding:'4px 10px'}}>{t('story.noChanges')}</div>
             )}
           </div>
         </div>
       </div>
-      <div style={{padding:'14px 24px', borderTop:`1px solid ${SV.divider}`, background:'#fff', display:'flex', gap:8, alignItems:'center'}}>
+      <div style={{padding:'14px 24px', borderTop:`1px solid ${SV.divider}`, background:'var(--bg-surface)', display:'flex', gap:8, alignItems:'center'}}>
         <div
           onClick={idx === 0 ? null : onPrev}
-          style={{padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:500, border:`1px solid ${SV.border}`, background:'#fff', opacity: idx === 0 ? 0.4 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer', color: SV.ink, userSelect:'none'}}
-        >← Anterior</div>
+          style={{padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:500, border:`1px solid ${SV.border}`, background:'var(--bg-surface)', opacity: idx === 0 ? 0.4 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer', color: SV.ink, userSelect:'none'}}
+        >{t('story.prev')}</div>
         {idx === total - 1 ? (
-          <div onClick={onRestart} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>↻ Reiniciar historia</div>
+          <div onClick={onRestart} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.restart')}</div>
         ) : (
-          <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:SV.ink, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>Siguiente →</div>
+          <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:SV.ink, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.next')}</div>
         )}
       </div>
-      <div style={{padding:'8px 24px 14px', background:'#fff', display:'flex', justifyContent:'space-between', fontSize:10, color:SV.ink3}}>
-        <span>Escena {idx + 1} / {total}</span>
-        <span><kbd style={kbdStyle}>←</kbd> <kbd style={kbdStyle}>→</kbd> navegar</span>
+      <div style={{padding:'8px 24px 14px', background:'var(--bg-surface)', display:'flex', justifyContent:'space-between', fontSize:10, color:SV.ink3}}>
+        <span>{t('story.scene', { idx: idx + 1, total })}</span>
+        <span><kbd style={kbdStyle}>←</kbd> <kbd style={kbdStyle}>→</kbd> {t('story.navigate')}</span>
       </div>
     </div>
   )
@@ -420,7 +424,7 @@ function Annotation({ a, nodes, override, onMove, svgRef }) {
     <g>
       <foreignObject x={x} y={y} width={w} height={h} style={{ overflow:'visible' }}>
         <div onMouseDown={startAnnDrag} style={{
-          background:'#fff', border:`1.5px solid ${c}`, borderRadius:10,
+          background:'var(--bg-surface)', border:`1.5px solid ${c}`, borderRadius:10,
           padding:'9px 12px', fontSize:11, lineHeight:1.45, color:SV.ink,
           boxShadow:`0 6px 16px ${c}33`, fontFamily:'Inter, system-ui, sans-serif',
           cursor: onMove ? 'grab' : 'default', userSelect: 'none'
@@ -434,22 +438,22 @@ function Annotation({ a, nodes, override, onMove, svgRef }) {
         if (effectiveArrow === 'down') {
           // Card is above anchor → triangle at bottom edge pointing down
           const tipX = cx, tipY = y + h + 8
-          return <polygon points={`${cx - 7},${y + h} ${cx + 7},${y + h} ${tipX},${tipY}`} fill="#fff" stroke={c} strokeWidth="1.5" />
+          return <polygon points={`${cx - 7},${y + h} ${cx + 7},${y + h} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
         }
         if (effectiveArrow === 'up') {
           // Card is below anchor → triangle at top edge pointing up
           const tipX = cx, tipY = y - 8
-          return <polygon points={`${cx - 7},${y} ${cx + 7},${y} ${tipX},${tipY}`} fill="#fff" stroke={c} strokeWidth="1.5" />
+          return <polygon points={`${cx - 7},${y} ${cx + 7},${y} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
         }
         if (effectiveArrow === 'left') {
           // Card is right of anchor → triangle at left edge pointing left
           const tipY = cy, tipX = x - 8
-          return <polygon points={`${x},${cy - 7} ${x},${cy + 7} ${tipX},${tipY}`} fill="#fff" stroke={c} strokeWidth="1.5" />
+          return <polygon points={`${x},${cy - 7} ${x},${cy + 7} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
         }
         if (effectiveArrow === 'right') {
           // Card is left of anchor → triangle at right edge pointing right
           const tipY = cy, tipX = x + w + 8
-          return <polygon points={`${x + w},${cy - 7} ${x + w},${cy + 7} ${tipX},${tipY}`} fill="#fff" stroke={c} strokeWidth="1.5" />
+          return <polygon points={`${x + w},${cy - 7} ${x + w},${cy + 7} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
         }
         return null
       })()}
@@ -458,6 +462,7 @@ function Annotation({ a, nodes, override, onMove, svgRef }) {
 }
 
 function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode, onMoveAnn, onRestoreLayout, hasOverrides, onRestart, canRestart }) {
+  const { t } = useLocale()
   const reveal = useMemo(() => getReveals(story, idx), [story, idx])
   const scene = story.scenes[idx]
   const NODES = story.nodes
@@ -557,8 +562,8 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
         onMouseDown={(e) => startDrag(id, e)}>
         <g style={{ transform:`scale(${scale})`, transformOrigin:`${n.x}px ${n.y}px` }}>
           {/* n8n style: full rounded border in cat.color (no left stripe, no concentric halo). State = stroke width + drop-shadow. */}
-          <rect x="-62" y="-20" width="124" height="40" rx="12" fill="#fff" stroke={c.color} strokeWidth={state === 'active' ? 2.5 : 1.8}
-            style={{ filter: state === 'active' ? `drop-shadow(0 0 8px ${c.color}55)` : 'drop-shadow(0 1px 3px rgba(15,23,42,0.06))', transition: 'stroke-width .25s ease, filter .25s ease' }} />
+          <rect x="-62" y="-20" width="124" height="40" rx="12" fill="var(--bg-surface)" stroke={c.color} strokeWidth={state === 'active' ? 2.5 : 1.8}
+            style={{ filter: state === 'active' ? `drop-shadow(0 0 8px ${c.color}55)` : 'drop-shadow(0 1px 3px rgba(var(--shadow-rgb),0.06))', transition: 'stroke-width .25s ease, filter .25s ease' }} />
           <circle cx="51" cy="-12" r="3" fill={c.color} />
           {(() => {
             const words = n.name.split(' ')
@@ -629,28 +634,28 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
   }, [allEdges, idx, overrides])
 
   return (
-    <div style={{flex:1, position:'relative', background:'#fff', overflow:'hidden'}}>
+    <div style={{flex:1, position:'relative', background:'var(--bg-surface)', overflow:'hidden'}}>
       {/* Reset chrome: Reiniciar historia + Restaurar layout */}
       <div style={{position:'absolute', top:14, left:18, zIndex:10, display:'flex', gap:6, fontFamily:'Inter, system-ui, sans-serif'}}>
         <div onClick={() => canRestart && onRestart && onRestart()}
-          title={canRestart ? 'Volver a la escena 1' : 'Ya estás en la escena 1'}
+          title={canRestart ? t('story.canvas.restart.title') : t('story.canvas.restart.disabled')}
           style={{
-            padding:'6px 10px', background:'#fff', border:`1px solid ${SV.border}`, borderRadius:8,
+            padding:'6px 10px', background:'var(--bg-surface)', border:`1px solid ${SV.border}`, borderRadius:8,
             fontSize:11, color: canRestart ? SV.ink2 : SV.ink4,
             cursor: canRestart ? 'pointer' : 'not-allowed', opacity: canRestart ? 1 : 0.55,
             display:'flex', gap:6, alignItems:'center', userSelect:'none'
           }}>
-          <span style={{fontSize:13, lineHeight:1}}>↻</span><span style={{fontWeight:500}}>Reiniciar historia</span>
+          <span style={{fontSize:13, lineHeight:1}}>↻</span><span style={{fontWeight:500}}>{t('story.canvas.restart')}</span>
         </div>
         <div onClick={() => hasOverrides && onRestoreLayout && onRestoreLayout()}
-          title={hasOverrides ? 'Restaurar posiciones por defecto' : 'No has movido nada todavía'}
+          title={hasOverrides ? t('story.canvas.restoreLayout.title') : t('story.canvas.restoreLayout.disabled')}
           style={{
-            padding:'6px 10px', background:'#fff', border:`1px solid ${SV.border}`, borderRadius:8,
+            padding:'6px 10px', background:'var(--bg-surface)', border:`1px solid ${SV.border}`, borderRadius:8,
             fontSize:11, color: hasOverrides ? SV.ink2 : SV.ink4,
             cursor: hasOverrides ? 'pointer' : 'not-allowed', opacity: hasOverrides ? 1 : 0.55,
             display:'flex', gap:6, alignItems:'center', userSelect:'none'
           }}>
-          <span style={{fontSize:13, lineHeight:1}}>⇲</span><span style={{fontWeight:500}}>Restaurar layout</span>
+          <span style={{fontSize:13, lineHeight:1}}>⇲</span><span style={{fontWeight:500}}>{t('story.canvas.restoreLayout')}</span>
         </div>
       </div>
       <svg ref={svgRef} viewBox="0 -100 920 600" style={{width:'100%', height:'100%', display:'block'}} preserveAspectRatio="xMidYMid meet">
@@ -700,7 +705,7 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
           const et = SV.edges[e.t]
           return (
             <g key={`L-${i}`} transform={`translate(${pos.x},${pos.y})`} style={{ pointerEvents: 'none' }}>
-              <rect x={-pos.w/2} y={-pos.h/2} width={pos.w} height={pos.h} rx={pos.h/2} fill="#fff" stroke={et.color} strokeOpacity="0.55" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 2px rgba(15,23,42,0.10))' }} />
+              <rect x={-pos.w/2} y={-pos.h/2} width={pos.w} height={pos.h} rx={pos.h/2} fill="var(--bg-surface)" stroke={et.color} strokeOpacity="0.55" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.10))' }} />
               <text x="0" y="4" fontSize="9.5" fill={et.color} fontWeight="700" textAnchor="middle" style={{ letterSpacing: '0.01em' }}>{e.label}</text>
             </g>
           )
@@ -721,12 +726,12 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
         })}
       </svg>
       <style>{`@keyframes sv-flash { 0%{opacity:0;transform:scale(0.85)} 60%{opacity:1;transform:scale(1.08)} 100%{transform:scale(1)} }`}</style>
-      <div style={{position:'absolute', bottom:14, right:18, background:'#fff', border:`1px solid ${SV.border}`, borderRadius:8, padding:'6px 10px', display:'flex', gap:10, fontSize:10.5, alignItems:'center'}}>
-        <span key={reveal.activeNodes.size + reveal.activeEdges.length} style={{color:SV.cats[story.primaryCat].ring, fontWeight:700, animation:'sv-flash 0.35s ease'}}>{reveal.activeNodes.size + reveal.activeEdges.length} nuevos</span>
+      <div style={{position:'absolute', bottom:14, right:18, background:'var(--bg-surface)', border:`1px solid ${SV.border}`, borderRadius:8, padding:'6px 10px', display:'flex', gap:10, fontSize:10.5, alignItems:'center'}}>
+        <span key={reveal.activeNodes.size + reveal.activeEdges.length} style={{color:SV.cats[story.primaryCat].ring, fontWeight:700, animation:'sv-flash 0.35s ease'}}>{t('story.canvas.new', { n: reveal.activeNodes.size + reveal.activeEdges.length })}</span>
         <span style={{color:SV.ink3}}>·</span>
-        <span style={{color:SV.ink2}}>{reveal.allNodes.size - reveal.activeNodes.size} previos</span>
+        <span style={{color:SV.ink2}}>{t('story.canvas.prev', { n: reveal.allNodes.size - reveal.activeNodes.size })}</span>
         <span style={{color:SV.ink3}}>·</span>
-        <span style={{color:SV.ink3}}>{totalNodes - reveal.allNodes.size} ocultos</span>
+        <span style={{color:SV.ink3}}>{t('story.canvas.hidden', { n: totalNodes - reveal.allNodes.size })}</span>
       </div>
     </div>
   )
@@ -753,7 +758,7 @@ function parseHash() {
 function StoryToolbar({ storyId, onPickStory, pickerOpen, onTogglePicker, view, setView }) {
   const story = STORIES[storyId]
   return (
-    <div style={{display:'flex', alignItems:'center', gap:12, padding:'10px 18px', borderBottom:`1px solid ${SV.divider}`, background:'#fff'}}>
+    <div style={{display:'flex', alignItems:'center', gap:12, padding:'10px 18px', borderBottom:`1px solid ${SV.divider}`, background:'var(--bg-surface)'}}>
       <div style={{display:'flex', alignItems:'center', gap:8}}>
         <img src="/favicon.svg" alt="" style={{width:26, height:26, flexShrink:0}} />
         <div style={{fontSize:13, fontWeight:600, letterSpacing:'-0.01em'}}>Intune Map</div>
@@ -767,9 +772,9 @@ function StoryToolbar({ storyId, onPickStory, pickerOpen, onTogglePicker, view, 
           <div key={m.id} style={{
             padding:'4px 14px', borderRadius:999, fontSize:11, fontWeight:600,
             display:'flex', alignItems:'center', gap:6, cursor:'pointer',
-            background: m.active ? '#fff' : 'transparent',
+            background: m.active ? 'var(--bg-surface)' : 'transparent',
             color: m.active ? SV.ink : SV.ink2,
-            boxShadow: m.active ? '0 1px 2px rgba(15,23,42,0.08)' : 'none'
+            boxShadow: m.active ? '0 1px 2px rgba(var(--shadow-rgb),0.08)' : 'none'
           }}>
             <span>{m.icon}</span>{m.label}
           </div>
@@ -786,9 +791,9 @@ function StoryToolbar({ storyId, onPickStory, pickerOpen, onTogglePicker, view, 
               style={{
                 padding:'4px 12px', borderRadius:6, fontSize:11, fontWeight:500,
                 cursor:'pointer',
-                background: active ? '#fff' : 'transparent',
+                background: active ? 'var(--bg-surface)' : 'transparent',
                 color: active ? SV.ink : SV.ink2,
-                boxShadow: active ? '0 1px 2px rgba(15,23,42,0.06)' : 'none'
+                boxShadow: active ? '0 1px 2px rgba(var(--shadow-rgb),0.06)' : 'none'
               }}>{t}</div>
           )
         })}
@@ -803,6 +808,7 @@ function StoryToolbar({ storyId, onPickStory, pickerOpen, onTogglePicker, view, 
 }
 
 export default function StoryView({ view, setView } = {}) {
+  const { t } = useLocale()
   const initial = () => {
     const fromHash = parseHash()
     if (fromHash) return fromHash
@@ -946,7 +952,7 @@ export default function StoryView({ view, setView } = {}) {
       <div style={{display:'flex', alignItems:'center', gap:4, padding:'3px 5px', background:SV.appBg, borderRadius:8, border:`1px solid ${SV.border}`}}>
         <button onClick={() => setAutoPlay(a => !a)} style={{
           width:26, height:26, borderRadius:5, border:'none', cursor:'pointer',
-          background: autoPlay ? SV.ink : '#fff',
+          background: autoPlay ? SV.ink : 'var(--bg-surface)',
           color: autoPlay ? '#fff' : SV.ink,
           display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700
         }}>{autoPlay ? '❚❚' : '▶'}</button>
@@ -959,7 +965,7 @@ export default function StoryView({ view, setView } = {}) {
               fontWeight: active ? 700 : 500,
               background: active ? SV.ink : 'transparent',
               color: active ? '#fff' : SV.ink2
-            }}>{p}</button>
+            }}>{t('story.pace.' + pid)}</button>
           )
         })}
       </div>

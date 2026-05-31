@@ -1,8 +1,10 @@
 import React from 'react'
 import WorkloadChips from './WorkloadChips.jsx'
 import { COMPONENT_META, PHASES } from '../data/workloads.js'
+import { useLocale } from '../hooks/useLocale.js'
 
 export default function Tooltip({ x, y, component, onClose }) {
+  const { t } = useLocale()
   if (!component) return null
   const meta = COMPONENT_META[component.id]
   const phase = meta ? PHASES[meta.phase] : null
@@ -14,8 +16,8 @@ export default function Tooltip({ x, y, component, onClose }) {
 
   return (
     <div
-      className="pointer-events-auto fixed z-50 bg-white text-slate-900 text-xs rounded-md shadow-xl border border-slate-200 p-3"
-      style={{ left, top, maxWidth: W }}
+      className="pointer-events-auto fixed z-50 text-xs rounded-md shadow-xl p-3"
+      style={{ left, top, maxWidth: W, background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
       onMouseLeave={() => onClose && onClose()}
     >
       <div className="font-bold text-[13px] mb-1">{component.name}</div>
@@ -27,16 +29,16 @@ export default function Tooltip({ x, y, component, onClose }) {
           </span>
         </div>
       )}
-      <div className="text-slate-600 leading-snug mb-2">{component.description}</div>
+      <div className="leading-snug mb-2" style={{ color: 'var(--text-secondary)' }}>{component.description}</div>
       {meta && (
-        <div className="pt-2 border-t border-slate-100">
+        <div className="pt-2" style={{ borderTop: '1px solid var(--divider)' }}>
           <WorkloadChips componentId={component.id} size="sm" />
         </div>
       )}
       {component.learnUrl && (
         <a href={component.learnUrl} target="_blank" rel="noopener noreferrer"
           className="inline-block mt-2 text-[11px] text-sky-600 hover:underline">
-          Saber más →
+          {t('tooltip.learnMore')}
         </a>
       )}
     </div>
