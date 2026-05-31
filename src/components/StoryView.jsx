@@ -6,8 +6,28 @@ import { createPortal } from 'react-dom'
 import { SV_PALETTE } from '../data/storyData.js'
 import { STORIES, STORY_ORDER } from '../data/stories.js'
 import { useLocale } from '../hooks/useLocale.js'
+import { useTheme } from '../hooks/useTheme.js'
 
 const SV = SV_PALETTE
+
+// Theme-aware bg selector for SV_PALETTE.cats entries — picks bgDark in dark
+// mode (added to storyData.js) so the soft category tint reads on dark canvas.
+const svBg = (cat, isDark) => (isDark && cat?.bgDark ? cat.bgDark : cat?.bg)
+// Theme-aware accent color — uses colorDark (lightened) in dark, raw in light.
+const svColor     = (cat, isDark) => (isDark && cat?.colorDark ? cat.colorDark : cat?.color)
+const svEdgeColor = (et,  isDark) => (isDark && et?.colorDark  ? et.colorDark  : et?.color)
+// Pick black or white text on a given hex bg using YIQ luminance.
+const pickTextOn = (hex) => {
+  if (!hex || typeof hex !== 'string') return '#fff'
+  const h = hex.replace('#', '')
+  const norm = h.length === 3 ? h.split('').map(c => c + c).join('') : h.slice(0, 6)
+  if (norm.length !== 6) return '#fff'
+  const r = parseInt(norm.slice(0, 2), 16)
+  const g = parseInt(norm.slice(2, 4), 16)
+  const b = parseInt(norm.slice(4, 6), 16)
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+  return yiq >= 150 ? '#0B0F1A' : '#fff'
+}
 
 function getReveals(story, sceneIdx) {
   const allNodes = new Set()
@@ -35,6 +55,7 @@ const kbdStyle = {
 }
 
 function StoryPicker({ storyId, onPick, open, onToggle }) {
+  const { isDark } = useTheme()
   const { t } = useLocale()
   const ref = useRef(null)
   const [filter, setFilter] = useState('')
@@ -133,14 +154,14 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
                       onClick={() => { onPick(s.id); onToggle(false) }}
                       style={{
                         padding:10, borderRadius:8, cursor:'pointer',
-                        background: active ? c.bg : 'var(--bg-surface)',
-                        border: active ? `1px solid ${c.color}` : `1px solid transparent`,
+                        background: active ? svBg(c, isDark) : 'var(--bg-surface)',
+                        border: active ? `1px solid ${svColor(c, isDark)}` : `1px solid transparent`,
                         marginBottom:3, display:'flex', gap:10, alignItems:'flex-start'
                       }}
                     >
                       <div style={{
                         width:28, height:28, borderRadius:7, flexShrink:0,
-                        background: active ? c.color : c.bg,
+                        background: active ? svColor(c, isDark) : svBg(c, isDark),
                         color: active ? '#fff' : c.ring,
                         display:'flex', alignItems:'center', justifyContent:'center',
                         fontSize:12, fontWeight:700
@@ -169,6 +190,7 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
 }
 
 function SceneStepper({ story, idx, onJump }) {
+  const { isDark } = useTheme()
   const { t } = useLocale()
   const scenes = story.scenes
   return (
@@ -181,7 +203,7 @@ function SceneStepper({ story, idx, onJump }) {
         {scenes.map((s, i) => {
           const active = i === idx
           const done = i < idx
-          const primaryColor = SV.cats[story.primaryCat].color
+          const primaryColor = svColor(SV.cats[story.primaryCat], isDark)
           return (
             <React.Fragment key={s.id}>
               <div
@@ -219,11 +241,13 @@ function SceneStepper({ story, idx, onJump }) {
 }
 
 function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
+  const { isDark } = useTheme()
   const { t } = useLocale()
   const total = story.scenes.length
-  const primaryRing = SV.cats[story.primaryCat].ring
-  const primaryBg = SV.cats[story.primaryCat].bg
-  const primaryColor = SV.cats[story.primaryCat].color
+  const primaryCat = SV.cats[story.primaryCat]
+  const primaryRing = primaryCat.ring
+  const primaryBg = svBg(primaryCat, isDark)
+  const primaryColor = svColor(primaryCat, isDark)
 
   return (
     <div style={{width:380, background:'var(--bg-surface)', borderRight:`1px solid ${SV.divider}`, display:'flex', flexDirection:'column', overflow:'hidden'}}>
@@ -256,8 +280,8 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
               if (!n) return null
               const c = SV.cats[n.cat]
               return (
-                <div key={nid} style={{display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:c.bg, borderRadius:7, fontSize:11.5}}>
-                  <span style={{width:7, height:7, borderRadius:'50%', background:c.color, flexShrink:0}}></span>
+                <div key={nid} style={{display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:svBg(c, isDark), borderRadius:7, fontSize:11.5}}>
+                  <span style={{width:7, height:7, borderRadius:'50%', background:svColor(c, isDark), flexShrink:0}}></span>
                   <span style={{fontWeight:600, color:SV.ink}}>{n.name}</span>
                   <span style={{marginLeft:'auto', fontSize:9, color:c.ring, fontWeight:600}}>{c.label.toUpperCase()}</span>
                 </div>
@@ -270,9 +294,9 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
               return (
                 <div key={i} style={{display:'flex', alignItems:'center', gap:8, padding:'5px 10px', background:SV.appBg, borderRadius:7, fontSize:11}}>
                   <span style={{color:SV.ink2, flexShrink:0, fontWeight:500}}>{na.name}</span>
-                  <svg width="22" height="3" style={{flexShrink:0}}><line x1="0" y1="1.5" x2="22" y2="1.5" stroke={et.color} strokeWidth="2" strokeDasharray={et.dash||undefined}/></svg>
+                  <svg width="22" height="3" style={{flexShrink:0}}><line x1="0" y1="1.5" x2="22" y2="1.5" stroke={svEdgeColor(et, isDark)} strokeWidth="2" strokeDasharray={et.dash||undefined}/></svg>
                   <span style={{color:SV.ink2, fontWeight:500}}>{nb.name}</span>
-                  <span style={{marginLeft:'auto', fontSize:9, color:et.color, fontWeight:700, letterSpacing:'.05em', textTransform:'uppercase'}}>{et.label}</span>
+                  <span style={{marginLeft:'auto', fontSize:9, color:svEdgeColor(et, isDark), fontWeight:700, letterSpacing:'.05em', textTransform:'uppercase'}}>{et.label}</span>
                 </div>
               )
             })}
@@ -311,13 +335,14 @@ function rectsOverlap(a, b) {
 }
 
 function Annotation({ a, nodes, override, onMove, svgRef }) {
+  const { isDark } = useTheme()
   const tone = a.tone || 'default'
   const colorMap = {
     'default': SV.selection,
-    'edge-data': SV.edges.data.color,
-    'edge-signal': SV.edges.signal.color,
-    'edge-policy': SV.edges.policy.color,
-    'edge-escalation': SV.edges.escalation.color
+    'edge-data': svEdgeColor(SV.edges.data, isDark),
+    'edge-signal': svEdgeColor(SV.edges.signal, isDark),
+    'edge-policy': svEdgeColor(SV.edges.policy, isDark),
+    'edge-escalation': svEdgeColor(SV.edges.escalation, isDark)
   }
   const c = colorMap[tone]
   const w = 220, h = 76
@@ -462,6 +487,7 @@ function Annotation({ a, nodes, override, onMove, svgRef }) {
 }
 
 function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode, onMoveAnn, onRestoreLayout, hasOverrides, onRestart, canRestart }) {
+  const { isDark } = useTheme()
   const { t } = useLocale()
   const reveal = useMemo(() => getReveals(story, idx), [story, idx])
   const scene = story.scenes[idx]
@@ -553,6 +579,7 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
 
   function NodeCard({ id, n, state }) {
     const c = SV.cats[n.cat]
+    const cColor = svColor(c, isDark)
     const op = state === 'active' ? 1 : state === 'dim' ? 0.55 : 0
     const scale = state === 'active' ? 1 : 0.94
     const isDragging = dragging?.id === id
@@ -562,9 +589,9 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
         onMouseDown={(e) => startDrag(id, e)}>
         <g style={{ transform:`scale(${scale})`, transformOrigin:`${n.x}px ${n.y}px` }}>
           {/* n8n style: full rounded border in cat.color (no left stripe, no concentric halo). State = stroke width + drop-shadow. */}
-          <rect x="-62" y="-20" width="124" height="40" rx="12" fill="var(--bg-surface)" stroke={c.color} strokeWidth={state === 'active' ? 2.5 : 1.8}
-            style={{ filter: state === 'active' ? `drop-shadow(0 0 8px ${c.color}55)` : 'drop-shadow(0 1px 3px rgba(var(--shadow-rgb),0.06))', transition: 'stroke-width .25s ease, filter .25s ease' }} />
-          <circle cx="51" cy="-12" r="3" fill={c.color} />
+          <rect x="-62" y="-20" width="124" height="40" rx="12" fill="var(--bg-surface)" stroke={cColor} strokeWidth={state === 'active' ? 2.5 : 1.8}
+            style={{ filter: state === 'active' ? `drop-shadow(0 0 8px ${cColor}55)` : 'drop-shadow(0 1px 3px rgba(var(--shadow-rgb),0.06))', transition: 'stroke-width .25s ease, filter .25s ease' }} />
+          <circle cx="51" cy="-12" r="3" fill={cColor} />
           {(() => {
             const words = n.name.split(' ')
             if (n.name.length > 13 && words.length > 1) {
@@ -665,7 +692,7 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
           </pattern>
           {Object.entries(SV.edges).map(([k, e]) => (
             <marker key={k} id={`sv-arrow-${k}`} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth">
-              <path d="M 0 0 L 7 3.5 L 0 7 Z" fill={e.color} />
+              <path d="M 0 0 L 7 3.5 L 0 7 Z" fill={svEdgeColor(e, isDark)} />
             </marker>
           ))}
         </defs>
@@ -676,7 +703,7 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
           const isActive = activeSet.has(activeEdgeKey(e))
           return (
             <path key={i} d={edgePath(e.a, e.b)}
-              stroke={et.color}
+              stroke={svEdgeColor(et, isDark)}
               strokeWidth={isActive ? 2.2 : 1.5}
               strokeDasharray={et.dash || undefined}
               fill="none"
@@ -705,8 +732,8 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
           const et = SV.edges[e.t]
           return (
             <g key={`L-${i}`} transform={`translate(${pos.x},${pos.y})`} style={{ pointerEvents: 'none' }}>
-              <rect x={-pos.w/2} y={-pos.h/2} width={pos.w} height={pos.h} rx={pos.h/2} fill="var(--bg-surface)" stroke={et.color} strokeOpacity="0.55" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.10))' }} />
-              <text x="0" y="4" fontSize="9.5" fill={et.color} fontWeight="700" textAnchor="middle" style={{ letterSpacing: '0.01em' }}>{e.label}</text>
+              <rect x={-pos.w/2} y={-pos.h/2} width={pos.w} height={pos.h} rx={pos.h/2} fill="var(--bg-surface)" stroke={svEdgeColor(et, isDark)} strokeOpacity="0.55" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.10))' }} />
+              <text x="0" y="4" fontSize="9.5" fill={svEdgeColor(et, isDark)} fontWeight="700" textAnchor="middle" style={{ letterSpacing: '0.01em' }}>{e.label}</text>
             </g>
           )
         })}

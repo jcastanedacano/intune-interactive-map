@@ -11,19 +11,19 @@ export const SV_PALETTE = {
   ink3:     'var(--text-tertiary)',
   selection:'#2563EB',
   cats: {
-    devices:   { color:'#0891A6', bg:'#E0F4F7', ring:'#066C7E', label:'Device Mgmt' },
-    apps:      { color:'#3B5DD9', bg:'#E6EAFB', ring:'#2A47B0', label:'App Mgmt' },
-    security:  { color:'#C97A14', bg:'#FBF1DE', ring:'#9A5C0A', label:'Endpoint Security' },
-    provision: { color:'#0F9D6A', bg:'#E6F6EE', ring:'#0A7A52', label:'Provisioning' },
-    suite:     { color:'#8541C5', bg:'#F0E7FA', ring:'#65329B', label:'Intune Suite' },
-    entra:     { color:'#C5377A', bg:'#FBE6EF', ring:'#9A275E', label:'Entra' },
-    defender:  { color:'#6D9224', bg:'#F0F5DC', ring:'#54711A', label:'Defender' }
+    devices:   { color:'#0891A6', colorDark:'#2BBBD1', bg:'#E0F4F7', bgDark:'#0891A622', ring:'#066C7E', label:'Device Mgmt' },
+    apps:      { color:'#3B5DD9', colorDark:'#7E97EE', bg:'#E6EAFB', bgDark:'#3B5DD922', ring:'#2A47B0', label:'App Mgmt' },
+    security:  { color:'#C97A14', colorDark:'#E5A23E', bg:'#FBF1DE', bgDark:'#C97A1422', ring:'#9A5C0A', label:'Endpoint Security' },
+    provision: { color:'#0F9D6A', colorDark:'#33C28C', bg:'#E6F6EE', bgDark:'#0F9D6A22', ring:'#0A7A52', label:'Provisioning' },
+    suite:     { color:'#8541C5', colorDark:'#B98DE8', bg:'#F0E7FA', bgDark:'#8541C522', ring:'#65329B', label:'Intune Suite' },
+    entra:     { color:'#C5377A', colorDark:'#E86FA6', bg:'#FBE6EF', bgDark:'#C5377A22', ring:'#9A275E', label:'Entra' },
+    defender:  { color:'#6D9224', colorDark:'#A6C84E', bg:'#F0F5DC', bgDark:'#6D922422', ring:'#54711A', label:'Defender' }
   },
   edges: {
-    data:       { color:'#0EA5C7', dash:'5 3',     label:'Data',       blurb:'Información que fluye de un componente a otro' },
-    signal:     { color:'#7A4ED1', dash:'2 3',     label:'Signal',     blurb:'Telemetría / score que alimenta decisiones' },
-    policy:     { color:'#E07B16', dash:null,      label:'Policy',     blurb:'Política que un componente aplica sobre otro' },
-    escalation: { color:'#1F2937', dash:'8 3 2 3', label:'Escalation', blurb:'Incidente que se promueve a la siguiente capa' }
+    data:       { color:'#0EA5C7', colorDark:'#2DD4E8', dash:'5 3',     label:'Data',       blurb:'Información que fluye de un componente a otro' },
+    signal:     { color:'#7A4ED1', colorDark:'#A78BFA', dash:'2 3',     label:'Signal',     blurb:'Telemetría / score que alimenta decisiones' },
+    policy:     { color:'#E07B16', colorDark:'#FB923C', dash:null,      label:'Policy',     blurb:'Política que un componente aplica sobre otro' },
+    escalation: { color:'#1F2937', colorDark:'#94A3B8', dash:'8 3 2 3', label:'Escalation', blurb:'Incidente que se promueve a la siguiente capa' }
   }
 }
 
