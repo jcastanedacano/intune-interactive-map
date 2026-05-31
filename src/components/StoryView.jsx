@@ -556,9 +556,9 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
         style={{ transition: isDragging ? 'none' : 'opacity .35s ease, transform .35s ease', opacity: op, cursor: 'grab' }}
         onMouseDown={(e) => startDrag(id, e)}>
         <g style={{ transform:`scale(${scale})`, transformOrigin:`${n.x}px ${n.y}px` }}>
-          <rect x="-62" y="-20" width="124" height="40" rx="8" fill="#fff" stroke={state === 'active' ? c.color : SV.border} strokeWidth={state === 'active' ? 1.5 : 1} />
-          <rect x="-62" y="-20" width="3" height="40" fill={c.color} />
-          {state === 'active' && (<rect x="-63" y="-21" width="126" height="42" rx="9" fill="none" stroke={c.color} strokeOpacity="0.25" strokeWidth="6" />)}
+          {/* n8n style: full rounded border in cat.color (no left stripe, no concentric halo). State = stroke width + drop-shadow. */}
+          <rect x="-62" y="-20" width="124" height="40" rx="12" fill="#fff" stroke={c.color} strokeWidth={state === 'active' ? 2.5 : 1.8}
+            style={{ filter: state === 'active' ? `drop-shadow(0 0 8px ${c.color}55)` : 'drop-shadow(0 1px 3px rgba(15,23,42,0.06))', transition: 'stroke-width .25s ease, filter .25s ease' }} />
           <circle cx="51" cy="-12" r="3" fill={c.color} />
           {(() => {
             const words = n.name.split(' ')
