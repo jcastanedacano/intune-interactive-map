@@ -549,7 +549,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             // (cyan/violet/orange/dark) — falls back to category color if no edge.
             const flowHueForNode = flowColorByNode[n.id] || cat.color
             const cardFill = heat || '#FFFFFF'
-            const borderColor = flowing ? flowHueForNode : (selected ? SC_SELECTION : (phaseColor || SC_BORDER))
+            // n8n-style: category color is the primary visual identity — full rounded border in cat.color
+            const borderColor = flowing ? flowHueForNode : (selected ? SC_SELECTION : (phaseColor || cat.color))
             return (
               <g key={n.id} data-id={n.id} className="node" transform={`translate(${n.x - CARD_W/2},${n.y - CARD_H/2})`} opacity={opacity}>
                 {/* Flow halo — uses the dominant edge color around each card */}
@@ -566,16 +567,15 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                 <rect width={CARD_W} height={CARD_H} rx={20}
                   fill={cardFill}
                   stroke={borderColor}
-                  strokeWidth={flowing ? 2 : (selected ? 2 : 1)}
+                  strokeWidth={flowing ? 2.5 : (selected ? 2.8 : 2.2)}
                   style={{
                     filter: flowing
                       ? `drop-shadow(0 0 12px ${flowHueForNode}66)`
                       : 'drop-shadow(0 2px 6px rgba(15,23,42,0.06))',
-                    transition: 'stroke .3s ease, filter .3s ease'
+                    transition: 'stroke .3s ease, stroke-width .3s ease, filter .3s ease'
                   }} />
-                {/* Left 4px category stripe (rounded to match card) */}
-                <rect x={0} y={0} width={4} height={CARD_H} rx={2} fill={cat.color} />
-                {phaseColor && <rect x={4} y={0} width={CARD_W - 4} height={3} fill={phaseColor} />}
+                {/* Phase stripe (top) — only when deployment overlay is active; preserves rounded corners */}
+                {phaseColor && <rect x={6} y={0} width={CARD_W - 12} height={3} fill={phaseColor} />}
                 <foreignObject x={10} y={6} width={CARD_W - 18} height={CARD_H - 12}>
                   <div xmlns="http://www.w3.org/1999/xhtml"
                     style={{ height:'100%', display:'flex', alignItems:'center', gap:10, cursor:'grab', userSelect:'none' }}
