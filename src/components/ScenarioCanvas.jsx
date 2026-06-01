@@ -10,6 +10,11 @@ import WorkloadChips from './WorkloadChips.jsx'
 import Tooltip from './Tooltip.jsx'
 import { useLocale } from '../hooks/useLocale.js'
 
+// Layout constants for auto-arrange — 2-row horizontal flow inspired by
+// the Purview Builder reference. Sources (in-degree 0) at left,
+// sinks (out-degree 0) at right; intermediate nodes binned by topological depth.
+const ARRANGE_X0 = 200, ARRANGE_X_STEP = 260, ARRANGE_Y_TOP = 240, ARRANGE_Y_BOTTOM = 480
+
 // Design package palette — white card + 4px left stripe + EDGE_TYPES colors for edges
 const SC_BORDER = 'var(--border)'
 const SC_BORDER_STRONG = 'var(--border-strong)'
@@ -191,6 +196,181 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
   }
 
   useImperativeHandle(ref, () => ({ resetZoom }), [])
+
+  // ── Auto-arrange ────────────────────────────────────────────────────────
+  // Topological 2-row layout: compute longest-path depth from sources
+  // (in-degree 0) then place each node in a column. Even-depth → top row,
+  // odd-depth → bottom row, creating the wave pattern of the reference.
+  // After repositioning, fit-zoom so the new layout is fully visible.
+  const autoArrange = () => {
+    if (scenario.nodes.length === 0) return
+    const ids = scenario.nodes.map(n => n.id)
+    const inDeg = Object.fromEntries(ids.map(id => [id, 0]))
+    const adj = Object.fromEntries(ids.map(id => [id, []]))
+    ;(edges || []).forEach(e => {
+      if (!ids.includes(e.source) || !ids.includes(e.target)) return
+      adj[e.source].push(e.target); inDeg[e.target]++
+    })
+    // Kahn topological sort — handles cycles by greedily peeling
+    // in-degree-0 nodes; whatever's left at the end is part of a cycle
+    // and gets appended at the tail in catalog order so the BFS never
+    // loops.
+    const inDegCopy = { ...inDeg }
+    const order = []
+    const queue = ids.filter(id => inDegCopy[id] === 0)
+    while (queue.length) {
+      const u = queue.shift()
+      order.push(u)
+      adj[u].forEach(v => {
+        inDegCopy[v]--
+        if (inDegCopy[v] === 0) queue.push(v)
+      })
+    }
+    // Cycle remainder — append unprocessed ids
+    ids.forEach(id => { if (!order.includes(id)) order.push(id) })
+    // Now compute longest-path depth in topological order — single pass,
+    // never revisits, no cycles can cause infinite recursion.
+    const depth = Object.fromEntries(ids.map(id => [id, 0]))
+    order.forEach(u => {
+      adj[u].forEach(v => {
+        if (depth[u] + 1 > depth[v]) depth[v] = depth[u] + 1
+      })
+    })
+    const cols = {}
+    ids.forEach(id => { (cols[depth[id]] = cols[depth[id]] || []).push(id) })
+    // Compute placed positions then dispatch all updates in a single batch.
+    const placements = []
+    Object.keys(cols).forEach(d => {
+      cols[d].forEach((id, i) => {
+        const x = ARRANGE_X0 + Number(d) * ARRANGE_X_STEP
+        const y = (Number(d) % 2 === 0)
+          ? ARRANGE_Y_TOP + (i - (cols[d].length - 1) / 2) * 110
+          : ARRANGE_Y_BOTTOM + (i - (cols[d].length - 1) / 2) * 110
+        placements.push({ id, x, y })
+      })
+    })
+    placements.forEach(p => dispatch({ type: 'moveNode', id: p.id, x: p.x, y: p.y }))
+    // Fit-zoom so the new layout is centered + visible.
+    setTimeout(() => {
+      if (!svgRef.current || placements.length === 0) return
+      const xs = placements.map(p => p.x); const ys = placements.map(p => p.y)
+      const minX = Math.min(...xs) - 120, maxX = Math.max(...xs) + 120
+      const minY = Math.min(...ys) - 80,  maxY = Math.max(...ys) + 80
+      const bbW = maxX - minX, bbH = maxY - minY
+      const rect = svgRef.current.getBoundingClientRect()
+      const k = Math.min(rect.width / bbW, rect.height / bbH, 1.2)
+      const tx = (rect.width  - bbW * k) / 2 - minX * k
+      const ty = (rect.height - bbH * k) / 2 - minY * k
+      const zoom = svgRef.current.__zoom__
+      if (zoom) d3.select(svgRef.current).transition().duration(400).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(k))
+    }, 60)
+  }
+
+  // ── Export as PNG ───────────────────────────────────────────────────────
+  // Native SVG → Canvas → PNG. Key tweaks to make it actually render:
+  //   1) Resolve every CSS var to its computed value (CSS vars don't carry
+  //      through when the SVG is loaded as a blob URL).
+  //   2) Make every <image href> absolute so the offline image fetch works.
+  //   3) Inline computed colors for fills/strokes that referenced vars in
+  //      attributes.
+  const exportCanvasPng = async () => {
+    if (!svgRef.current) return
+    try {
+      const rootStyle = getComputedStyle(document.documentElement)
+      const varMap = {}
+      const resolveVar = (val) => {
+        if (typeof val !== 'string' || !val.includes('var(')) return val
+        return val.replace(/var\((--[a-z0-9-]+)[^)]*\)/g, (_, name) => {
+          if (!(name in varMap)) varMap[name] = rootStyle.getPropertyValue(name).trim() || '#000'
+          return varMap[name]
+        })
+      }
+      const svg = svgRef.current.cloneNode(true)
+      const rect = svgRef.current.getBoundingClientRect()
+      svg.setAttribute('width', rect.width)
+      svg.setAttribute('height', rect.height)
+      svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+      // Walk every element: resolve var() in style attribute + fill/stroke + image href
+      const origin = window.location.origin
+      const isDark = document.documentElement.dataset.theme === 'dark'
+      const all = svg.querySelectorAll('*')
+      for (const el of all) {
+        for (const attr of ['fill', 'stroke', 'color', 'stop-color']) {
+          const v = el.getAttribute(attr)
+          if (v && v.includes('var(')) el.setAttribute(attr, resolveVar(v))
+        }
+        const styleAttr = el.getAttribute('style')
+        if (styleAttr && styleAttr.includes('var(')) el.setAttribute('style', resolveVar(styleAttr))
+        // <image href> / xlink:href → absolute URL + same-origin CORS
+        if (el.tagName.toLowerCase() === 'image') {
+          for (const a of ['href', 'xlink:href']) {
+            const v = el.getAttribute(a)
+            if (v && v.startsWith('/')) el.setAttribute(a, origin + v)
+          }
+        }
+        // .azure-icon filter (invert in dark mode) lives in index.css — bake it
+        if (el.classList?.contains('azure-icon') && isDark && el.getAttribute('href')?.endsWith('.svg')) {
+          el.style.filter = 'invert(1) hue-rotate(180deg)'
+        }
+      }
+      // Inline current canvas bg so export doesn't render transparent
+      const bg = getComputedStyle(containerRef.current).backgroundColor
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+      bgRect.setAttribute('width', '100%')
+      bgRect.setAttribute('height', '100%')
+      bgRect.setAttribute('fill', bg)
+      svg.insertBefore(bgRect, svg.firstChild)
+      const data = new XMLSerializer().serializeToString(svg)
+      // Encode as data URL (more reliable than blob URL for img.crossOrigin)
+      const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data)
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = (e) => reject(new Error('Failed to load SVG image: ' + (e?.message || 'unknown')))
+        img.src = dataUrl
+      })
+      const scale = 2
+      const canvas = document.createElement('canvas')
+      canvas.width = rect.width * scale
+      canvas.height = rect.height * scale
+      const ctx = canvas.getContext('2d')
+      ctx.scale(scale, scale)
+      ctx.drawImage(img, 0, 0)
+      canvas.toBlob(async (png) => {
+        if (!png) { console.error('toBlob returned null — likely tainted canvas from cross-origin image'); return }
+        const slug = (scenario.title || 'scenario').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scenario'
+        const fileName = `${slug}.png`
+        // Prefer showSaveFilePicker (Chromium 86+) so the user picks the
+        // destination — bypasses corporate Downloads UNC mapping issues.
+        if (typeof window.showSaveFilePicker === 'function') {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: fileName,
+              types: [{ description: 'PNG image', accept: { 'image/png': ['.png'] } }]
+            })
+            const writable = await handle.createWritable()
+            await writable.write(png)
+            await writable.close()
+            return
+          } catch (err) {
+            // User cancelled or picker failed — fall through to <a> download
+            if (err?.name === 'AbortError') return
+          }
+        }
+        // Classic <a download> fallback
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(png)
+        a.download = fileName
+        a.rel = 'noopener'
+        document.body.appendChild(a); a.click(); document.body.removeChild(a)
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+      }, 'image/png')
+    } catch (e) {
+      console.error('Export PNG failed:', e)
+      alert('Export PNG falló — revisa la consola. Posible causa: imágenes cross-origin.')
+    }
+  }
 
   useEffect(() => {
     const drag = d3.drag()
@@ -390,20 +570,23 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
       onMouseMove={onCanvasMouseMove}
       onMouseUp={onCanvasMouseUp}
     >
-      {/* Floating chrome — top-left: overlay dropdown + stats pill + Vaciar canvas chip */}
-      <div style={{ position: 'absolute', top: 14, left: 18, display: 'flex', alignItems: 'center', gap: 8, zIndex: 10, fontFamily: 'Inter, system-ui, sans-serif' }}>
-        {/* Select overlay — load pre-built scenario */}
+      {/* Top stats row — Components / Edges / Actions (export, arrange, clear) */}
+      <div style={{
+        position: 'absolute', top: 14, left: 18, right: 18, zIndex: 10,
+        display: 'flex', gap: 10, fontFamily: 'Inter, system-ui, sans-serif'
+      }}>
+        {/* Load scenario dropdown */}
         {onOverlay && (
           <select
             onChange={(e) => { if (e.target.value) { onOverlay(e.target.value); e.target.value = '' } }}
             defaultValue=""
             style={{
-              fontSize: 10.5, border: `1px solid ${SC_BORDER}`, borderRadius: 8,
-              padding: '6px 24px 6px 10px', background: 'var(--bg-surface)', color: SC_INK2,
-              cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 10.5, border: `1px solid ${SC_BORDER}`, borderRadius: 10,
+              padding: '10px 28px 10px 14px', background: 'var(--bg-surface)', color: SC_INK2,
+              cursor: 'pointer', fontFamily: 'inherit', minWidth: 180,
               appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
-              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23475467' stroke-width='1.5' stroke-linecap='round'/></svg>")`,
-              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center'
+              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23A9B4C7' stroke-width='1.5' stroke-linecap='round'/></svg>")`,
+              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center'
             }}>
             <option value="" disabled>{tr('scenario.load.placeholder')}</option>
             {SCENARIO_GROUPS.map(group => (
@@ -413,30 +596,63 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             ))}
           </select>
         )}
-        <div style={{ background: 'var(--bg-surface)', border: `1px solid ${SC_BORDER}`, borderRadius: 8, padding: '6px 10px', display: 'flex', gap: 10, fontSize: 10.5, alignItems: 'center' }}>
-          <span style={{ color: SC_INK2, fontWeight: 600 }}>{scenario.nodes.length}</span>
-          <span style={{ color: SC_INK3 }}>{tr('panel.composition.components')}</span>
-          <span style={{ color: '#CBD0DA' }}>·</span>
-          <span style={{ color: SC_INK2, fontWeight: 600 }}>{edges.length}</span>
-          <span style={{ color: SC_INK3 }}>{tr('panel.composition.edges')}</span>
+        {/* COMPONENTS stat card */}
+        <div style={{
+          flex: 1, padding: '10px 16px', background: 'var(--bg-surface)',
+          border: `1px solid ${SC_BORDER}`, borderRadius: 10
+        }}>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr('scenario.stats.components')}</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{scenario.nodes.length}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{tr('scenario.stats.of', { n: Object.keys(COMPONENT_MAP).length })}</span>
+          </div>
         </div>
-        <div
-          onClick={() => { if (scenario.nodes.length > 0) dispatch({ type: 'reset' }) }}
-          title={scenario.nodes.length === 0 ? tr('scenario.action.clear.title.empty') : tr('scenario.action.clear.title')}
-          style={{
-            background: 'var(--bg-surface)', border: `1px solid ${SC_BORDER}`, borderRadius: 8,
-            padding: '6px 10px', display: 'flex', gap: 6, fontSize: 11, alignItems: 'center',
-            color: scenario.nodes.length === 0 ? '#CBD0DA' : SC_INK2,
-            cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer',
-            userSelect: 'none', opacity: scenario.nodes.length === 0 ? 0.55 : 1, transition: 'opacity .2s, color .2s'
-          }}>
-          <span style={{ fontSize: 13, lineHeight: 1 }}>↻</span>
-          <span style={{ fontWeight: 500 }}>{tr('scenario.canvas.clear')}</span>
+        {/* EDGES stat card */}
+        <div style={{
+          flex: 1, padding: '10px 16px', background: 'var(--bg-surface)',
+          border: `1px solid ${SC_BORDER}`, borderRadius: 10
+        }}>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr('scenario.stats.edges')}</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{edges.length}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{tr('scenario.stats.of', { n: EDGES.length })}</span>
+          </div>
+        </div>
+        {/* ACTIONS — Arrange + Export + Clear */}
+        <div style={{
+          padding: '10px 16px', background: 'var(--bg-surface)',
+          border: `1px solid ${SC_BORDER}`, borderRadius: 10,
+          display: 'flex', alignItems: 'center', gap: 6
+        }}>
+          <button onClick={() => autoArrange()} disabled={scenario.nodes.length === 0}
+            title={tr('scenario.action.arrange.title')}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8,
+              background: 'var(--bg-elevated)', color: scenario.nodes.length === 0 ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              border: '1px solid var(--border)',
+              cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
+            }}>{tr('scenario.action.arrange')}</button>
+          <button onClick={() => exportCanvasPng()} disabled={scenario.nodes.length === 0}
+            title={tr('scenario.action.export.title')}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8,
+              background: 'var(--bg-elevated)', color: scenario.nodes.length === 0 ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              border: '1px solid var(--border)',
+              cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
+            }}>{tr('scenario.action.export')}</button>
+          <button onClick={() => { if (scenario.nodes.length > 0) dispatch({ type: 'reset' }) }} disabled={scenario.nodes.length === 0}
+            title={scenario.nodes.length === 0 ? tr('scenario.action.clear.title.empty') : tr('scenario.action.clear.title')}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8,
+              background: 'var(--bg-elevated)', color: scenario.nodes.length === 0 ? 'var(--text-tertiary)' : 'var(--text-secondary)',
+              border: '1px solid var(--border)',
+              cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
+            }}>{tr('scenario.action.clear')}</button>
         </div>
       </div>
 
       {/* Flow pace pill — top center */}
-      <div style={{position:'absolute', top:14, left:'50%', transform:'translateX(-50%)', zIndex:10, display:'flex', alignItems:'center', gap:4, background:'var(--bg-surface)', border:`1px solid ${SC_BORDER}`, borderRadius:999, padding:'4px 8px', fontFamily:'Inter, system-ui, sans-serif', fontSize:10.5, boxShadow:'0 1px 4px rgba(var(--shadow-rgb),0.07)'}}>
+      <div style={{position:'absolute', top:82, left:'50%', transform:'translateX(-50%)', zIndex:10, display:'flex', alignItems:'center', gap:4, background:'var(--bg-surface)', border:`1px solid ${SC_BORDER}`, borderRadius:999, padding:'4px 8px', fontFamily:'Inter, system-ui, sans-serif', fontSize:10.5, boxShadow:'0 1px 4px rgba(var(--shadow-rgb),0.07)'}}>
         <span style={{color:'var(--text-tertiary)', fontWeight:600, marginRight:2, fontSize:9.5, letterSpacing:'.05em', textTransform:'uppercase'}}>{tr('scenario.flow.label')}</span>
         {['slow','normal','fast'].map(p => (
           <button key={p} onClick={() => setFlowPace(p)} style={{
