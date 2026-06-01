@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Share2, Check, BookOpen, FileText, Key, Target, ExternalLink } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { CATEGORIES, COMPONENT_MAP } from '../data/components.js'
+import { getDetails } from '../data/componentDetails.js'
 import { EDGES } from '../data/edges.js'
 import { SUBTOPICS } from '../data/subtopics.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
@@ -327,6 +328,25 @@ function ComponentProfile({ component, onSelectComponent }) {
           {component.description}
         </div>
 
+        {/* CAVEATS — sparse field, only render if present */}
+        {(() => {
+          const d = getDetails(component.id)
+          if (!d.caveats?.length) return null
+          return (
+            <div style={{ marginBottom: 14, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-canvas)' }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>{t('profile.caveats')}</div>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                {d.caveats.map((c, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 6, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>·</span>
+                    <span>{c}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })()}
+
         {/* GRADO · I/O — always shown when there are edges (design package GrDetailRail) */}
         {(salida.length + entrada.length) > 0 && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -393,13 +413,25 @@ function ComponentProfile({ component, onSelectComponent }) {
           </div>
         )}
 
-        {/* Microsoft Learn link */}
-        {component.learnUrl && (
-          <a href={component.learnUrl} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)', padding: '5px 10px', border: '1px solid var(--border)', borderRadius: 6, textDecoration: 'none', marginTop: 4 }}>
-            <BookOpen size={11} /> {t('profile.link.learn')}
-          </a>
-        )}
+        {/* External resource links — Microsoft Learn + License + RBAC */}
+        {(() => {
+          const d = getDetails(component.id)
+          const links = []
+          if (component.learnUrl) links.push({ icon: <BookOpen size={11} />, label: t('profile.link.learn'), url: component.learnUrl })
+          if (d.licenseUrl) links.push({ icon: <FileText size={11} />, label: t('profile.link.license'), url: d.licenseUrl })
+          if (d.rbacUrl) links.push({ icon: <Key size={11} />, label: t('profile.link.rbac'), url: d.rbacUrl })
+          if (!links.length) return null
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+              {links.map((l, i) => (
+                <a key={i} href={l.url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)', padding: '5px 10px', border: '1px solid var(--border)', borderRadius: 6, textDecoration: 'none' }}>
+                  {l.icon} {l.label} <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>↗</span>
+                </a>
+              ))}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )
