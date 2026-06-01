@@ -70,8 +70,11 @@ export default function Toolbar(props) {
           })}
         </div>
 
+        <div style={{ flex: 1 }}></div>
+
+        {/* Action buttons — right edge, matching Azure Security */}
         {showAnalytical && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
               onClick={() => blast.toggle()}
               title={blast.enabled ? t('toolbar.blast.on') : t('toolbar.blast.off')}
@@ -125,8 +128,6 @@ export default function Toolbar(props) {
             )}
           </div>
         )}
-
-        <div style={{ flex: 1 }}></div>
 
         {/* Story controls portal target — StoryView injects ▶/pace/picker here */}
         {isStory && <div id="toolbar-story-slot" style={{ display: 'flex', alignItems: 'center', gap: 8 }} />}
