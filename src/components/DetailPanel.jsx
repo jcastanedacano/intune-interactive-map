@@ -11,54 +11,46 @@ import { useLocale } from '../hooks/useLocale.js'
 
 function MitreSection({ mitre }) {
   const { t } = useLocale()
-  const [open, setOpen] = useState(true)
   if (!mitre || !mitre.length) return null
   const valid = mitre.map(resolveMitre).filter(Boolean)
   if (!valid.length) return null
-  // Group by tactic
-  const byTactic = {}
-  valid.forEach(t => { (byTactic[t.tactic] ||= []).push(t) })
   return (
-    <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
-      <button onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: 0, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left'
-        }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>
-          <Target size={11} color="#DC2626" /> {t('panel.mitre.label')} · {valid.length} TTPs
+    <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+          {t('panel.mitre.label')}
         </span>
-        <span style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{open ? '▾' : '▸'}</span>
-      </button>
-      {open && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
-          {Object.entries(byTactic).map(([tactic, ttps]) => {
-            const color = MITRE_TACTIC_COLORS[tactic] || 'var(--text-secondary)'
-            return (
-              <div key={tactic}>
-                <div style={{ fontSize: 8.5, fontWeight: 700, color, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 4 }}>{tactic}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {ttps.map(t => (
-                    <a key={t.id} href={t.url} target="_blank" rel="noreferrer"
-                      title={`${t.id} · ${t.name} — Open MITRE ATT&CK page`}
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 4,
-                        fontSize: 10, fontWeight: 600,
-                        padding: '2px 7px', borderRadius: 999,
-                        background: `${color}14`, color, border: `1px solid ${color}40`,
-                        textDecoration: 'none', fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-                        cursor: 'pointer'
-                      }}>
-                      {t.id}<span style={{ fontWeight: 500, fontFamily: 'Inter, system-ui, sans-serif', opacity: 0.85 }}>· {t.name}</span>
-                      <ExternalLink size={9} />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+        <span style={{ fontSize: 9.5, color: 'var(--text-tertiary)' }}>{t('panel.mitre.count', { n: valid.length })}</span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+        {valid.map(tech => {
+          const color = MITRE_TACTIC_COLORS[tech.tactic] || 'var(--text-secondary)'
+          return (
+            <a key={tech.id} href={tech.url} target="_blank" rel="noreferrer"
+              title={`${tech.name} · ${tech.tactic}`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontSize: 11, fontWeight: 700, padding: '5px 10px 5px 6px',
+                borderRadius: 999, textDecoration: 'none',
+                background: `${color}26`, color,
+                border: `1.5px solid ${color}66`,
+                transition: 'transform .12s, box-shadow .12s', cursor: 'pointer'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 2px 8px ${color}55` }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
+              <span style={{
+                fontSize: 9.5, fontWeight: 700, fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                background: 'var(--bg-canvas)', color,
+                padding: '2px 6px', borderRadius: 4, border: `1px solid ${color}66`
+              }}>{tech.id}</span>
+              <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tech.name}</span>
+            </a>
+          )
+        })}
+      </div>
+      <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', marginTop: 6, lineHeight: 1.4 }}>
+        {t('panel.mitre.hint')}
+      </div>
     </div>
   )
 }
