@@ -266,8 +266,8 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
           {scene.heading}
         </div>
         <div className="sv-narrative" style={{fontSize:13, color:SV.ink2, lineHeight:1.65}} dangerouslySetInnerHTML={{__html: scene.narrative}}></div>
-        <div style={{padding:14, background:primaryBg, borderRadius:10, fontSize:12, color:primaryRing, lineHeight:1.6}}>
-          <div style={{fontWeight:700, marginBottom:5, display:'flex', alignItems:'center', gap:6}}>
+        <div style={{padding:14, background:primaryBg, borderRadius:10, fontSize:12, color:SV.ink, lineHeight:1.6}}>
+          <div style={{fontWeight:700, marginBottom:5, display:'flex', alignItems:'center', gap:6, color:primaryColor}}>
             <span style={{fontSize:14}}>💡</span> {t('story.insight.header')}
           </div>
           <div className="sv-insight-body" dangerouslySetInnerHTML={{__html: scene.insight}}></div>
