@@ -1117,7 +1117,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                 const label = document.getElementById('edge-label-input')?.value?.trim()
                 confirmEdge(k, label || k)
               }}
-              className="w-full flex items-center gap-2 text-xs px-2 py-1 hover:bg-slate-50 rounded"
+              className="w-full flex items-center gap-2 text-xs px-2 py-1 hover-bg-canvas rounded"
               style={{ color: v.color }}
             >
               <svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke={v.color} strokeWidth="2" strokeDasharray={v.dash || undefined} /></svg>
