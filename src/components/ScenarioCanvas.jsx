@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
 import * as d3 from 'd3'
 import { ICONS as Icons } from '../data/iconMap.js'
-import { Cog } from 'lucide-react'
 import { COMPONENT_MAP, COMPONENTS, CATEGORIES } from '../data/components.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { COMPONENT_META, PHASES, coverageScore, heatColor } from '../data/workloads.js'
@@ -919,10 +918,21 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
       </div>
 
       {scenario.nodes.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none">
-          <Cog size={56} className="mb-3" />
-          <div className="text-sm">{tr('scenario.empty.line1')}</div>
-          <div className="text-sm">{tr('scenario.empty.line2')}</div>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-6">
+          <div style={{ maxWidth: 460, padding: '28px 32px', borderRadius: 16,
+            background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
+            border: '1px solid var(--border)', boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+            fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'left' }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: '#2563EB', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>{tr('scenario.hero.eyebrow')}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2, letterSpacing: '-0.02em', marginBottom: 10 }}>{tr('scenario.hero.title')}</div>
+            <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.55, marginBottom: 16 }}>{tr('scenario.hero.body')}</div>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap', fontSize:10.5, color:'var(--text-tertiary)' }}>
+              <span style={{ padding:'4px 10px', borderRadius:999, background:'var(--bg-canvas)', border:'1px solid var(--border)' }}>{tr('scenario.hero.chip.components')}</span>
+              <span style={{ padding:'4px 10px', borderRadius:999, background:'var(--bg-canvas)', border:'1px solid var(--border)' }}>{tr('scenario.hero.chip.edges')}</span>
+              <span style={{ padding:'4px 10px', borderRadius:999, background:'var(--bg-canvas)', border:'1px solid var(--border)' }}>{tr('scenario.hero.chip.mitre')}</span>
+              <span style={{ padding:'4px 10px', borderRadius:999, background:'var(--bg-canvas)', border:'1px solid var(--border)' }}>{tr('scenario.hero.chip.frameworks')}</span>
+            </div>
+          </div>
         </div>
       )}
 
