@@ -96,6 +96,14 @@ function buildLayoutFromPreset(preset) {
 export default function MindmapView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent }) {
   const { t } = useLocale()
   const [presetId, setPresetId] = useState(MINDMAP_PRESETS[0].id)
+  const [presetOpen, setPresetOpen] = useState(false)
+  const presetRef = useRef(null)
+  useEffect(() => {
+    if (!presetOpen) return
+    const onDown = (e) => { if (presetRef.current && !presetRef.current.contains(e.target)) setPresetOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [presetOpen])
   const preset = useMemo(() => MINDMAP_PRESETS.find(p => p.id === presetId) || MINDMAP_PRESETS[0], [presetId])
 
   // Merge preset-specific categories with the global CATEGORIES for color lookup
@@ -261,33 +269,120 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
   )
   const totalBranches = layout.families.length
 
+  const selectedName = selectedComponent?.name || null
+
   return (
     <div className="relative flex-1 overflow-hidden" style={{ background: 'var(--bg-canvas)' }}>
+      {/* Hero descriptor card — describes the current preset; collapses on narrow */}
+      <div style={{
+        position: 'absolute', top: 64, left: 18, zIndex: 9,
+        width: 260, padding: '12px 14px',
+        background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
+        border: '1px solid var(--border)', borderRadius: 12,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+        fontFamily: 'Inter, system-ui, sans-serif', pointerEvents: 'none'
+      }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>{t('mindmap.eyebrow')}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2, marginBottom: 8 }}>{preset.label}</div>
+        {preset.description && (
+          <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45 }}>{preset.description}</div>
+        )}
+      </div>
+
+      {/* Hierarchy breadcrumb summary — center top */}
+      <div style={{
+        position: 'absolute', top: 64, left: 296, right: 220, zIndex: 9,
+        padding: '10px 14px',
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
+        fontFamily: 'Inter, system-ui, sans-serif',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap'
+      }}>
+        <div>
+          <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>{t('mindmap.hierarchy')}</div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>1</span> {t('mindmap.hierarchy.roots')} ·{' '}
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{totalBranches}</span> {t('mindmap.hierarchy.branches')} ·{' '}
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{totalNodes}</span> {t('mindmap.hierarchy.leaves')}
+            {selectedName && (
+              <>
+                <span style={{ color: 'var(--text-tertiary)', margin: '0 6px' }}>·</span>
+                {t('mindmap.hierarchy.viewing')} <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{selectedName}</span>
+              </>
+            )}
+          </div>
+        </div>
+        {selectedName && (
+          <button onClick={() => onSelectComponent && onSelectComponent(null)}
+            style={{
+              fontSize: 10.5, fontWeight: 600, padding: '5px 12px', borderRadius: 999,
+              background: 'var(--bg-elevated)', color: 'var(--text-secondary)',
+              border: '1px solid var(--border-strong)', cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'background .15s'
+            }}>
+            {t('mindmap.deselect')}
+          </button>
+        )}
+      </div>
+
+      {/* Leaves counter — top right */}
+      <div style={{
+        position: 'absolute', top: 64, right: 18, zIndex: 9,
+        padding: '12px 16px', minWidth: 180,
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
+        fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'right'
+      }}>
+        <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('mindmap.leaves')}</div>
+        <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1, marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{totalNodes}</div>
+        <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', marginTop: 4, letterSpacing: '0.04em' }}>{t('mindmap.components')}</div>
+      </div>
+
       {/* Top strip: preset picker + stats + category filter chips */}
       <div style={{
         position: 'absolute', top: 14, left: 18, right: 18, zIndex: 10,
         display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
         fontFamily: 'Inter, system-ui, sans-serif'
       }}>
-        {/* Preset picker */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
-          background: 'var(--bg-surface)', border: `1px solid ${MP.border}`, borderRadius: 8
-        }}>
-          <span style={{ fontSize: 9.5, fontWeight: 700, color: MP.ink3, letterSpacing: '.08em', textTransform: 'uppercase' }}>Mindmap</span>
-          <select
-            value={presetId}
-            onChange={(e) => setPresetId(e.target.value)}
+        {/* Preset picker — custom dropdown so it respects the theme tokens
+            (native <select> options can't be styled cross-browser). */}
+        <div ref={presetRef} style={{ position: 'relative' }}>
+          <div
+            onClick={() => setPresetOpen(o => !o)}
             style={{
-              border: 'none', outline: 'none', background: 'transparent',
-              fontSize: 12.5, fontWeight: 600, color: MP.ink, cursor: 'pointer',
-              fontFamily: 'inherit', appearance: 'auto', paddingRight: 4
-            }}
-          >
-            {MINDMAP_PRESETS.map(p => (
-              <option key={p.id} value={p.id}>{p.label}</option>
-            ))}
-          </select>
+              display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
+              background: 'var(--bg-surface)', border: `1px solid ${MP.border}`, borderRadius: 8,
+              cursor: 'pointer', userSelect: 'none'
+            }}>
+            <span style={{ fontSize: 9.5, fontWeight: 700, color: MP.ink3, letterSpacing: '.08em', textTransform: 'uppercase' }}>{t('mindmap.label')}</span>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: MP.ink }}>{preset.label}</span>
+            <span style={{ color: MP.ink3, marginLeft: 2 }}>▾</span>
+          </div>
+          {presetOpen && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 6px)', left: 0, minWidth: 280,
+              background: 'var(--bg-elevated)', border: `1px solid ${MP.border}`, borderRadius: 8,
+              boxShadow: '0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04)',
+              padding: 4, zIndex: 50, maxHeight: 360, overflowY: 'auto'
+            }}>
+              {MINDMAP_PRESETS.map(p => {
+                const active = p.id === presetId
+                return (
+                  <div key={p.id}
+                    onClick={() => { setPresetId(p.id); setPresetOpen(false) }}
+                    style={{
+                      padding: '7px 10px', borderRadius: 6, cursor: 'pointer',
+                      fontSize: 12.5, fontWeight: active ? 700 : 500,
+                      color: 'var(--text-primary)',
+                      background: active ? 'var(--bg-canvas)' : 'transparent',
+                      userSelect: 'none', transition: 'background .12s'
+                    }}
+                    onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'var(--bg-muted)' }}
+                    onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent' }}>
+                    {p.label}
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, paddingRight: 14, borderRight: `1px solid ${MP.divider}` }}>
