@@ -7,7 +7,51 @@ import { EDGES } from '../data/edges.js'
 import { SUBTOPICS } from '../data/subtopics.js'
 import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { MITRE_TTPS, MITRE_TACTIC_COLORS, resolveMitre } from '../data/mitre.js'
+import { frameworkCoverage } from '../data/frameworks.js'
 import { useLocale } from '../hooks/useLocale.js'
+
+// Per-framework coverage card — header with score % + tiny progress bar,
+// expandable control list with ✓/○ markers. Click the header to expand.
+function FrameworkBreakdown({ selected, placedIds }) {
+  const [openKey, setOpenKey] = React.useState(null)
+  return (
+    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {selected.map(fw => {
+        const cov = frameworkCoverage(fw, placedIds)
+        const isOpen = openKey === fw
+        const barColor = cov.percent >= 75 ? '#059669' : cov.percent >= 40 ? '#D97706' : '#DC2626'
+        return (
+          <div key={fw} style={{ border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-canvas)', overflow: 'hidden' }}>
+            <div onClick={() => setOpenKey(isOpen ? null : fw)}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', cursor: 'pointer', userSelect: 'none' }}>
+              <span style={{ fontSize: 9, color: 'var(--text-tertiary)' }}>{isOpen ? '▾' : '▸'}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{fw}</div>
+                <div style={{ height: 3, background: 'var(--divider)', borderRadius: 2, marginTop: 4, overflow: 'hidden' }}>
+                  <div style={{ width: `${cov.percent}%`, height: '100%', background: barColor, transition: 'width .25s' }} />
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: barColor, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{cov.percent}%</div>
+                <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 2 }}>{cov.covered}/{cov.total}</div>
+              </div>
+            </div>
+            {isOpen && (
+              <div style={{ borderTop: '1px solid var(--divider)', padding: '6px 10px 10px' }}>
+                {cov.byControl.map(c => (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '3px 0', fontSize: 10.5 }}>
+                    <span style={{ width: 12, color: c.covered ? '#059669' : 'var(--text-tertiary)', fontWeight: 700 }}>{c.covered ? '✓' : '○'}</span>
+                    <span style={{ flex: 1, color: c.covered ? 'var(--text-primary)' : 'var(--text-tertiary)', lineHeight: 1.3 }}>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 function MitreSection({ mitre }) {
   const { t } = useLocale()
@@ -179,6 +223,9 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
                 )
               })}
             </div>
+            {scenario.frameworks?.length > 0 && (
+              <FrameworkBreakdown selected={scenario.frameworks} placedIds={new Set(nodes.map(n => n.id))} />
+            )}
           </div>
         </div>
 
