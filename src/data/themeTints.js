@@ -64,7 +64,15 @@ const EDGE_DARK = {
 
 // Úsalo donde hoy lees cat.color / EDGE_TYPES[t].color
 export function catColor(id, rawColor, isDark) {
-  return isDark ? (CAT_DARK[id] || rawColor) : rawColor
+  if (!isDark) return rawColor
+  if (CAT_DARK[id]) return CAT_DARK[id]
+  // Fallback: lighten colors too dark to read on the dark canvas.
+  if (typeof rawColor !== 'string' || rawColor[0] !== '#' || rawColor.length !== 7) return rawColor
+  const r = parseInt(rawColor.slice(1, 3), 16), g = parseInt(rawColor.slice(3, 5), 16), b = parseInt(rawColor.slice(5, 7), 16)
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+  if (yiq >= 105) return rawColor
+  const mix = (c) => Math.round(c + (255 - c) * 0.42).toString(16).padStart(2, '0')
+  return `#${mix(r)}${mix(g)}${mix(b)}`
 }
 export function edgeColor(type, rawColor, isDark) {
   if (!isDark) return rawColor
