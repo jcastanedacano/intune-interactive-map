@@ -6,6 +6,8 @@ import { MINDMAP_PRESETS, resolveItem } from '../data/mindmaps.js'
 import Tooltip from './Tooltip.jsx'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useLocale } from '../hooks/useLocale.js'
+import { useTheme } from '../hooks/useTheme.js'
+import { catBgActive, surfaceBg, edgeColor, catColor } from '../data/themeTints.js'
 
 // Design package palette
 const MP = {
@@ -95,6 +97,7 @@ function buildLayoutFromPreset(preset) {
 
 export default function MindmapView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent }) {
   const { t } = useLocale()
+  const { isDark } = useTheme()
   const [presetId, setPresetId] = useState(MINDMAP_PRESETS[0].id)
   const [presetOpen, setPresetOpen] = useState(false)
   const presetRef = useRef(null)
@@ -192,6 +195,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
   function Card({ item, x, y, dashed }) {
     if (!item) return null
     const c = CATS[item.cat] || { color: MP.ink3, bg: 'var(--bg-muted)' }
+    const accent = catColor(item.cat, c.color, isDark)
     const isSel = selectedId === item.id
     const isConn = connected.set.has(item.id)
     const dimSel = selectedId && !isSel && !isConn
@@ -223,19 +227,19 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
       >
         <rect
           x={0} y={0} width={CARD_W} height={CARD_H} rx={9}
-          fill={blastReached ? `${blastClr}${blastHop === 0 ? '2A' : '18'}` : (isConn ? `${c.color}22` : 'var(--bg-surface)')}
-          stroke={blastReached ? blastClr : (isSel ? MP.selection : c.color)}
-          strokeOpacity={blastReached ? 1 : (isSel ? 1 : (isConn ? 0.95 : 0.55))}
+          fill={blastReached ? `${blastClr}${blastHop === 0 ? '2A' : '18'}` : (isConn ? catBgActive(accent, isDark) : surfaceBg(isDark))}
+          stroke={blastReached ? blastClr : (isSel ? MP.selection : accent)}
+          strokeOpacity={blastReached ? 1 : (isSel ? 1 : (isConn ? 0.95 : (isDark ? 0.75 : 0.55)))}
           strokeWidth={blastReached ? (blastHop === 0 ? 2.5 : 2) : (isSel ? 2 : (isConn ? 1.8 : 1.2))}
           strokeDasharray={dashed && !isSel && !isConn && !blastReached ? '5 3' : undefined}
           style={{ filter: blastReached
             ? `drop-shadow(0 3px 10px ${blastClr}55)`
             : (isSel
               ? `drop-shadow(0 4px 12px ${MP.selection}33)`
-              : (isConn ? `drop-shadow(0 3px 8px ${c.color}40)` : 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.04))')),
+              : (isConn ? `drop-shadow(0 3px 8px ${accent}40)` : 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.04))')),
             transition: 'fill .35s, stroke .35s, stroke-width .35s' }}
         />
-        <circle cx={CARD_W - 9} cy={9} r={3} fill={blastReached ? blastClr : c.color} />
+        <circle cx={CARD_W - 9} cy={9} r={3} fill={blastReached ? blastClr : accent} />
         <foreignObject x={10} y={6} width={CARD_W - 18} height={CARD_H - 12}>
           <div xmlns="http://www.w3.org/1999/xhtml" style={{
             height: '100%', display: 'flex', alignItems: 'center', gap: 10,
@@ -410,6 +414,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {Object.entries(catCounts).map(([k, ct]) => {
             const c = CATS[k]
             if (!c) return null
+            const accent = catColor(k, c.color, isDark)
             const active = catActive(k)
             return (
               <div key={k}
@@ -417,14 +422,14 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
                 title={active ? `Ocultar ${c.label}` : `Mostrar ${c.label}`}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 999,
-                  background: c.bg, color: c.color,
+                  background: `${accent}26`, color: accent,
                   fontSize: 10.5, fontWeight: 600, cursor: 'pointer', opacity: active ? 1 : 0.35,
-                  border: `1px solid ${c.color}33`, userSelect: 'none',
+                  border: `1px solid ${accent}66`, userSelect: 'none',
                   transition: 'opacity .2s'
                 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.color }}></span>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: accent }}></span>
                 {c.label}
-                <span style={{ color: c.color, opacity: 0.55, fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontWeight: 500 }}>· {ct}</span>
+                <span style={{ color: accent, opacity: 0.55, fontFamily: 'JetBrains Mono, ui-monospace, monospace', fontWeight: 500 }}>· {ct}</span>
               </div>
             )
           })}
@@ -460,11 +465,12 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {/* Eco hub → each eco card */}
           {layout.ecoCards.map(card => {
             const c = CATS[card.item.cat] || { color: MP.ink3 }
+            const accent = catColor(card.item.cat, c.color, isDark)
             return (
               <path key={'eco-line-'+card.item.id}
                 d={smoothPath(ECO_HUB.x - ECO_HUB.w/2, ECO_HUB.y, card.x + CARD_W/2, card.y)}
                 fill="none"
-                stroke={c.color}
+                stroke={accent}
                 strokeOpacity={!catActive(card.item.cat) ? 0.18 : 0.55}
                 strokeWidth={1.5}
                 strokeDasharray="5 3" />
@@ -473,11 +479,12 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {/* Root → each family pill */}
           {layout.families.map(f => {
             const c = CATS[f.cat] || { color: MP.ink3 }
+            const accent = catColor(f.cat, c.color, isDark)
             const active = catActive(f.cat)
             return (
               <path key={'fam-line-'+f.cat+'-'+f.familyCenter.y}
                 d={smoothPath(ROOT.x + ROOT.w/2, ROOT.y, f.familyCenter.x - FAMILY_W/2, f.familyCenter.y)}
-                fill="none" stroke={c.color}
+                fill="none" stroke={accent}
                 strokeOpacity={active ? 0.6 : 0.18}
                 strokeWidth={2} />
             )
@@ -485,10 +492,11 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {/* Family pill → each card */}
           {layout.families.map(f => {
             const c = CATS[f.cat] || { color: MP.ink3 }
+            const accent = catColor(f.cat, c.color, isDark)
             return f.cards.map(card => (
               <path key={'card-line-'+card.item.id}
                 d={smoothPath(f.familyCenter.x + FAMILY_W/2, f.familyCenter.y, card.x - CARD_W/2, card.y)}
-                fill="none" stroke={c.color}
+                fill="none" stroke={accent}
                 strokeOpacity={!catActive(f.cat) ? 0.15 : 0.5}
                 strokeWidth={1.5} />
             ))
@@ -497,6 +505,7 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
           {/* Family pills */}
           {layout.families.map(f => {
             const c = CATS[f.cat] || { color: MP.ink3, bg: 'var(--bg-muted)', label: f.cat }
+            const accent = catColor(f.cat, c.color, isDark)
             const dim = !catActive(f.cat)
             const label = f.label || c.label || f.cat
             return (
@@ -504,10 +513,10 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
                 transform={`translate(${f.familyCenter.x - FAMILY_W/2},${f.familyCenter.y - FAMILY_H/2})`}
                 style={{ opacity: dim ? 0.3 : 1, transition: 'opacity .25s' }}>
                 <rect x={0} y={0} width={FAMILY_W} height={FAMILY_H} rx={FAMILY_H/2}
-                  fill={c.bg} stroke={c.color} strokeWidth={1.5} />
+                  fill={`${accent}26`} stroke={accent} strokeWidth={1.5} />
                 <text x={FAMILY_W/2} y={FAMILY_H/2 + 4}
                   textAnchor="middle" fontSize="10.5" fontWeight="700"
-                  fill={c.color} letterSpacing="0.08em"
+                  fill={accent} letterSpacing="0.08em"
                   style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'uppercase' }}>
                   {label}
                 </text>
@@ -607,29 +616,31 @@ export default function MindmapView({ edgeFilter, categoryFilter, search, setSea
             })
             const lines = visibleEdges.map(({ e, i, ax, bx, ay, by }) => {
               const et = EDGE_TYPES[e.type] || EDGE_TYPES.Data
+              const ec = edgeColor(e.type, et.color, isDark)
               return (
                 <g key={'line-'+i}>
                   <path d={smoothPath(ax, ay, bx, by)}
-                    fill="none" stroke="var(--bg-canvas)" strokeWidth={6} strokeOpacity={0.85} />
+                    fill="none" stroke="var(--bg-surface)" strokeWidth={6} strokeOpacity={0.85} />
                   <path d={smoothPath(ax, ay, bx, by)}
-                    fill="none" stroke={et.color}
+                    fill="none" stroke={ec}
                     strokeOpacity={0.95} strokeWidth={2.6}
                     strokeDasharray={et.dash || undefined}
-                    style={{ filter: `drop-shadow(0 0 6px ${et.color}55)` }} />
-                  <circle cx={bx} cy={by} r={4} fill={et.color} stroke="#fff" strokeWidth={1.5} />
+                    style={{ filter: `drop-shadow(0 0 6px ${ec}55)` }} />
+                  <circle cx={bx} cy={by} r={4} fill={ec} stroke="var(--bg-surface)" strokeWidth={1.5} />
                 </g>
               )
             })
             const labels = visibleEdges.map(({ e, i, labelW }, vi) => {
               if (!e.label) return null
               const et = EDGE_TYPES[e.type] || EDGE_TYPES.Data
+              const ec = edgeColor(e.type, et.color, isDark)
               const lp = labelPos[vi]
               return (
                 <g key={'lbl-'+i} transform={`translate(${lp.x},${lp.y})`} style={{ pointerEvents: 'none' }}>
                   <rect x={-labelW/2 - 2} y={-10} width={labelW + 4} height={20} rx={10} fill="var(--bg-surface)" />
                   <rect x={-labelW/2} y={-9} width={labelW} height={18} rx={9}
-                    fill="var(--bg-surface)" stroke={et.color} strokeOpacity={0.7} strokeWidth={1.2} />
-                  <text x={0} y={4} textAnchor="middle" fontSize={10.5} fontWeight={600} fill={et.color}>
+                    fill="var(--bg-surface)" stroke={ec} strokeOpacity={0.7} strokeWidth={1.2} />
+                  <text x={0} y={4} textAnchor="middle" fontSize={10.5} fontWeight={600} fill={ec}>
                     {e.label}
                   </text>
                 </g>
