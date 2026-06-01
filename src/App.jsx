@@ -40,12 +40,18 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [selectedComponent, setSelectedComponent] = useState(null)
   const [collapsedLeft, setCollapsedLeft] = useState(window.innerWidth < 1024)
+  const [flowing, setFlowing] = useState(false)
   const [flowKey, setFlowKey] = useState(0)
   const { state: scenario, dispatch, activeEdges } = useScenario()
   const { t } = useLocale()
   const scenarioRef = useRef(null)
   const [helpOpen, setHelpOpen] = useState(false)
-  const animateFlow = () => setFlowKey(Date.now())
+  // Toggle: if flow is already running, "Animar flujo" turns into the
+  // stop control and shuts it off; otherwise it (re)starts the loop.
+  const toggleFlow = () => {
+    if (flowing) { setFlowing(false); return }
+    setFlowKey(Date.now()); setFlowing(true)
+  }
 
   // Global keyboard shortcuts. Ignore when the user is typing in an input.
   useEffect(() => {
@@ -158,6 +164,7 @@ export default function App() {
               selectedComponent={selectedComponent}
               onSelectComponent={setSelectedComponent}
               flowKey={flowKey}
+              flowing={flowing}
               toggleEdgeType={toggleEdgeType}
               onOverlay={onOverlay}
             />
@@ -185,7 +192,8 @@ export default function App() {
             selectedComponent={selectedComponent}
             onSelectComponent={setSelectedComponent}
             onReset={onReset}
-            onAnimateFlow={animateFlow}
+            onAnimateFlow={toggleFlow}
+            flowing={flowing}
             onAddNode={(id) => dispatch({ type: 'addNode', id })}
           />
         )}

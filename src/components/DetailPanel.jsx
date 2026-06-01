@@ -86,7 +86,7 @@ function copyToClipboard(text) {
   })
 }
 
-function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, onReset, onAnimateFlow }) {
+function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, onReset, onAnimateFlow, flowing = false }) {
   const { t } = useLocale()
   // Per-category breakdown
   const byCat = {}
@@ -229,14 +229,14 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
         <div style={{ marginTop: 18, display: 'flex', gap: 8 }}>
           <button onClick={() => onAnimateFlow && onAnimateFlow()} disabled={nodes.length === 0 || edges.length === 0} style={{
             flex: 1, padding: '9px 12px',
-            background: (nodes.length === 0 || edges.length === 0) ? '#CBD0DA' : 'var(--text-primary)',
+            background: (nodes.length === 0 || edges.length === 0) ? '#CBD0DA' : (flowing ? '#DC2626' : '#059669'),
             color: '#fff', border: 'none',
             borderRadius: 8, fontSize: 12, fontWeight: 600,
             cursor: (nodes.length === 0 || edges.length === 0) ? 'not-allowed' : 'pointer',
             fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
           }}>
-            {t('panel.animate')}
+            {flowing ? t('panel.stop') : t('panel.animate')}
           </button>
           <button onClick={onReset} disabled={nodes.length === 0} style={{
             padding: '9px 14px', background: 'var(--bg-surface)', color: nodes.length === 0 ? '#CBD0DA' : 'var(--text-secondary)',
@@ -829,7 +829,7 @@ function ComponentProfile_LEGACY({ component, onSelectComponent }) {
 }
 
 export default function DetailPanel(props) {
-  const { mode = 'scenario', scenario, setScenario, nodes = [], edges = [], selectedComponent, onSelectComponent, onReset, onAnimateFlow, onAddNode } = props
+  const { mode = 'scenario', scenario, setScenario, nodes = [], edges = [], selectedComponent, onSelectComponent, onReset, onAnimateFlow, flowing = false, onAddNode } = props
   const [copied, setCopied] = useState(false)
 
   const onShare = async () => {
@@ -885,7 +885,7 @@ export default function DetailPanel(props) {
   }
   return (
     <div className="w-80 shrink-0 border-l flex flex-col overflow-y-auto" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-      <ScenarioFields scenario={scenario} setScenario={setScenario} nodes={nodes} edges={edges} copied={copied} onShare={onShare} onReset={onReset} onAnimateFlow={onAnimateFlow} />
+      <ScenarioFields scenario={scenario} setScenario={setScenario} nodes={nodes} edges={edges} copied={copied} onShare={onShare} onReset={onReset} onAnimateFlow={onAnimateFlow} flowing={flowing} />
     </div>
   )
 }

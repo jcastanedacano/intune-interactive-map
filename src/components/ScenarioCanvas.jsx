@@ -143,7 +143,7 @@ function findSuggestions(nodeId, placedNodeIds) {
   return out
 }
 
-function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, categoryFilter, search, selectedComponent, onSelectComponent, flowKey, toggleEdgeType, onOverlay }, ref) {
+function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, categoryFilter, search, selectedComponent, onSelectComponent, flowKey, flowing = false, toggleEdgeType, onOverlay }, ref) {
   const { t: tr } = useLocale()
   const svgRef = useRef(null)
   const gRef = useRef(null)
@@ -152,7 +152,10 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
   const [tooltip, setTooltip] = useState(null)
   const [addMenu, setAddMenu] = useState(null) // { screenX, screenY, fromId }
   const [zoomState, setZoomState] = useState(d3.zoomIdentity)
-  const [flowing, setFlowing] = useState(false)
+  // `flowing` is now owned by App so the DetailPanel button (Animar/Detener)
+  // and the pace pill stay in sync. `flowKey` bumps remount the SVG animate
+  // elements when the user picks a new pace / restarts the loop.
+  const [recording, setRecording] = useState(false)
   const [flowPace, setFlowPace] = useState(() => {
     try { return localStorage.getItem('sc-flow-pace') || 'normal' } catch { return 'normal' }
   })
@@ -160,14 +163,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
     try { localStorage.setItem('sc-flow-pace', flowPace) } catch {}
   }, [flowPace])
   const FLOW_DURATIONS = { slow: 2.6, normal: 1.6, fast: 0.9 }
-
-  // Trigger flow animation when flowKey changes (from "Animar flujo" button)
-  useEffect(() => {
-    if (!flowKey) return
-    setFlowing(true)
-    const t = setTimeout(() => setFlowing(false), 2400)
-    return () => clearTimeout(t)
-  }, [flowKey])
+  const flowDurSec = FLOW_DURATIONS[flowPace] || FLOW_DURATIONS.normal
 
   const selectedId = selectedComponent?.id || null
   const setSelectedId = (id) => {
@@ -369,6 +365,218 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
     } catch (e) {
       console.error('Export PNG failed:', e)
       alert('Export PNG falló — revisa la consola. Posible causa: imágenes cross-origin.')
+    }
+  }
+
+  // ─── MP4/WebM video export ───────────────────────────────────────────────
+  // Records `EXPORT_DUR_SEC` seconds of the flowing scenario into a video file
+  // via MediaRecorder. Because SVG SMIL animations don't progress inside
+  // detached <img>-rendered snapshots, we strip them and *analytically* inject
+  // a static <circle> per edge at the computed particle position for the
+  // current frame time, sampled on the quadratic Bézier produced by edgePath.
+  const EXPORT_DUR_SEC = 4
+  const EXPORT_FPS = 30
+  // Sample a point on the quadratic Bézier matching edgePath()'s trimmed
+  // endpoints + perpendicular control point.
+  const sampleBezier = (ax, ay, bx, by, prog, curve = 22) => {
+    const dx = bx - ax, dy = by - ay
+    const s = trimToCardBorder(ax, ay, dx, dy)
+    const tt = trimToCardBorder(bx, by, -dx, -dy)
+    const mx = (s.x + tt.x) / 2, my = (s.y + tt.y) / 2
+    const segDx = tt.x - s.x, segDy = tt.y - s.y
+    const len = Math.sqrt(segDx*segDx + segDy*segDy) || 1
+    const cx = mx + (-segDy / len) * curve
+    const cy = my + ( segDx / len) * curve
+    const u = 1 - prog
+    return {
+      x: u*u*s.x + 2*u*prog*cx + prog*prog*tt.x,
+      y: u*u*s.y + 2*u*prog*cy + prog*prog*tt.y
+    }
+  }
+  // Fetch an asset URL and convert it to a data URL so it can be embedded
+  // inline in the exported SVG (data:-URL SVGs can't fetch nested resources).
+  const fetchAsDataUrl = async (url) => {
+    try {
+      const res = await fetch(url, { credentials: 'same-origin' })
+      if (!res.ok) throw new Error('http ' + res.status)
+      const blob = await res.blob()
+      return await new Promise((resolve, reject) => {
+        const r = new FileReader()
+        r.onloadend = () => resolve(r.result)
+        r.onerror = reject
+        r.readAsDataURL(blob)
+      })
+    } catch (e) {
+      console.warn('Failed to inline icon', url, e)
+      return null
+    }
+  }
+  // Walk every <image> in the SVG, fetch its href and replace with the
+  // base64 data URL. Mutates the SVG in place.
+  const inlineSvgIcons = async (svg) => {
+    const urls = new Set()
+    for (const img of svg.querySelectorAll('image')) {
+      const h = img.getAttribute('href') || img.getAttribute('xlink:href')
+      if (h && h.startsWith('http')) urls.add(h)
+    }
+    const map = {}
+    await Promise.all([...urls].map(async u => { map[u] = await fetchAsDataUrl(u) }))
+    for (const img of svg.querySelectorAll('image')) {
+      for (const attr of ['href', 'xlink:href']) {
+        const v = img.getAttribute(attr)
+        if (v && map[v]) img.setAttribute(attr, map[v])
+      }
+    }
+  }
+  // Save a blob to disk — File System Access API when available, else <a download>.
+  const saveBlob = async (blob, fileName, mime) => {
+    if (typeof window.showSaveFilePicker === 'function') {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [{ description: mime, accept: { [mime]: ['.' + fileName.split('.').pop()] } }]
+        })
+        const writable = await handle.createWritable()
+        await writable.write(blob)
+        await writable.close()
+        return
+      } catch (err) {
+        if (err?.name === 'AbortError') return
+      }
+    }
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = fileName
+    a.rel = 'noopener'
+    document.body.appendChild(a); a.click(); document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+  }
+  // Build an export-ready clone of the live SVG: resolve CSS vars, rewrite
+  // icon hrefs to absolute, bake dark-mode icon invert, prepend bg rect.
+  const prepSvgClone = () => {
+    const rootStyle = getComputedStyle(document.documentElement)
+    const varMap = {}
+    const resolveVar = (val) => {
+      if (typeof val !== 'string' || !val.includes('var(')) return val
+      return val.replace(/var\((--[a-z0-9-]+)[^)]*\)/g, (_, name) => {
+        if (!(name in varMap)) varMap[name] = rootStyle.getPropertyValue(name).trim() || '#000'
+        return varMap[name]
+      })
+    }
+    const svg = svgRef.current.cloneNode(true)
+    const rect = svgRef.current.getBoundingClientRect()
+    svg.setAttribute('width', rect.width)
+    svg.setAttribute('height', rect.height)
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    const origin = window.location.origin
+    const isDark = document.documentElement.dataset.theme === 'dark'
+    for (const el of svg.querySelectorAll('*')) {
+      for (const attr of ['fill', 'stroke', 'color', 'stop-color']) {
+        const v = el.getAttribute(attr)
+        if (v && v.includes('var(')) el.setAttribute(attr, resolveVar(v))
+      }
+      const styleAttr = el.getAttribute('style')
+      if (styleAttr && styleAttr.includes('var(')) el.setAttribute('style', resolveVar(styleAttr))
+      if (el.tagName.toLowerCase() === 'image') {
+        for (const a of ['href', 'xlink:href']) {
+          const v = el.getAttribute(a)
+          if (v && v.startsWith('/')) el.setAttribute(a, origin + v)
+        }
+      }
+      if (el.classList?.contains('azure-icon') && isDark && el.getAttribute('href')?.endsWith('.svg')) {
+        el.style.filter = 'invert(1) hue-rotate(180deg)'
+      }
+    }
+    const bg = getComputedStyle(containerRef.current).backgroundColor
+    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    bgRect.setAttribute('width', '100%')
+    bgRect.setAttribute('height', '100%')
+    bgRect.setAttribute('fill', bg)
+    svg.insertBefore(bgRect, svg.firstChild)
+    return { svg, rect, bg }
+  }
+  const exportCanvasVideo = async () => {
+    if (!svgRef.current || scenario.nodes.length === 0) return
+    if (typeof MediaRecorder === 'undefined') {
+      alert('Tu navegador no soporta MediaRecorder. Usa Chrome/Edge/Firefox actual.')
+      return
+    }
+    setRecording(true)
+    try {
+      const { svg: baseSvg, rect } = prepSvgClone()
+      // Strip every SMIL animate element from the base — we'll inject static
+      // <circle> particles per frame instead.
+      for (const el of baseSvg.querySelectorAll('animate, animateMotion, animateTransform')) el.remove()
+      for (const el of baseSvg.querySelectorAll('circle')) {
+        if (!el.hasAttribute('fill') && !el.hasAttribute('stroke')) el.remove()
+      }
+      await inlineSvgIcons(baseSvg)
+      const SCALE = 1
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(rect.width  * SCALE)
+      canvas.height = Math.round(rect.height * SCALE)
+      const ctx = canvas.getContext('2d')
+      const stream = canvas.captureStream(0)
+      const track = stream.getVideoTracks()[0]
+      const mimes = ['video/mp4;codecs=avc1.42E01F', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+      const mime = mimes.find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm'
+      const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 })
+      const chunks = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+      const stopped = new Promise(res => { recorder.onstop = res })
+      recorder.start()
+      const totalFrames = EXPORT_DUR_SEC * EXPORT_FPS
+      const stagger = (i) => (i % 6) * 0.12
+      for (let f = 0; f < totalFrames; f++) {
+        const tSec = f / EXPORT_FPS
+        const frameSvg = baseSvg.cloneNode(true)
+        const frameZoom = frameSvg.querySelector(':scope > g') || frameSvg
+        for (let i = 0; i < edges.length; i++) {
+          const e = edges[i]
+          if (!edgeFilter[e.type]) continue
+          const s = scenario.nodes.find(n => n.id === e.source)
+          const tg = scenario.nodes.find(n => n.id === e.target)
+          if (!s || !tg) continue
+          const elapsed = tSec - stagger(i)
+          if (elapsed < 0) continue
+          const phase = (elapsed % flowDurSec) / flowDurSec
+          let op
+          if      (phase < 0.08) op = (phase / 0.08) * 0.95
+          else if (phase > 0.92) op = ((1 - phase) / 0.08) * 0.95
+          else                   op = 0.95
+          if (op <= 0.02) continue
+          const pos = sampleBezier(s.x, s.y, tg.x, tg.y, phase)
+          const flow = e.flow || e.type?.toLowerCase()
+          const color = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || '#06B6D4'
+          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+          c.setAttribute('cx', String(pos.x))
+          c.setAttribute('cy', String(pos.y))
+          c.setAttribute('r', '4')
+          c.setAttribute('fill', color)
+          c.setAttribute('opacity', op.toFixed(3))
+          c.setAttribute('style', `filter: drop-shadow(0 0 6px ${color})`)
+          frameZoom.appendChild(c)
+        }
+        const data = new XMLSerializer().serializeToString(frameSvg)
+        const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data)
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = dataUrl })
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        track.requestFrame()
+      }
+      recorder.stop()
+      await stopped
+      const blob = new Blob(chunks, { type: mime })
+      const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm'
+      const slug = (scenario.title || 'scenario').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scenario'
+      await saveBlob(blob, `${slug}.${ext}`, mime.split(';')[0])
+    } catch (e) {
+      console.error('Export video failed:', e)
+      alert('Export video falló — revisa la consola.')
+    } finally {
+      setRecording(false)
     }
   }
 
@@ -632,7 +840,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
               border: '1px solid var(--border)',
               cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
             }}>{tr('scenario.action.arrange')}</button>
-          <button onClick={() => exportCanvasPng()} disabled={scenario.nodes.length === 0}
+          <button onClick={() => exportCanvasPng()} disabled={scenario.nodes.length === 0 || recording}
             title={tr('scenario.action.export.title')}
             style={{
               fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8,
@@ -640,6 +848,15 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
               border: '1px solid var(--border)',
               cursor: scenario.nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
             }}>{tr('scenario.action.export')}</button>
+          <button onClick={() => exportCanvasVideo()} disabled={scenario.nodes.length === 0 || recording}
+            title={tr('scenario.action.exportVideo.title')}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '6px 10px', borderRadius: 8,
+              background: recording ? '#DC2626' : 'var(--bg-elevated)',
+              color: recording ? '#fff' : (scenario.nodes.length === 0 ? 'var(--text-tertiary)' : 'var(--text-primary)'),
+              border: '1px solid ' + (recording ? '#DC2626' : 'var(--border)'),
+              cursor: (scenario.nodes.length === 0 || recording) ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
+            }}>{recording ? tr('scenario.action.exportVideo.recording') : tr('scenario.action.exportVideo')}</button>
           <button onClick={() => { if (scenario.nodes.length > 0) dispatch({ type: 'reset' }) }} disabled={scenario.nodes.length === 0}
             title={scenario.nodes.length === 0 ? tr('scenario.action.clear.title.empty') : tr('scenario.action.clear.title')}
             style={{
@@ -754,13 +971,16 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                   markerEnd={marker || undefined}
                 />
                 {flowing && !sDim && !tDim && (
-                  <circle r={4} fill={color} opacity={0} style={{ filter: `drop-shadow(0 0 6px ${color})` }}>
-                    {/* Hide particle before motion starts + after it ends so it doesn't sit at SVG origin (0,0) */}
+                  <circle key={`flow-${flowKey}-${i}`} r={4} fill={color} opacity={0} style={{ filter: `drop-shadow(0 0 6px ${color})` }}>
+                    {/* Perpetual loop — particle fades in, glides along the
+                        edge path, fades out, restarts. Stagger by edge index
+                        so the whole graph feels like a wave rather than a
+                        synchronized pulse. */}
                     <animate attributeName="opacity" values="0;0.95;0.95;0"
-                      keyTimes="0;0.08;0.92;1" dur={`${FLOW_DURATIONS[flowPace]}s`}
-                      begin={`${(i % 6) * 0.12}s`} fill="freeze" />
-                    <animateMotion dur={`${FLOW_DURATIONS[flowPace]}s`} repeatCount="1" begin={`${(i % 6) * 0.12}s`}
-                      keyPoints="0;1" keyTimes="0;1" calcMode="linear" fill="freeze">
+                      keyTimes="0;0.08;0.92;1" dur={`${flowDurSec}s`}
+                      begin={`${(i % 6) * 0.12}s`} repeatCount="indefinite" />
+                    <animateMotion dur={`${flowDurSec}s`} repeatCount="indefinite" begin={`${(i % 6) * 0.12}s`}
+                      keyPoints="0;1" keyTimes="0;1" calcMode="linear">
                       <mpath href={`#${pathId}`} />
                     </animateMotion>
                   </circle>
