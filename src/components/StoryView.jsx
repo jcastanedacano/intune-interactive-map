@@ -26,7 +26,7 @@ const pickTextOn = (hex) => {
   const g = parseInt(norm.slice(2, 4), 16)
   const b = parseInt(norm.slice(4, 6), 16)
   const yiq = (r * 299 + g * 587 + b * 114) / 1000
-  return yiq >= 150 ? '#0B0F1A' : '#fff'
+  return yiq >= 140 ? '#0B0F1A' : '#fff'
 }
 
 function getReveals(story, sceneIdx) {
@@ -753,13 +753,6 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
         })}
       </svg>
       <style>{`@keyframes sv-flash { 0%{opacity:0;transform:scale(0.85)} 60%{opacity:1;transform:scale(1.08)} 100%{transform:scale(1)} }`}</style>
-      <div style={{position:'absolute', bottom:14, right:18, background:'var(--bg-surface)', border:`1px solid ${SV.border}`, borderRadius:8, padding:'6px 10px', display:'flex', gap:10, fontSize:10.5, alignItems:'center'}}>
-        <span key={reveal.activeNodes.size + reveal.activeEdges.length} style={{color:SV.cats[story.primaryCat].ring, fontWeight:700, animation:'sv-flash 0.35s ease'}}>{t('story.canvas.new', { n: reveal.activeNodes.size + reveal.activeEdges.length })}</span>
-        <span style={{color:SV.ink3}}>·</span>
-        <span style={{color:SV.ink2}}>{t('story.canvas.prev', { n: reveal.allNodes.size - reveal.activeNodes.size })}</span>
-        <span style={{color:SV.ink3}}>·</span>
-        <span style={{color:SV.ink3}}>{t('story.canvas.hidden', { n: totalNodes - reveal.allNodes.size })}</span>
-      </div>
     </div>
   )
 }
