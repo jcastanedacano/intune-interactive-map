@@ -1062,10 +1062,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.name}</div>
                       <div style={{ fontSize: 8.5, fontWeight: 700, color: catColor(cat.id, cat.color, isDark), letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.2, marginTop: 1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{cat.label}</div>
-                      {c.sublabel && (
-                        <div style={{ fontSize: 8.5, color: SC_INK3, lineHeight: 1.3, marginTop: 2,
-                          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.sublabel}</div>
-                      )}
+                      {/* Sub-services list omitted for a cleaner card — available on hover via Tooltip */}
                     </div>
                   </div>
                 </foreignObject>
