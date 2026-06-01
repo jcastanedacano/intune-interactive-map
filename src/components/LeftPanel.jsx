@@ -107,7 +107,7 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
                 title={g.label}
               >
                 <Icon size={16} />
-                <span className="absolute -top-1 -right-1 text-[9px] font-bold rounded-full bg-white border border-slate-200 px-1 leading-none py-[1px]">
+                <span className="absolute -top-1 -right-1 text-[9px] font-bold rounded-full px-1 leading-none py-[1px]" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                   {grp?.availableCount ?? 0}
                 </span>
               </button>
@@ -129,7 +129,7 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
             <div className="max-h-96 overflow-y-auto scrollbar-thin">
               {flyoutGroup.items.map(c => <Item key={c.id} c={c} cat={flyoutCat} onAdd={onAdd} />)}
               {flyoutGroup.items.length === 0 && (
-                <div className="text-[10px] text-slate-400 px-3 py-2 italic">all placed on canvas</div>
+                <div className="text-[10px] px-3 py-2 italic" style={{ color: 'var(--text-tertiary)' }}>all placed on canvas</div>
               )}
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
                 <div className="py-1">
                   {g.items.map(c => <Item key={c.id} c={c} cat={cat} onAdd={onAdd} isPlaced={placedIds.has(c.id)} />)}
                   {g.items.length === 0 && (
-                    <div className="text-[10px] text-slate-400 px-3 py-1.5 italic">sin coincidencias</div>
+                    <div className="text-[10px] px-3 py-1.5 italic" style={{ color: 'var(--text-tertiary)' }}>sin coincidencias</div>
                   )}
                 </div>
               )}
