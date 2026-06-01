@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { ICONS as Icons } from '../data/iconMap.js'
 import { ChevronDown, ChevronRight, Layers } from 'lucide-react'
 import { COMPONENTS, GROUPS_LEFT_PANEL, CATEGORIES } from '../data/components.js'
+import { isMonoIcon, MonoIcon } from '../data/monoIcon.jsx'
+import { catColor } from '../data/themeTints.js'
 import { useLocale } from '../hooks/useLocale.js'
 
 const GROUP_ICONS = {
@@ -16,6 +18,9 @@ const GROUP_ICONS = {
 
 function Item({ c, cat, onAdd, isPlaced }) {
   const Icon = Icons[c.icon] || Icons.Box
+  const isDark = typeof document !== 'undefined' && document.documentElement.dataset.theme === 'dark'
+  const mono = c.iconSvg && isMonoIcon(c.iconSvg)
+  const tint = catColor(cat?.id || c.category, cat?.color || CATEGORIES[c.category]?.color, isDark)
   return (
     <div
       draggable
@@ -34,8 +39,12 @@ function Item({ c, cat, onAdd, isPlaced }) {
       onMouseLeave={(e) => { if (!isPlaced) e.currentTarget.style.background = 'transparent' }}
     >
       {c.iconSvg ? (
-        <img src={c.iconSvg} alt="" style={{ width: 36, height: 36, flexShrink: 0, objectFit: 'contain' }}
-          onError={(e) => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'inline-block' }} />
+        mono ? (
+          <MonoIcon src={c.iconSvg} color={tint} size={36} />
+        ) : (
+          <img src={c.iconSvg} alt="" style={{ width: 36, height: 36, flexShrink: 0, objectFit: 'contain' }}
+            onError={(e) => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'inline-block' }} />
+        )
       ) : null}
       <Icon size={26} style={{ color: cat.color, display: c.iconSvg ? 'none' : 'inline-block', flexShrink: 0 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
