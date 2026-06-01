@@ -6,7 +6,7 @@ import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
 import { useLocale } from '../hooks/useLocale.js'
-import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice } from '../data/pricing.js'
+import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice, costFreq, costPillTier, formatPricePill } from '../data/pricing.js'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -110,10 +110,6 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
     const s = score
     bg = s >= 80 ? '#DCFAE6' : s >= 60 ? '#FEF0C7' : '#FEE4E2'
     borderColor = s >= 80 ? '#079455' : s >= 60 ? '#B54708' : '#B42318'; borderW = 2
-  } else if (overlay === 'cost') {
-    const tier = getCostTier(item.id)
-    const tc = tier !== null ? COST_TIER_COLOR[tier] : 'var(--text-tertiary)'
-    bg = `${tc}18`; borderColor = tc; borderW = 2
   } else if (isSelected) {
     bg = `${T.selection}12`; borderColor = T.selection; borderW = 2.5
   } else if (isConnected) {
@@ -170,25 +166,11 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
             {sym}
           </span>
         </div>
-        {overlay === 'cost' ? (() => {
-          const cp = PRICING[item.id]; const tier = getCostTier(item.id)
-          const tc = tier !== null ? COST_TIER_COLOR[tier] : 'var(--text-tertiary)'
-          return (
-            <span title={cp?.note || ''} style={{
-              fontSize: 9.5, fontWeight: 700, color: tc,
-              background: `${tc}1A`, border: `1px solid ${tc}45`,
-              padding: '2px 7px', borderRadius: 999,
-              fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-              whiteSpace: 'nowrap', maxWidth: 124, overflow: 'hidden', textOverflow: 'ellipsis'
-            }}>
-              {formatPrice(cp)}
-            </span>
-          )
-        })() : (phase && (
+        {phase && (
           <span style={{ fontSize: 8, fontWeight: 700, color: phaseTone ? phaseTone.color : cat.color, background: phaseTone ? `${phaseTone.color}18` : `${cat.color}14`, padding: '2px 6px', borderRadius: 4, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
             P{phase}
           </span>
-        ))}
+        )}
       </div>
 
       {/* Middle: icon + name */}
@@ -201,8 +183,27 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
         </div>
       </div>
 
-      {/* Bottom: coverage bar */}
-      {overlay === 'none' && (
+      {/* Bottom: pricing pill (when cost overlay is on) OR coverage bar */}
+      {overlay === 'cost' ? (() => {
+        const cp = PRICING[item.id]
+        const tier = costPillTier(item.id)
+        const priceLabel = formatPricePill(cp)
+        const freq = costFreq(cp)
+        return (
+          <div title={cp?.note || ''} style={{
+            marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+            background: tier.bg, color: tier.color,
+            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+            flexShrink: 0
+          }}>
+            <span>{priceLabel}</span>
+            {freq !== '-' && freq !== 'month' && (
+              <span style={{ opacity: 0.7, fontSize: 8 }}>{freq}</span>
+            )}
+          </div>
+        )
+      })() : overlay === 'none' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
           <div style={{ flex: 1, height: 3, background: `${borderColor}25`, borderRadius: 2, overflow: 'hidden' }}>
             <div style={{ width: `${score}%`, height: '100%', background: borderColor }} />

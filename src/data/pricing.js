@@ -97,3 +97,45 @@ export function formatPrice(p) {
             : '/mes'
   return `$${p.price.toFixed(2)} ${per}`
 }
+
+// ── Azure-style pill helpers ──────────────────────────────────────────────────
+// Compact tier→{bg,color} palette + freq string, mirroring the Azure Security map
+// so the Grid cost pill matches that app's design exactly. Reuses this app's
+// existing PRICING data (price/per) — does not change any prices.
+
+// Billing frequency string for the pill suffix.
+// Monthly prices show no suffix (the formatPrice label already says "/mes");
+// SCU/hr is hourly/PAYG-style usage and is surfaced as the suffix.
+export function costFreq(p) {
+  if (!p) return '-'
+  if (p.price === 0) return '-'
+  if (p.per === 'SCU/hr') return 'SCU/hr'
+  return 'month'
+}
+
+// Compact tier palette (bg + text color), keyed by the existing getCostTier band.
+// 0 free · 1 low (<$3) · 2 mid ($3-$5) · 3 high (>$5)
+export const TIER_PALETTE = {
+  0: { color: '#64748B', bg: '#F1F5F9' },  // free / included — slate
+  1: { color: '#059669', bg: '#D1FAE5' },  // low   — emerald
+  2: { color: '#CA8A04', bg: '#FEF9C3' },  // mid   — amber
+  3: { color: '#DC2626', bg: '#FEE2E2' }   // high  — red
+}
+
+// Resolve the pill tier palette for a component id.
+export function costPillTier(componentId) {
+  const tier = getCostTier(componentId)
+  return TIER_PALETTE[tier ?? 0]
+}
+
+// Compact pill label: "Incluido" for $0, else "$X.XX/usuario" (no /mes — freq is separate).
+export function formatPricePill(p) {
+  if (!p) return '—'
+  if (p.price === 0) return 'Incluido'
+  const unit = p.per === 'user' ? 'usuario'
+             : p.per === 'device' ? 'disp.'
+             : p.per === 'gateway' ? 'gateway'
+             : p.per === 'SCU/hr' ? 'SCU'
+             : 'mes'
+  return `$${p.price.toFixed(2)}/${unit}`
+}
