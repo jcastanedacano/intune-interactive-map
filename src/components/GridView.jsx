@@ -6,6 +6,8 @@ import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
 import { useLocale } from '../hooks/useLocale.js'
+import { useTheme } from '../hooks/useTheme.js'
+import { catBg, catBgActive, catBorder, catColor } from '../data/themeTints.js'
 import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice, costFreq, costPillTier, formatPricePill } from '../data/pricing.js'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -91,7 +93,9 @@ function buildLayout(grouped) {
 
 // ── Card component ────────────────────────────────────────────────────────────
 function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimmed, onSelect, blastHop, compareIdx, onCompare }) {
+  const { isDark } = useTheme()
   const cat = CATEGORIES[item.category]
+  const accent = catColor(item.category, cat.color, isDark)   // dark-aware (lightened) category color
   const rawPhase = COMPONENT_META[item.id]?.phase
   const phase = rawPhase ? Math.min(3, rawPhase) : null
   const phaseTone = phase ? PHASES[phase] : null
@@ -113,9 +117,9 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
   } else if (isSelected) {
     bg = `${T.selection}12`; borderColor = T.selection; borderW = 2.5
   } else if (isConnected) {
-    bg = `${cat.color}14`; borderColor = cat.color; borderW = 2
+    bg = catBgActive(accent, isDark); borderColor = accent; borderW = 2
   } else {
-    bg = `${cat.color}08`; borderColor = `${cat.color}55`; borderW = 1
+    bg = catBg(accent, isDark); borderColor = catBorder(accent, isDark); borderW = 1
   }
 
   return (
@@ -159,7 +163,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
       {/* Top row: atomic num + symbol + phase */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 8.5, fontWeight: 700, color: isSelected ? T.selection : cat.color, fontFamily: 'JetBrains Mono, ui-monospace, monospace', letterSpacing: '.05em' }}>
+          <span style={{ fontSize: 8.5, fontWeight: 700, color: isSelected ? T.selection : accent, fontFamily: 'JetBrains Mono, ui-monospace, monospace', letterSpacing: '.05em' }}>
             {String(atomicNum).padStart(2, '0')}
           </span>
           <span style={{ fontSize: 15, fontWeight: 800, color: isSelected ? T.selection : T.ink, letterSpacing: '-0.02em', fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -167,7 +171,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
           </span>
         </div>
         {phase && (
-          <span style={{ fontSize: 8, fontWeight: 700, color: phaseTone ? phaseTone.color : cat.color, background: phaseTone ? `${phaseTone.color}18` : `${cat.color}14`, padding: '2px 6px', borderRadius: 4, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
+          <span style={{ fontSize: 8, fontWeight: 700, color: phaseTone ? phaseTone.color : accent, background: phaseTone ? `${phaseTone.color}18` : `${accent}14`, padding: '2px 6px', borderRadius: 4, fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>
             P{phase}
           </span>
         )}
@@ -177,7 +181,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, flex: 1 }}>
         {item.iconSvg
           ? <img src={item.iconSvg} alt="" style={{ width: 34, height: 34, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />
-          : (() => { const I = Icons[item.icon] || Icons.Box; return <I size={28} color={CATEGORIES[item.category]?.color} style={{ flexShrink: 0 }} /> })()}
+          : (() => { const I = Icons[item.icon] || Icons.Box; return <I size={28} color={accent} style={{ flexShrink: 0 }} /> })()}
         <div style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? T.selection : T.ink2, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {item.name}
         </div>
