@@ -9,6 +9,8 @@ import { useBlastRadius, bfsBlast, hopColor } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
 import { getCostTier, COST_TIER_COLOR } from '../data/pricing.js'
 import { useLocale } from '../hooks/useLocale.js'
+import { useTheme } from '../hooks/useTheme.js'
+import { surfaceBg, catColor, edgeColor } from '../data/themeTints.js'
 
 const CARD_W = 130
 const CARD_H = 48
@@ -56,6 +58,7 @@ function rectHullPath(pts, padding) {
 
 export default function GraphView({ edgeFilter, categoryFilter, search, setSearch, overlay, selectedComponent, onSelectComponent, toggleEdgeType }) {
   const { t: tr } = useLocale()
+  const { isDark } = useTheme()
   const selectedId = selectedComponent?.id || null
   const blast = useBlastRadius()
   const compare = useCompare()
@@ -329,7 +332,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                 <path key={h.cat}
                   data-hull-cat={h.cat}
                   d={h.path}
-                  fill={c.bg}
+                  fill={isDark ? c.color : c.bg}
                   fillOpacity={active ? 0.35 : 0.05}
                   stroke={c.color}
                   strokeOpacity={active ? 0.25 : 0.04}
@@ -415,16 +418,18 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
               const pathD = `M ${sx} ${sy} Q ${mx} ${my} ${tx} ${ty}`
               return (
                 <g key={i} opacity={opacity} style={{ transition: dragPos ? 'none' : 'opacity .25s' }}>
-                  <path d={pathD} fill="none" stroke={et.color} strokeWidth={strokeW} strokeDasharray={et.dash || undefined} markerEnd={`url(#grmarker-${e.type})`} />
+                  {(() => { const ec = edgeColor(e.type, et.color, isDark); return (<>
+                  <path d={pathD} fill="none" stroke={ec} strokeWidth={strokeW} strokeDasharray={et.dash || undefined} markerEnd={`url(#grmarker-${e.type})`} />
                   {isSelectionEdge && e.label && (
                     <g transform={`translate(${lmx},${lmy})`}>
                       <rect x={-(e.label.length * 3.2 + 10)} y={-9} width={e.label.length * 6.4 + 20} height={18} rx={9}
-                        fill="var(--bg-surface)" stroke={et.color} strokeOpacity={0.55} strokeWidth={1.2}
+                        fill="var(--bg-surface)" stroke={ec} strokeOpacity={0.55} strokeWidth={1.2}
                         style={{ filter: 'drop-shadow(0 1px 3px rgba(var(--shadow-rgb),0.10))' }} />
-                      <text x="0" y="5" fontSize="10" fontWeight="600" fill={et.color} textAnchor="middle"
+                      <text x="0" y="5" fontSize="10" fontWeight="600" fill={ec} textAnchor="middle"
                         style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{e.label}</text>
                     </g>
                   )}
+                  </>) })()}
                 </g>
               )
             })}
@@ -434,6 +439,7 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
           <g className="nodes">
             {data?.nodes.map(n => {
               const cat = CATEGORIES[n.category]
+              const accent = catColor(n.category, cat.color, isDark)
               const phaseColor = overlay === 'deployment' && COMPONENT_META[n.id] ? PHASES[COMPONENT_META[n.id].phase].color : null
               const isSelected = selectedId === n.id
               const isConnected = connectedIds && connectedIds.has(n.id)
@@ -489,13 +495,13 @@ export default function GraphView({ edgeFilter, categoryFilter, search, setSearc
                     </circle>
                   )}
                   {/* Outer ring (white, or hop-colored under Blast Radius) */}
-                  <circle r={r} fill="var(--bg-surface)"
-                    stroke={blastReached ? blastColor : (isSelected ? '#2563EB' : (costStroke || phaseColor || cat.color))}
+                  <circle r={r} fill={surfaceBg(isDark)}
+                    stroke={blastReached ? blastColor : (isSelected ? '#2563EB' : (costStroke || phaseColor || accent))}
                     strokeWidth={blastReached ? (blastHop === 0 ? 3.5 : 2.8) : (costStroke ? 2.2 : (isSelected ? 2.5 : 1.5))}
                     style={{ filter: 'drop-shadow(0 2px 6px rgba(var(--shadow-rgb),0.10))', transition: 'stroke .35s, stroke-width .35s' }} />
                   {/* Inner tinted disc */}
-                  <circle r={r - 4} fill={blastReached ? blastColor : (costFill || heat || cat.bg)}
-                    fillOpacity={blastReached ? (blastHop === 0 ? 0.28 : 0.18) : 0.55}
+                  <circle r={r - 4} fill={blastReached ? blastColor : (costFill || heat || (isDark ? accent : cat.bg))}
+                    fillOpacity={blastReached ? (blastHop === 0 ? 0.28 : 0.18) : (isDark ? 0.30 : 0.55)}
                     style={{ transition: 'fill .35s, fill-opacity .35s' }} />
                   {/* Pin indicator (drag or shift+click pins node) */}
                   {n.fx != null && (
