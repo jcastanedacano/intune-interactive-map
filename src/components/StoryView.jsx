@@ -990,8 +990,9 @@ export default function StoryView({ view, setView } = {}) {
             <button key={pid} onClick={() => { setPace(pid); setAutoPlay(true) }} style={{
               padding:'3px 9px', borderRadius:5, border:'none', cursor:'pointer', fontSize:11,
               fontWeight: active ? 700 : 500,
-              background: active ? SV.ink : 'transparent',
-              color: active ? '#fff' : SV.ink2
+              background: active ? 'var(--bg-surface)' : 'transparent',
+              color: active ? SV.ink : SV.ink2,
+              boxShadow: active ? '0 1px 2px rgba(var(--shadow-rgb),0.08)' : 'none'
             }}>{t('story.pace.' + pid)}</button>
           )
         })}
