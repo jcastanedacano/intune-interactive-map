@@ -252,7 +252,7 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
   return (
     <div style={{width:380, background:'var(--bg-surface)', borderRight:`1px solid ${SV.divider}`, display:'flex', flexDirection:'column', overflow:'hidden'}}>
       <div style={{padding:'22px 24px 14px', flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:14}}>
-        <div style={{fontSize:10, fontWeight:700, color:primaryRing, letterSpacing:'.08em', textTransform:'uppercase'}}>
+        <div style={{fontSize:10, fontWeight:700, color:primaryColor, letterSpacing:'.08em', textTransform:'uppercase'}}>
           {scene.chip}
         </div>
         {scene.character && (
@@ -265,12 +265,12 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
         <div style={{fontSize:21, fontWeight:700, letterSpacing:'-0.02em', lineHeight:1.2, color:SV.ink}}>
           {scene.heading}
         </div>
-        <div style={{fontSize:13, color:SV.ink2, lineHeight:1.65}} dangerouslySetInnerHTML={{__html: scene.narrative}}></div>
+        <div className="sv-narrative" style={{fontSize:13, color:SV.ink2, lineHeight:1.65}} dangerouslySetInnerHTML={{__html: scene.narrative}}></div>
         <div style={{padding:14, background:primaryBg, borderRadius:10, fontSize:12, color:primaryRing, lineHeight:1.6}}>
           <div style={{fontWeight:700, marginBottom:5, display:'flex', alignItems:'center', gap:6}}>
             <span style={{fontSize:14}}>💡</span> {t('story.insight.header')}
           </div>
-          <div dangerouslySetInnerHTML={{__html: scene.insight}}></div>
+          <div className="sv-insight-body" dangerouslySetInnerHTML={{__html: scene.insight}}></div>
         </div>
         <div style={{marginTop:4}}>
           <div style={{fontSize:9, fontWeight:700, color:SV.ink2, letterSpacing:'.08em', textTransform:'uppercase', marginBottom:8}}>{t('story.newInScene')}</div>
@@ -312,9 +312,9 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
           style={{padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:500, border:`1px solid ${SV.border}`, background:'var(--bg-surface)', opacity: idx === 0 ? 0.4 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer', color: SV.ink, userSelect:'none'}}
         >{t('story.prev')}</div>
         {idx === total - 1 ? (
-          <div onClick={onRestart} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.restart')}</div>
+          <div onClick={onRestart} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:pickTextOn(primaryColor), cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.restart')}</div>
         ) : (
-          <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:SV.ink, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.next')}</div>
+          <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:pickTextOn(primaryColor), cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.next')}</div>
         )}
       </div>
       <div style={{padding:'8px 24px 14px', background:'var(--bg-surface)', display:'flex', justifyContent:'space-between', fontSize:10, color:SV.ink3}}>
