@@ -118,9 +118,76 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
       </div>
 
       <div style={{ padding: '14px 18px 18px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em', lineHeight: 1.15 }}>{t('panel.composition')}</div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>
-          {t('panel.composition.intro')}
+        {/* ─── DETALLES DEL ESCENARIO ─── grouped card with section header */}
+        <div style={{
+          padding: '14px 14px 16px', borderRadius: 12,
+          background: 'var(--bg-canvas)', border: '1px solid var(--border)',
+          display: 'flex', flexDirection: 'column', gap: 12
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+              {t('panel.scenario.details')}
+            </div>
+            <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)' }}>
+              {t('panel.scenario.fields', { filled: [scenario.title, scenario.problem, scenario.outcome].filter(Boolean).length })}
+              {(scenario.frameworks?.length > 0) ? ` · ${t('panel.scenario.frameworksShort', { n: scenario.frameworks.length })}` : ''}
+            </div>
+          </div>
+
+          {/* TÍTULO */}
+          <div>
+            <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.1em', textTransform: 'uppercase' }}>{t('panel.scenario.title.label')}</label>
+            <input value={scenario.title} onChange={(e) => setScenario({ ...scenario, title: e.target.value })}
+              placeholder={t('panel.scenario.title.placeholder')}
+              style={{ display: 'block', width: '100%', boxSizing: 'border-box', fontSize: 14, fontWeight: 600, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', marginTop: 4, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', background: 'var(--bg-surface)' }} />
+          </div>
+
+          {/* PROBLEMA */}
+          <div>
+            <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.1em', textTransform: 'uppercase' }}>{t('panel.scenario.problem.label')}</label>
+            <textarea value={scenario.problem} onChange={(e) => setScenario({ ...scenario, problem: e.target.value })}
+              placeholder={t('panel.scenario.problem.placeholder')} rows={3}
+              style={{ display: 'block', width: '100%', boxSizing: 'border-box', fontSize: 11.5, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', marginTop: 4, color: 'var(--text-primary)', outline: 'none', resize: 'vertical', fontFamily: 'inherit', background: 'var(--bg-surface)', lineHeight: 1.5, minHeight: 60 }} />
+          </div>
+
+          {/* RESULTADO */}
+          <div>
+            <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.1em', textTransform: 'uppercase' }}>{t('panel.scenario.outcome.label')}</label>
+            <textarea value={scenario.outcome} onChange={(e) => setScenario({ ...scenario, outcome: e.target.value })}
+              placeholder={t('panel.scenario.outcome.placeholder')} rows={3}
+              style={{ display: 'block', width: '100%', boxSizing: 'border-box', fontSize: 11.5, border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', marginTop: 4, color: 'var(--text-primary)', outline: 'none', resize: 'vertical', fontFamily: 'inherit', background: 'var(--bg-surface)', lineHeight: 1.5, minHeight: 60 }} />
+          </div>
+
+          {/* FRAMEWORKS COVERAGE */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <label style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.1em', textTransform: 'uppercase' }}>{t('panel.frameworks.label')}</label>
+              {scenario.frameworks?.length > 0 && (
+                <span style={{ fontSize: 9.5, color: 'var(--text-tertiary)' }}>{t('panel.frameworks.selected', { n: scenario.frameworks.length })}</span>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {['NIST CSF 2.0','PCI DSS v4','ISO 27001:2022','GDPR','HIPAA','SOC 2 Type II','NIS2','CIS Benchmarks','DORA'].map(fw => {
+                const selected = (scenario.frameworks || []).includes(fw)
+                return (
+                  <span key={fw}
+                    onClick={() => {
+                      const cur = scenario.frameworks || []
+                      const next = selected ? cur.filter(f => f !== fw) : [...cur, fw]
+                      setScenario({ ...scenario, frameworks: next })
+                    }}
+                    style={{
+                      fontSize: 10, fontWeight: 600, padding: '4px 9px', borderRadius: 999,
+                      cursor: 'pointer', userSelect: 'none',
+                      background: selected ? '#2563EB' : 'var(--bg-surface)',
+                      color: selected ? '#fff' : 'var(--text-secondary)',
+                      border: `1px solid ${selected ? '#2563EB' : 'var(--border)'}`,
+                      transition: 'all .12s'
+                    }}>{fw}</span>
+                )
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Composition header + counts */}
@@ -180,32 +247,7 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
           </button>
         </div>
 
-        {/* Scenario metadata (collapsible-feel) */}
-        <details style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
-          <summary style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', marginBottom: 10 }}>
-            {t('panel.scenario.details')}
-          </summary>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-            <div>
-              <label style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.06em' }}>{t('panel.scenario.title.label')}</label>
-              <input value={scenario.title} onChange={(e) => setScenario({ ...scenario, title: e.target.value })}
-                placeholder={t('panel.scenario.title.placeholder')}
-                style={{ width: '100%', fontSize: 12, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.06em' }}>{t('panel.scenario.problem.label')}</label>
-              <textarea value={scenario.problem} onChange={(e) => setScenario({ ...scenario, problem: e.target.value })}
-                placeholder={t('panel.scenario.problem.placeholder')} rows={3}
-                style={{ width: '100%', fontSize: 12, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: 'var(--text-primary)', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.06em' }}>{t('panel.scenario.outcome.label')}</label>
-              <textarea value={scenario.outcome} onChange={(e) => setScenario({ ...scenario, outcome: e.target.value })}
-                placeholder={t('panel.scenario.outcome.placeholder')} rows={3}
-                style={{ width: '100%', fontSize: 12, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', marginTop: 3, color: 'var(--text-primary)', outline: 'none', resize: 'none', fontFamily: 'inherit' }} />
-            </div>
-          </div>
-        </details>
+        {/* MITRE ATT&CK section */}
         <MitreSection mitre={scenario.mitre} />
       </div>
     </>
