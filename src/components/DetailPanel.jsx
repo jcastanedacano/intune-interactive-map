@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Share2, Check, BookOpen, FileText, Key, Target, ExternalLink } from 'lucide-react'
-import * as Icons from 'lucide-react'
+import { ICONS as Icons } from '../data/iconMap.js'
 import { CATEGORIES, COMPONENT_MAP } from '../data/components.js'
 import { getDetails } from '../data/componentDetails.js'
 import { EDGES } from '../data/edges.js'

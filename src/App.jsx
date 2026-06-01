@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import Toolbar from './components/Toolbar.jsx'
 import LeftPanel from './components/LeftPanel.jsx'
-import ScenarioCanvas from './components/ScenarioCanvas.jsx'
+const ScenarioCanvas = lazy(() => import('./components/ScenarioCanvas.jsx'))
 import GridView from './components/GridView.jsx'
 import GraphView from './components/GraphView.jsx'
-import MindmapView from './components/MindmapView.jsx'
+const MindmapView = lazy(() => import('./components/MindmapView.jsx'))
 import StoryView from './components/StoryView.jsx'
 import DetailPanel from './components/DetailPanel.jsx'
 import EdgeLegend from './components/EdgeLegend.jsx'
@@ -148,22 +148,28 @@ export default function App() {
           />
         )}
         {view === 'scenario' && (
-          <ScenarioCanvas
-            ref={scenarioRef}
-            scenario={scenario}
-            dispatch={dispatch}
-            edges={activeEdges}
-            {...viewProps}
-            selectedComponent={selectedComponent}
-            onSelectComponent={setSelectedComponent}
-            flowKey={flowKey}
-            toggleEdgeType={toggleEdgeType}
-            onOverlay={onOverlay}
-          />
+          <Suspense fallback={<div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-tertiary)',fontSize:12}}>Cargando…</div>}>
+            <ScenarioCanvas
+              ref={scenarioRef}
+              scenario={scenario}
+              dispatch={dispatch}
+              edges={activeEdges}
+              {...viewProps}
+              selectedComponent={selectedComponent}
+              onSelectComponent={setSelectedComponent}
+              flowKey={flowKey}
+              toggleEdgeType={toggleEdgeType}
+              onOverlay={onOverlay}
+            />
+          </Suspense>
         )}
         {view === 'grid' && <GridView {...viewProps} setSearch={setSearch} setOverlay={setOverlay} selectedComponent={selectedComponent} onSelectComponent={setSelectedComponent} />}
         {view === 'graph' && <GraphView {...viewProps} setSearch={setSearch} selectedComponent={selectedComponent} onSelectComponent={setSelectedComponent} toggleEdgeType={toggleEdgeType} />}
-        {view === 'mindmap' && <MindmapView {...viewProps} setSearch={setSearch} selectedComponent={selectedComponent} onSelectComponent={setSelectedComponent} />}
+        {view === 'mindmap' && (
+          <Suspense fallback={<div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-tertiary)',fontSize:12}}>Cargando…</div>}>
+            <MindmapView {...viewProps} setSearch={setSearch} selectedComponent={selectedComponent} onSelectComponent={setSelectedComponent} />
+          </Suspense>
+        )}
         {view === 'story' && <StoryView view={view} setView={setView} />}
         {/* Inspector panel:
             - Scenario: always visible (shows Workspace)

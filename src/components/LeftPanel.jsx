@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import * as Icons from 'lucide-react'
+import { ICONS as Icons } from '../data/iconMap.js'
 import { ChevronDown, ChevronRight, Layers } from 'lucide-react'
 import { COMPONENTS, GROUPS_LEFT_PANEL, CATEGORIES } from '../data/components.js'
 import { useLocale } from '../hooks/useLocale.js'

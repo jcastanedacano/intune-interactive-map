@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
 import * as d3 from 'd3'
-import * as Icons from 'lucide-react'
+import { ICONS as Icons } from '../data/iconMap.js'
 import { Cog } from 'lucide-react'
 import { COMPONENT_MAP, COMPONENTS, CATEGORIES } from '../data/components.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'

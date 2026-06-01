@@ -1,5 +1,5 @@
 import React from 'react'
-import * as Icons from 'lucide-react'
+import { ICONS as Icons } from '../data/iconMap.js'
 import { CATEGORIES } from '../data/components.js'
 
 export default function NodeCard({ component, small = false, selected = false, onClick, onPlus, onDelete, draggable = false, onDragStart }) {
