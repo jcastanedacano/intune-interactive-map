@@ -181,7 +181,7 @@ export default function LeftPanel({ search, setSearch, collapsed, placedIds = ne
           const cat = CATEGORIES[g.key]
           const Chev = open[g.key] ? ChevronDown : ChevronRight
           return (
-            <div key={g.key} style={{ borderBottom: '1px solid var(--bg-muted)' }}>
+            <div key={g.key}>
               <button
                 onClick={() => setOpen({ ...open, [g.key]: !open[g.key] })}
                 className="w-full flex items-center justify-between"
