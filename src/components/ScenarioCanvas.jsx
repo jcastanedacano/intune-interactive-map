@@ -1074,8 +1074,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                   onClick={(e) => openAddMenu(n, e)}
                   onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <circle r={11} fill="var(--bg-surface)" stroke={SC_BORDER_STRONG} strokeWidth={1} style={{ filter: 'drop-shadow(0 1px 2px rgba(var(--shadow-rgb),0.08))' }} />
-                  <text x={0} y={4} textAnchor="middle" fill={SC_INK2} fontSize={14} fontWeight={600} style={{ pointerEvents: 'none', userSelect: 'none' }}>+</text>
+                  <circle r={13} fill={catColor(c.category, cat.color, isDark)} stroke="var(--bg-surface)" strokeWidth={2.5} style={{ filter: `drop-shadow(0 2px 6px ${catColor(c.category, cat.color, isDark)}66)` }} />
+                  <text x={0} y={5} textAnchor="middle" fill="#fff" fontSize={16} fontWeight={700} style={{ pointerEvents: 'none', userSelect: 'none' }}>+</text>
                 </g>
                 {/* Delete via right-click (per design package — no red X overlay) */}
                 {/* Output port handle (drag-wire) */}
