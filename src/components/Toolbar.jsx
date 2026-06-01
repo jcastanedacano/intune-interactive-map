@@ -150,15 +150,7 @@ export default function Toolbar(props) {
             </button>
           </>
         )}
-        {view === 'scenario' && onExport && (
-          <button onClick={onExport} title="Exportar composición como JSON" style={{
-            padding: '5px 10px', border: `1px solid ${SV_BORDER}`, borderRadius: 8,
-            background: 'var(--bg-surface)', color: SV_INK2, fontSize: 11, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 5
-          }}>
-            <span style={{ fontSize: 12, lineHeight: 1 }}>↓</span> Exportar
-          </button>
-        )}
+        {/* Scenario JSON export button removed — export available from the workspace panel */}
 
         {/* Locale + Theme toggles, grouped for the onboarding tour */}
         <div data-tour="pref" style={{ display: 'flex', alignItems: 'center' }}>
