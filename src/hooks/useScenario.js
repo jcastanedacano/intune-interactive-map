@@ -1,7 +1,8 @@
 import { useReducer } from 'react'
 import { COMPONENT_MAP, resolveId } from '../data/components.js'
 import { EDGES, edgesBetween } from '../data/edges.js'
-import { SCENARIO_MAP } from '../data/scenarios.js'
+import { SCENARIO_MAP, pick } from '../data/scenarios.js'
+import { getLocale } from './useLocale.js'
 
 const CANVAS_CENTER = { x: 420, y: 320 }
 
@@ -96,7 +97,10 @@ function reducer(state, action) {
         const angle = (i / s.nodes.length) * Math.PI * 2
         nodes.push({ id, x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius })
       })
-      return { title: s.title, problem: s.problem || '', outcome: s.outcome || '', mitre: s.mitre || [], nodes, customEdges: [] }
+      // Resolve localized { es, en } fields to plain strings for the editable
+      // scenario state (DetailPanel <input>/<textarea> bind to these directly).
+      const loc = getLocale()
+      return { title: pick(s.title, loc), problem: pick(s.problem, loc), outcome: pick(s.outcome, loc), mitre: s.mitre || [], nodes, customEdges: [] }
     }
     case 'reset': return init()
     default: return state

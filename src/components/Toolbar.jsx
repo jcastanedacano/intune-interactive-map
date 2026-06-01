@@ -1,7 +1,7 @@
 import React from 'react'
 import { RotateCcw, Search, Layers, Flame, BookOpen, Radio, DollarSign, GitCompareArrows } from 'lucide-react'
 import { CATEGORIES } from '../data/components.js'
-import { SCENARIO_GROUPS } from '../data/scenarios.js'
+import { SCENARIO_GROUPS, pick } from '../data/scenarios.js'
 import { EDGE_TYPES } from '../data/edges.js'
 import { useBlastRadius } from '../hooks/useBlastRadius.js'
 import { useCompare } from '../hooks/useCompare.js'
@@ -212,8 +212,8 @@ export default function Toolbar(props) {
           >
             <option value="" disabled>Select overlay…</option>
             {SCENARIO_GROUPS.map(group => (
-              <optgroup key={group.label} label={group.label}>
-                {group.scenarios.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+              <optgroup key={pick(group.label, locale)} label={pick(group.label, locale)}>
+                {group.scenarios.map(s => <option key={s.id} value={s.id}>{pick(s.title, locale)}</option>)}
               </optgroup>
             ))}
           </select>

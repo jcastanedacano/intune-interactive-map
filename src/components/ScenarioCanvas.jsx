@@ -4,7 +4,7 @@ import { ICONS as Icons } from '../data/iconMap.js'
 import { COMPONENT_MAP, COMPONENTS, CATEGORIES } from '../data/components.js'
 import { EDGES, EDGE_TYPES } from '../data/edges.js'
 import { COMPONENT_META, PHASES, coverageScore, heatColor } from '../data/workloads.js'
-import { SCENARIO_GROUPS } from '../data/scenarios.js'
+import { SCENARIO_GROUPS, pick } from '../data/scenarios.js'
 import WorkloadChips from './WorkloadChips.jsx'
 import Tooltip from './Tooltip.jsx'
 import { useLocale } from '../hooks/useLocale.js'
@@ -145,7 +145,7 @@ function findSuggestions(nodeId, placedNodeIds) {
 
 function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, categoryFilter, search, selectedComponent, onSelectComponent, flowKey, flowing = false, toggleEdgeType, onOverlay }, ref) {
   const isDark = document.documentElement.dataset.theme === 'dark'
-  const { t: tr } = useLocale()
+  const { t: tr, locale } = useLocale()
   const svgRef = useRef(null)
   const gRef = useRef(null)
   const containerRef = useRef(null)
@@ -799,8 +799,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             }}>
             <option value="" disabled>{tr('scenario.load.placeholder')}</option>
             {SCENARIO_GROUPS.map(group => (
-              <optgroup key={group.label} label={group.label}>
-                {group.scenarios.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+              <optgroup key={pick(group.label, locale)} label={pick(group.label, locale)}>
+                {group.scenarios.map(s => <option key={s.id} value={s.id}>{pick(s.title, locale)}</option>)}
               </optgroup>
             ))}
           </select>
