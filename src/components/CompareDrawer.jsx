@@ -6,6 +6,13 @@ import { COMPONENT_META, WORKLOAD_ORDER, WORKLOADS } from '../data/workloads.js'
 import { useCompare } from '../hooks/useCompare.js'
 import { useLocale } from '../hooks/useLocale.js'
 
+function edgesFor(id) {
+  const out = EDGES.filter(e => e.source === id)
+  const ins = EDGES.filter(e => e.target === id)
+  const neighbors = new Set([...out.map(e => e.target), ...ins.map(e => e.source)])
+  return { out, ins, neighbors }
+}
+
 function ColCard({ comp }) {
   if (!comp) return null
   const cat = CATEGORIES[comp.category]
@@ -126,6 +133,15 @@ export default function CompareDrawer() {
   if (compare.ids.length === 0) return null
   const a = COMPONENT_MAP[compare.ids[0]]
   const b = COMPONENT_MAP[compare.ids[1]] || null
+
+  // Shared neighbors: components both a & b connect to (computed only when both present)
+  let shared = []
+  if (a && b) {
+    const aN = edgesFor(a.id).neighbors
+    const bN = edgesFor(b.id).neighbors
+    shared = [...aN].filter(n => bN.has(n) && n !== a.id && n !== b.id)
+  }
+
   return (
     <div style={{
       position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 30,
@@ -157,6 +173,41 @@ export default function CompareDrawer() {
               {tr('compare.placeholder')}
             </div>}
       </div>
+
+      {/* Shared neighbors row — shown only when both slots are filled */}
+      {a && b && (
+        <div style={{
+          padding: '8px 18px', borderTop: '1px solid var(--divider)',
+          background: 'var(--bg-base)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap'
+        }}>
+          <span style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+            {tr('compare.sharedNeighbors')}
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: shared.length > 0 ? '#2563EB' : 'var(--text-tertiary)' }}>
+            {shared.length}
+          </span>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {shared.length === 0 ? (
+              <span style={{ fontSize: 10.5, color: 'var(--text-tertiary)' }}>
+                {tr('compare.noShared')}
+              </span>
+            ) : shared.map(nid => {
+              const n = COMPONENT_MAP[nid]
+              if (!n) return null
+              const cat = CATEGORIES[n.category] || { color: 'var(--text-secondary)', bg: 'var(--bg-muted)' }
+              return (
+                <span key={nid}
+                  style={{
+                    fontSize: 10.5, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+                    background: cat.bg, color: cat.color, border: `1px solid ${cat.color}33`
+                  }}>
+                  {n.name}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
