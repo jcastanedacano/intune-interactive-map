@@ -661,7 +661,7 @@ function StoryCanvas({ story, idx, overrides = {}, annOverrides = {}, onMoveNode
   }, [allEdges, idx, overrides])
 
   return (
-    <div style={{flex:1, position:'relative', background:'var(--bg-surface)', overflow:'hidden'}}>
+    <div style={{flex:1, position:'relative', background:'var(--bg-canvas)', overflow:'hidden'}}>
       {/* Reset chrome: Reiniciar historia + Restaurar layout */}
       <div style={{position:'absolute', top:14, left:18, zIndex:10, display:'flex', gap:6, fontFamily:'Inter, system-ui, sans-serif'}}>
         <div onClick={() => canRestart && onRestart && onRestart()}
