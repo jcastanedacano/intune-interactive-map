@@ -280,10 +280,10 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
               if (!n) return null
               const c = SV.cats[n.cat]
               return (
-                <div key={nid} style={{display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:svBg(c, isDark), borderRadius:7, fontSize:11.5}}>
+                <div key={nid} style={{display:'flex', alignItems:'center', gap:10, padding:'7px 10px', background:'var(--bg-elevated)', borderRadius:7, fontSize:11.5}}>
                   <span style={{width:7, height:7, borderRadius:'50%', background:svColor(c, isDark), flexShrink:0}}></span>
                   <span style={{fontWeight:600, color:SV.ink}}>{n.name}</span>
-                  <span style={{marginLeft:'auto', fontSize:9, color:c.ring, fontWeight:600}}>{c.label.toUpperCase()}</span>
+                  <span style={{marginLeft:'auto', fontSize:9, color:svColor(c, isDark), fontWeight:600}}>{c.label.toUpperCase()}</span>
                 </div>
               )
             })}
@@ -292,7 +292,7 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
               const na = story.nodes[e.a], nb = story.nodes[e.b]
               if (!na || !nb) return null
               return (
-                <div key={i} style={{display:'flex', alignItems:'center', gap:8, padding:'5px 10px', background:SV.appBg, borderRadius:7, fontSize:11}}>
+                <div key={i} style={{display:'flex', alignItems:'center', gap:8, padding:'5px 10px', background:'transparent', border:'1px dashed var(--border)', borderRadius:7, fontSize:11}}>
                   <span style={{color:SV.ink2, flexShrink:0, fontWeight:500}}>{na.name}</span>
                   <svg width="22" height="3" style={{flexShrink:0}}><line x1="0" y1="1.5" x2="22" y2="1.5" stroke={svEdgeColor(et, isDark)} strokeWidth="2" strokeDasharray={et.dash||undefined}/></svg>
                   <span style={{color:SV.ink2, fontWeight:500}}>{nb.name}</span>
