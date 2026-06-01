@@ -229,8 +229,8 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
         <div style={{ marginTop: 18, display: 'flex', gap: 8 }}>
           <button onClick={() => onAnimateFlow && onAnimateFlow()} disabled={nodes.length === 0 || edges.length === 0} style={{
             flex: 1, padding: '9px 12px',
-            background: (nodes.length === 0 || edges.length === 0) ? '#CBD0DA' : (flowing ? '#DC2626' : '#059669'),
-            color: '#fff', border: 'none',
+            background: (nodes.length === 0 || edges.length === 0) ? 'var(--bg-elevated)' : (flowing ? '#DC2626' : '#059669'),
+            color: (nodes.length === 0 || edges.length === 0) ? 'var(--text-tertiary)' : '#fff', border: 'none',
             borderRadius: 8, fontSize: 12, fontWeight: 600,
             cursor: (nodes.length === 0 || edges.length === 0) ? 'not-allowed' : 'pointer',
             fontFamily: 'inherit',
@@ -239,7 +239,7 @@ function ScenarioFields({ scenario, setScenario, nodes, edges, copied, onShare, 
             {flowing ? t('panel.stop') : t('panel.animate')}
           </button>
           <button onClick={onReset} disabled={nodes.length === 0} style={{
-            padding: '9px 14px', background: 'var(--bg-surface)', color: nodes.length === 0 ? '#CBD0DA' : 'var(--text-secondary)',
+            padding: '9px 14px', background: 'var(--bg-surface)', color: nodes.length === 0 ? 'var(--text-tertiary)' : 'var(--text-secondary)',
             border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, fontWeight: 500,
             cursor: nodes.length === 0 ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
           }}>
@@ -403,7 +403,7 @@ function ComponentProfile({ component, onSelectComponent }) {
               <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--text-tertiary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t('profile.connections.io')}</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginTop: 3 }}>
                 <span style={{ color: '#059669' }}>↑{salida.length}</span>
-                <span style={{ color: '#CBD0DA', margin: '0 5px' }}>·</span>
+                <span style={{ color: 'var(--text-tertiary)', margin: '0 5px' }}>·</span>
                 <span style={{ color: '#3B5DD9' }}>↓{entrada.length}</span>
               </div>
               <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 3 }}>{t('profile.connections.outIn')}</div>
