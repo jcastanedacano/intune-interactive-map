@@ -1,7 +1,7 @@
 // Story View · AI / Copilot in the Intune ecosystem.
 import { pickNodes as pick } from "../storyData.js"
 
-export const STORY_ORDER = ['copilot-intune-admin','copilot-ca-agent','copilot-phish-agent','copilot-vuln-agent','copilot-ti-agent','copilot-incident-agent']
+export const STORY_ORDER = ['copilot-intune-admin','copilot-ca-agent','copilot-phish-agent','copilot-vuln-agent','copilot-ti-agent','copilot-incident-agent','uc-byod-copilot']
 
 export const STORIES = {
   'copilot-intune-admin': {
@@ -116,6 +116,46 @@ export const STORIES = {
           {a:'security-copilot', b:'defender-xdr', t:'signal', label:'incident context'}
         ],
         annotations:[]
+      }
+    ]
+  },
+
+  'uc-byod-copilot': {
+    id:'uc-byod-copilot', title:'BYOD → Copilot Agent: cortar el vector de exfiltration', tag:'Use case',
+    blurb:'En BYOD el agente Copilot hereda la postura del endpoint del usuario. Sin Intune + CA gating, un dispositivo personal no-managed se convierte en vector de data exfiltration via agentes.',
+    duration:'3 escenas · ~3 min', primaryCat:'defender',
+    nodes: pick(['app-protection','compliance-policies','entra-ca','defender-endpoint','copilot-intune','security-copilot']),
+    scenes:[
+      { id:1, chip:'Escena 1 · El vector',
+        heading:'El agente hereda el contexto del endpoint que lo invoca.',
+        narrative:'Un usuario abre <i>M365 Copilot</i> desde su laptop personal. El agente ejecuta queries sobre SharePoint, Outlook, Teams. Pero el <b>contexto de ejecución del agente</b> no es solo la identidad del usuario — es <b>identidad + postura del dispositivo</b>. Sin Intune, ese dispositivo es una caja negra: ¿tiene AV?, ¿está parchado?, ¿hay malware que ya esté drenando lo que el agente devuelve?',
+        insight:'El usuario es legítimo. La identidad es válida. Pero el endpoint puede estar comprometido — y el agente actúa como un <b>multiplicador de exfiltration</b>: en lugar de un email a la vez, el atacante lee TODO via prompts naturales.',
+        introNodes:['copilot-intune'],
+        introEdges:[],
+        annotations:[{x:770, y:50, arrow:'down', tone:'default', body:'<b>Vector BYOD→Agent</b><br/><span class="muted">Identidad ≠ Postura del device.</span>'}]
+      },
+      { id:2, chip:'Escena 2 · La defensa real',
+        heading:'Compliance + CA condicionan al agente al estado del endpoint.',
+        narrative:'<i>Compliance Policies</i> exigen mínimos del dispositivo (encryption, AV, OS version, MDE risk &lt; High). <i>Conditional Access</i> requiere <b>"compliant device"</b> como condición para emitir tokens hacia M365 Copilot. <i>Defender for Endpoint</i> aporta el risk score en tiempo real: un compromise detectado → device non-compliant → CA niega el siguiente token → el agente se corta.',
+        insight:'No estás bloqueando al usuario — estás bloqueando al <b>device-as-vector</b>. Cuando la postura cambia, el acceso cambia. CAE (Continuous Access Evaluation) baja el lag de detección→corte de horas a segundos.',
+        introNodes:['compliance-policies','defender-endpoint','entra-ca'],
+        introEdges:[
+          {a:'defender-endpoint', b:'compliance-policies', t:'signal', label:'risk score'},
+          {a:'compliance-policies', b:'entra-ca', t:'signal', label:'compliant claim'},
+          {a:'entra-ca', b:'copilot-intune', t:'policy', label:'token gating'}
+        ],
+        annotations:[{x:600, y:200, arrow:'down', tone:'edge-policy', body:'<b>Gating en cascada</b><br/><span class="muted">Risk → Compliance → CA → Token.</span>'}]
+      },
+      { id:3, chip:'Escena 3 · El path MAM-only',
+        heading:'Sin enrollment, el container es la línea de defensa.',
+        narrative:'Para casos donde NO se puede enrollar el dispositivo (contractors, gig workers, partners): <i>App Protection (MAM)</i> entrega un container per-app sobre M365 Apps + agentes Copilot mobile. CA exige el claim "App Protection activa" antes del token. El agente ejecuta dentro del container — el output no puede salir a apps personales (no save-as, no copy/paste, no screenshots). <i>Security Copilot</i> + el CA Optimization Agent revisan gaps de cobertura de forma autónoma.',
+        insight:'El container no es perfecto — pero <b>convierte el problema</b>: de "controlar TODO el dispositivo" a "controlar SOLO los datos corporativos en él". Es el patrón realista para BYOD masivo sin fricción de enrollment.',
+        introNodes:['app-protection','security-copilot'],
+        introEdges:[
+          {a:'app-protection', b:'entra-ca', t:'signal', label:'APP claim'},
+          {a:'security-copilot', b:'entra-ca', t:'policy', label:'gap analysis (CA Optimizer)'}
+        ],
+        annotations:[{x:260, y:200, arrow:'right', tone:'edge-signal', body:'<b>Container = defense</b><br/><span class="muted">Datos corporativos sandboxeados.</span>'}]
       }
     ]
   },
