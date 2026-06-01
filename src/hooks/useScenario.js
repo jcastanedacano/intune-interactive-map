@@ -89,12 +89,25 @@ function reducer(state, action) {
       // Resolve legacy IDs to canonical so EDGES lookup matches (e.g. sensitivity-labels → labels)
       // Dedupe in case the alias map collapses multiple legacy IDs to the same canonical one.
       const seen = new Set()
-      const nodes = []
-      s.nodes.forEach((rawId, i) => {
+      const candidates = []
+      s.nodes.forEach((rawId) => {
         const id = resolveId(rawId) || rawId
         if (!id || seen.has(id) || !COMPONENT_MAP[id]) return
         seen.add(id)
-        const angle = (i / s.nodes.length) * Math.PI * 2
+        candidates.push(id)
+      })
+      // Drop orphan nodes: keep only ids that are an endpoint of at least one
+      // catalog edge whose OTHER endpoint is also in the candidate set. This
+      // prevents isolated cards from floating disconnected on the canvas.
+      const candidateSet = new Set(candidates)
+      const connected = new Set()
+      edgesBetween(candidateSet).forEach(e => { connected.add(e.source); connected.add(e.target) })
+      let keptIds = candidates.filter(id => connected.has(id))
+      // Safeguard: never blank the canvas — if no node has an edge, keep all.
+      if (keptIds.length === 0) keptIds = candidates
+      const nodes = []
+      keptIds.forEach((id, i) => {
+        const angle = (i / keptIds.length) * Math.PI * 2
         nodes.push({ id, x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius })
       })
       // Resolve localized { es, en } fields to plain strings for the editable

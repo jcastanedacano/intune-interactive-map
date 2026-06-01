@@ -56,10 +56,10 @@ const CAT_DARK = {
   defender:  '#6D9224'
 }
 const EDGE_DARK = {
-  data:       '#06B6D4',
-  signal:     '#8B5CF6',
-  policy:     '#F97316',
-  escalation: '#374151'
+  data:       '#2DD4E8',
+  signal:     '#A78BFA',
+  policy:     '#FB923C',
+  escalation: '#94A3B8'
 }
 
 // Úsalo donde hoy lees cat.color / EDGE_TYPES[t].color

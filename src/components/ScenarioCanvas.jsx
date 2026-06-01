@@ -8,7 +8,7 @@ import { SCENARIO_GROUPS, pick } from '../data/scenarios.js'
 import WorkloadChips from './WorkloadChips.jsx'
 import Tooltip from './Tooltip.jsx'
 import { useLocale } from '../hooks/useLocale.js'
-import { catColor } from '../data/themeTints.js'
+import { catColor, edgeColor } from '../data/themeTints.js'
 
 // Layout constants for auto-arrange — 2-row horizontal flow inspired by
 // the Purview Builder reference. Sources (in-degree 0) at left,
@@ -548,7 +548,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
           if (op <= 0.02) continue
           const pos = sampleBezier(s.x, s.y, tg.x, tg.y, phase)
           const flow = e.flow || e.type?.toLowerCase()
-          const color = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || '#06B6D4'
+          const rawColor = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || '#94A3B8'
+          const color = edgeColor(e.type, rawColor, isDark)
           const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
           c.setAttribute('cx', String(pos.x))
           c.setAttribute('cy', String(pos.y))
@@ -876,7 +877,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
           <button key={p} onClick={() => setFlowPace(p)} style={{
             padding:'2px 8px', borderRadius:999, border:'none', cursor:'pointer', fontSize:10.5,
             fontWeight: flowPace === p ? 700 : 500,
-            background: flowPace === p ? 'var(--text-primary)' : 'transparent',
+            background: flowPace === p ? '#2563EB' : 'transparent',
             color: flowPace === p ? '#fff' : '#64748B'
           }}>{tr('scenario.flow.' + p)}</button>
         ))}
@@ -961,7 +962,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             const t = scenario.nodes.find(n => n.id === e.target)
             if (!s || !t) return null
             const flow = e.flow || e.type?.toLowerCase()
-            const color = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || 'var(--text-tertiary)'
+            const rawColor = FLOW_COLOR[flow] || EDGE_TYPES[e.type]?.color || '#94A3B8'
+            const color = edgeColor(e.type, rawColor, isDark)
             const marker = FLOW_MARKER[flow] || null
             const op = edgeOpacity(e)
             const showLabel = op >= 0.3 && e.label
