@@ -380,9 +380,9 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
           style={{padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:500, border:`1px solid ${SV.border}`, background:'var(--bg-surface)', opacity: idx === 0 ? 0.4 : 1, cursor: idx === 0 ? 'not-allowed' : 'pointer', color: SV.ink, userSelect:'none'}}
         >{t('story.prev')}</div>
         {idx === total - 1 ? (
-          <div onClick={onRestart} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:pickTextOn(primaryColor), cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.restart')}</div>
+          <div onClick={onRestart} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.restart')}</div>
         ) : (
-          <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:pickTextOn(primaryColor), cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.next')}</div>
+          <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.next')}</div>
         )}
       </div>
       <div style={{padding:'8px 24px 14px', background:'var(--bg-surface)', display:'flex', justifyContent:'space-between', fontSize:10, color:SV.ink3}}>

@@ -1136,7 +1136,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                         : (() => { const I = Icons[c.icon] || Icons.Box; return <I size={22} color={cat.color} /> })()}
                     </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.name}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: SC_INK, lineHeight: 1.15, whiteSpace:'normal', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical', overflow:'hidden', wordBreak:'break-word' }}>{c.name}</div>
                       <div style={{ fontSize: 8.5, fontWeight: 700, color: catColor(cat.id, cat.color, isDark), letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1.2, marginTop: 1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{cat.label}</div>
                       {/* Sub-services list omitted for a cleaner card — available on hover via Tooltip */}
                     </div>
