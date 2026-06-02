@@ -1,0 +1,116 @@
+# Public search engines welcome — this is a security-architecture map meant
+# to be discoverable. AI training crawlers are blocked because the curated
+# content (component descriptions, scenarios, mapping to compliance
+# frameworks) is the author's research output, not training data.
+
+User-agent: *
+Allow: /
+
+# ── AI training crawlers · explicit disallow ──────────────────────────────
+# Honored by the well-behaved bots from OpenAI, Anthropic, Google, Meta,
+# Perplexity, Apple, ByteDance, You.com, Common Crawl, Diffbot and others.
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Perplexity-User
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: Meta-ExternalFetcher
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: ByteDance
+Disallow: /
+
+User-agent: TikTokSpider
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: cohere-training-data-crawler
+Disallow: /
+
+User-agent: Omgili
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Timpibot
+Disallow: /
+
+User-agent: ICC-Crawler
+Disallow: /
+
+User-agent: ISSCyberRiskCrawler
+Disallow: /
+
+User-agent: AI2Bot
+Disallow: /
+
+User-agent: Ai2Bot-Dolma
+Disallow: /
+
+User-agent: Kangaroo Bot
+Disallow: /
+
+User-agent: NovaAct
+Disallow: /
+
+User-agent: Crawlspace
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /

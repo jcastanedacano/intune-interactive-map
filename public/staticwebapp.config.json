@@ -1,0 +1,9 @@
+{
+  "globalHeaders": {
+    "X-Robots-Tag": "noai, noimageai"
+  },
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/icons/*", "/favicon.svg", "/favicon.ico", "/robots.txt", "/.well-known/*"]
+  }
+}
