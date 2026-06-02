@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { SV_PALETTE } from '../data/storyData.js'
+import { SV_PALETTE, SV_COMPONENTS } from '../data/storyData.js'
 import { STORIES, STORY_ORDER } from '../data/stories.js'
 import { useLocale } from '../hooks/useLocale.js'
 import { useTheme } from '../hooks/useTheme.js'
@@ -27,6 +27,63 @@ const pickTextOn = (hex) => {
   const b = parseInt(norm.slice(4, 6), 16)
   const yiq = (r * 299 + g * 587 + b * 114) / 1000
   return yiq >= 140 ? '#0B0F1A' : '#fff'
+}
+
+// Tag accent colors for the story picker — reused by group headers AND cards so
+// they match. Unknown tags fall back to a neutral ink color.
+const TAG_COLOR = {
+  'Framework':  '#16A34A', // green
+  'Use case':   '#2563EB', // blue
+  'Deployment': '#D97706', // amber
+  'Flow':       '#7C3AED'  // violet (4th tag present in this repo)
+}
+const tagColor = (tag) => TAG_COLOR[tag] || 'var(--text-tertiary)'
+
+// Mini "constellation" thumbnail — a recognizable fingerprint of a story built
+// from the canonical SV_COMPONENTS positions of its nodes. Dots-only (no edges)
+// since this repo exposes no EDGES map. Dark-aware via SV_PALETTE colorDark.
+function StoryConstellation({ nodes, isDark }) {
+  const W = 84, H = 56, PAD = 6, R = 2.6
+  // story.nodes is a map id -> { cat, x, y, ... }; tolerate raw id arrays too.
+  const ids = Array.isArray(nodes) ? nodes : Object.keys(nodes || {})
+  const pts = []
+  for (const id of ids) {
+    const c = (nodes && !Array.isArray(nodes) && nodes[id]) || SV_COMPONENTS[id]
+    if (!c || typeof c.x !== 'number' || typeof c.y !== 'number') continue
+    pts.push({ x: c.x, y: c.y, cat: c.cat })
+  }
+  let placed = []
+  if (pts.length) {
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y)
+    const minX = Math.min(...xs), maxX = Math.max(...xs)
+    const minY = Math.min(...ys), maxY = Math.max(...ys)
+    const spanX = maxX - minX, spanY = maxY - minY
+    const innerW = W - PAD * 2, innerH = H - PAD * 2
+    // Preserve aspect ratio; guard divide-by-zero when all x or all y are equal.
+    const sx = spanX > 0 ? innerW / spanX : 0
+    const sy = spanY > 0 ? innerH / spanY : 0
+    const s = Math.min(sx || sy || 1, sy || sx || 1)
+    // Center the (possibly collapsed) cluster inside the thumbnail.
+    const drawW = spanX * s, drawH = spanY * s
+    const offX = PAD + (innerW - drawW) / 2
+    const offY = PAD + (innerH - drawH) / 2
+    placed = pts.map(p => ({
+      cx: spanX > 0 ? offX + (p.x - minX) * s : W / 2,
+      cy: spanY > 0 ? offY + (p.y - minY) * s : H / 2,
+      cat: p.cat
+    }))
+  }
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ flexShrink: 0, display: 'block' }} aria-hidden="true">
+      <rect x="0.5" y="0.5" width={W - 1} height={H - 1} rx="6"
+        fill="var(--bg-canvas)" stroke="var(--border)" strokeWidth="1" />
+      {placed.map((p, i) => {
+        const cat = SV.cats[p.cat]
+        const fill = cat ? svColor(cat, isDark) : (isDark ? '#7E97EE' : '#3B5DD9')
+        return <circle key={i} cx={p.cx} cy={p.cy} r={R} fill={fill} />
+      })}
+    </svg>
+  )
 }
 
 function getReveals(story, sceneIdx) {
@@ -142,12 +199,14 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
             )}
             {filteredGroups.map(group => (
               <div key={group.tag} style={{marginBottom:8}}>
-                <div style={{fontSize:9, fontWeight:700, color:SV.ink3, letterSpacing:'.08em', textTransform:'uppercase', padding:'8px 10px 6px'}}>
+                <div style={{fontSize:9, fontWeight:700, color:tagColor(group.tag), letterSpacing:'.08em', textTransform:'uppercase', padding:'8px 10px 6px', display:'flex', alignItems:'center', gap:6}}>
+                  <span style={{width:6, height:6, borderRadius:'50%', background:tagColor(group.tag), flexShrink:0}}></span>
                   {group.tag} · {group.items.length}
                 </div>
                 {group.items.map(s => {
                   const c = SV.cats[s.primaryCat]
                   const active = s.id === storyId
+                  const tc = tagColor(s.tag)
                   return (
                     <div
                       key={s.id}
@@ -161,8 +220,9 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
                     >
                       <div style={{
                         width:28, height:28, borderRadius:7, flexShrink:0,
-                        background: active ? svColor(c, isDark) : svBg(c, isDark),
-                        color: active ? '#fff' : c.ring,
+                        background: tc + '22',
+                        color: tc,
+                        border: `1px solid ${tc}55`,
                         display:'flex', alignItems:'center', justifyContent:'center',
                         fontSize:12, fontWeight:700
                       }}>{s.title.charAt(0).toUpperCase()}</div>
@@ -171,9 +231,17 @@ function StoryPicker({ storyId, onPick, open, onToggle }) {
                           <div style={{fontSize:12, fontWeight:600, color:SV.ink}}>{s.title}</div>
                           {active && <span style={{fontSize:9, color:c.ring, fontWeight:700, flexShrink:0}}>{t('story.picker.active')}</span>}
                         </div>
-                        <div style={{fontSize:9, color:c.ring, fontWeight:600, marginTop:2, letterSpacing:'.03em'}}>{s.duration}</div>
+                        <div style={{display:'flex', alignItems:'center', gap:7, marginTop:3, flexWrap:'wrap'}}>
+                          <span style={{
+                            fontSize:8.5, fontWeight:700, color:tc, background:tc + '1A',
+                            padding:'1px 7px', borderRadius:999, letterSpacing:'.04em',
+                            textTransform:'uppercase', flexShrink:0
+                          }}>{s.tag}</span>
+                          <span style={{fontSize:9, color:c.ring, fontWeight:600, letterSpacing:'.03em'}}>{s.duration}</span>
+                        </div>
                         <div style={{fontSize:11, color:SV.ink2, lineHeight:1.45, marginTop:4}}>{s.blurb}</div>
                       </div>
+                      <StoryConstellation nodes={s.nodes} isDark={isDark} />
                     </div>
                   )
                 })}
