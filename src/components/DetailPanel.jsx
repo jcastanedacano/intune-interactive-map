@@ -9,6 +9,8 @@ import { COMPONENT_META, PHASES, coverageScore } from '../data/workloads.js'
 import { MITRE_TTPS, MITRE_TACTIC_COLORS, resolveMitre } from '../data/mitre.js'
 import { frameworkCoverage } from '../data/frameworks.js'
 import { useLocale } from '../hooks/useLocale.js'
+import { useTheme } from '../hooks/useTheme.js'
+import { catColor } from '../data/themeTints.js'
 
 // Per-framework coverage card — header with score % + tiny progress bar,
 // expandable control list with ✓/○ markers. Click the header to expand.
@@ -346,8 +348,13 @@ function ConnectionRow({ direction, edge, neighbor, onSelectComponent }) {
 
 function ComponentProfile({ component, onSelectComponent }) {
   const { t } = useLocale()
+  const { isDark } = useTheme()
   if (!component) return null
   const cat = CATEGORIES[component.category]
+  const accent = catColor(component.category, cat.color, isDark)
+  // Header bg: keep the saturated pastel in light, switch to a low-alpha tint
+  // of the accent in dark (the pastel is too light for primary text contrast).
+  const headerBg = isDark ? `${accent}26` : cat.bg
   const Icon = Icons[component.icon] || Icons.Box
   const rawPhase = COMPONENT_META[component.id]?.phase
   const phase = rawPhase ? Math.min(3, rawPhase) : null
@@ -372,9 +379,9 @@ function ComponentProfile({ component, onSelectComponent }) {
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif', height: '100%' }}>
       {/* Header with category tint + close */}
       <div style={{ borderBottom: '1px solid var(--divider)' }}>
-        <div style={{ background: cat.bg, padding: '14px 18px 12px', borderBottom: `1px solid ${cat.color}22` }}>
+        <div style={{ background: headerBg, padding: '14px 18px 12px', borderBottom: `1px solid ${cat.color}22` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: cat.color, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{cat.label}</div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{cat.label}</div>
             <div onClick={() => onSelectComponent && onSelectComponent(null)}
               style={{ fontSize: 10, color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-surface)', padding: '2px 8px', userSelect: 'none' }}>
               {t('profile.close')}
@@ -525,8 +532,11 @@ function ComponentProfile({ component, onSelectComponent }) {
 // - VECINOS EN CATÁLOGO · SUGERIDOS (catalog neighbors NOT yet placed, with + añadir)
 function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], onSelectComponent, onAddNode }) {
   const { t } = useLocale()
+  const { isDark } = useTheme()
   if (!component) return null
   const cat = CATEGORIES[component.category]
+  const accent = catColor(component.category, cat.color, isDark)
+  const headerBg = isDark ? `${accent}26` : cat.bg
   const Icon = Icons[component.icon] || Icons.Box
 
   const placedIds = new Set(scenarioNodes.map(n => n.id))
@@ -561,9 +571,9 @@ function ScenarioInspector({ component, scenarioNodes = [], scenarioEdges = [], 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif', height: '100%' }}>
       {/* Header */}
-      <div style={{ background: cat.bg, padding: '14px 18px 12px', borderBottom: `1px solid ${cat.color}22`, flexShrink: 0 }}>
+      <div style={{ background: headerBg, padding: '14px 18px 12px', borderBottom: `1px solid ${cat.color}22`, flexShrink: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, color: cat.color, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{cat.label}</div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: accent, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{cat.label}</div>
           <div onClick={() => onSelectComponent && onSelectComponent(null)}
             style={{ fontSize: 10, color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--bg-surface)', padding: '2px 8px', userSelect: 'none' }}>
             {t('profile.close')}
