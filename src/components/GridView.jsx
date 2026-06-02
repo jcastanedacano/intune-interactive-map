@@ -8,7 +8,12 @@ import { useCompare } from '../hooks/useCompare.js'
 import { useLocale } from '../hooks/useLocale.js'
 import { useTheme } from '../hooks/useTheme.js'
 import { catBg, catBgActive, catBorder, catColor } from '../data/themeTints.js'
-import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice, costFreq, costPillTier, formatPricePill } from '../data/pricing.js'
+import { PRICING, getCostTier, COST_TIER_COLOR, COST_TIER_LABEL, formatPrice, costFreq, costPillTier, formatPricePill, monthlyUsd } from '../data/pricing.js'
+
+// Cost-tier band → magnitude bar fill width (longer = pricier). Tier-based so it
+// is reliable for every component that has pricing. This app's getCostTier returns
+// 4 bands: 0 free·1 low(<$3)·2 mid($3-5)·3 high(>$5).
+const TIER_BAR_PCT = { 0: 14, 1: 32, 2: 55, 3: 100 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -118,6 +123,10 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
     bg = `${T.selection}12`; borderColor = T.selection; borderW = 2.5
   } else if (isConnected) {
     bg = catBgActive(accent, isDark); borderColor = accent; borderW = 2
+  } else if (overlay === 'cost' && PRICING[item.id]) {
+    // Cost heatmap: tint the whole card by its cost tier (cheap=green → expensive=red)
+    const tierColor = COST_TIER_COLOR[getCostTier(item.id) ?? 0]
+    bg = tierColor + (isDark ? '26' : '14'); borderColor = tierColor; borderW = 2
   } else {
     bg = catBg(accent, isDark); borderColor = catBorder(accent, isDark); borderW = 1
   }
@@ -193,17 +202,26 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
         const tier = costPillTier(item.id)
         const priceLabel = formatPricePill(cp)
         const freq = costFreq(cp)
+        const tierBand = getCostTier(item.id)
+        const tierColor = COST_TIER_COLOR[tierBand ?? 0]
         return (
-          <div title={cp?.note || ''} style={{
-            marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
-            background: tier.bg, color: tier.color,
-            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-            flexShrink: 0
-          }}>
-            <span>{priceLabel}</span>
-            {freq !== '-' && freq !== 'month' && (
-              <span style={{ opacity: 0.7, fontSize: 8 }}>{freq}</span>
+          <div style={{ flexShrink: 0 }}>
+            <div title={cp?.note || ''} style={{
+              marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+              background: tier.bg, color: tier.color,
+              fontFamily: 'JetBrains Mono, ui-monospace, monospace'
+            }}>
+              <span>{priceLabel}</span>
+              {freq !== '-' && freq !== 'month' && (
+                <span style={{ opacity: 0.7, fontSize: 8 }}>{freq}</span>
+              )}
+            </div>
+            {/* Magnitude bar — width maps to cost tier rank (longer/redder = pricier) */}
+            {cp && (
+              <div style={{ marginTop: 3, height: 3, background: T.divider, borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ width: `${TIER_BAR_PCT[tierBand ?? 0]}%`, height: '100%', background: tierColor, borderRadius: 2 }} />
+              </div>
             )}
           </div>
         )
@@ -230,7 +248,7 @@ function bezierPath(sx, sy, tx, ty) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function GridView({ edgeFilter, categoryFilter, search, setSearch, overlay, setOverlay, selectedComponent, onSelectComponent }) {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const blast = useBlastRadius()
   const compare = useCompare()
   const blastResult = useMemo(() => {
@@ -273,6 +291,28 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
     })
     return s
   }, [selectedId])
+
+  // TCO total: sum the monthly-normalized USD across every component that has a
+  // numeric price. priced = how many of the components in PRICING carry a number;
+  // total intentionally sums the whole catalog (free $0 entries count as priced).
+  const tco = useMemo(() => {
+    let total = 0, priced = 0
+    const all = Object.keys(PRICING)
+    for (const id of all) {
+      const p = PRICING[id]
+      if (typeof p?.price === 'number') {
+        priced++
+        const m = monthlyUsd(p)
+        if (m) total += m
+      }
+    }
+    return { total, priced, all: all.length }
+  }, [])
+
+  const fmtMoney = (n) => {
+    if (n >= 1000) return `$${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`
+    return `$${Math.round(n)}`
+  }
 
   const lower = (search || '').trim().toLowerCase()
 
@@ -319,6 +359,23 @@ export default function GridView({ edgeFilter, categoryFilter, search, setSearch
             })}
           </div>
         </div>
+
+        {/* TCO total chip — only while the cost overlay is on */}
+        {overlay === 'cost' && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+            padding: '4px 11px', borderRadius: 20,
+            background: T.white, border: `1px solid ${T.divider}`,
+            fontSize: 10.5, color: T.ink2, whiteSpace: 'nowrap',
+            fontVariantNumeric: 'tabular-nums'
+          }}>
+            <span style={{ fontWeight: 800, color: T.ink }}>{`Total ~${fmtMoney(tco.total)}/mo`}</span>
+            <span style={{ color: T.ink3 }}>·</span>
+            <span>{locale === 'en'
+              ? `${tco.priced} of ${tco.all} priced`
+              : `${tco.priced} de ${tco.all} con precio`}</span>
+          </div>
+        )}
 
         {/* Selected context pill */}
         {selectedId && (() => {

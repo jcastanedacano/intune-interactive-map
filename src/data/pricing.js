@@ -87,6 +87,16 @@ export const COST_TIER_LABEL = {
   3: '>$5/u'
 }
 
+// Monthly-normalized USD for a component's price entry. Mirrors how getCostTier
+// reads the number: PRICING.price is already a monthly per-user/device figure, so
+// pass it through; SCU/hr is hourly usage → ×720 to estimate a monthly equivalent.
+// Returns null when there is no numeric price to sum.
+export function monthlyUsd(p) {
+  if (!p || typeof p.price !== 'number' || p.price === 0) return null
+  if (p.per === 'SCU/hr') return p.price * 720
+  return p.price
+}
+
 export function formatPrice(p) {
   if (!p) return '—'
   if (p.price === 0) return 'Incluido'
