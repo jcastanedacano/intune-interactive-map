@@ -150,6 +150,8 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
   const gRef = useRef(null)
   const containerRef = useRef(null)
   const menuRef = useRef(null)
+  const loadRef = useRef(null)
+  const [loadOpen, setLoadOpen] = useState(false) // "Cargar escenario…" custom dropdown
   const [tooltip, setTooltip] = useState(null)
   const [addMenu, setAddMenu] = useState(null) // { screenX, screenY, fromId }
   const [zoomState, setZoomState] = useState(d3.zoomIdentity)
@@ -741,6 +743,14 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
     setEdgePicker(null)
   }
 
+  // Close "Cargar escenario…" custom dropdown on outside click
+  useEffect(() => {
+    if (!loadOpen) return
+    const onDown = (e) => { if (loadRef.current && !loadRef.current.contains(e.target)) setLoadOpen(false) }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [loadOpen])
+
   // PART 5: close menu on outside click
   useEffect(() => {
     if (!addMenu) return
@@ -785,26 +795,54 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
         position: 'absolute', top: 14, left: 18, right: 18, zIndex: 10,
         display: 'flex', gap: 10, fontFamily: 'Inter, system-ui, sans-serif'
       }}>
-        {/* Load scenario dropdown */}
+        {/* Load scenario — custom theme-aware dropdown (replaces native <select>,
+            whose OS-drawn option list clashes with the dark theme). Groups =
+            optgroup-equivalent: non-clickable header + clickable scenario rows. */}
         {onOverlay && (
-          <select
-            onChange={(e) => { if (e.target.value) { onOverlay(e.target.value); e.target.value = '' } }}
-            defaultValue=""
-            style={{
-              fontSize: 10.5, border: `1px solid ${SC_BORDER}`, borderRadius: 10,
-              padding: '10px 28px 10px 14px', background: 'var(--bg-surface)', color: SC_INK2,
-              cursor: 'pointer', fontFamily: 'inherit', minWidth: 180,
-              appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
-              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23A9B4C7' stroke-width='1.5' stroke-linecap='round'/></svg>")`,
-              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center'
-            }}>
-            <option value="" disabled>{tr('scenario.load.placeholder')}</option>
-            {SCENARIO_GROUPS.map(group => (
-              <optgroup key={pick(group.label, locale)} label={pick(group.label, locale)}>
-                {group.scenarios.map(s => <option key={s.id} value={s.id}>{pick(s.title, locale)}</option>)}
-              </optgroup>
-            ))}
-          </select>
+          <div ref={loadRef} style={{ position: 'relative' }}>
+            <div
+              onClick={() => setLoadOpen(o => !o)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontSize: 10.5, border: `1px solid ${SC_BORDER}`, borderRadius: 10,
+                padding: '10px 14px', background: 'var(--bg-surface)', color: SC_INK2,
+                cursor: 'pointer', fontFamily: 'inherit', minWidth: 180, userSelect: 'none'
+              }}>
+              <span style={{ flex: 1 }}>{tr('scenario.load.placeholder')}</span>
+              <span style={{ color: SC_INK3, marginLeft: 2 }}>▾</span>
+            </div>
+            {loadOpen && (
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 6px)', left: 0, minWidth: 240,
+                background: 'var(--bg-elevated)', border: `1px solid ${SC_BORDER}`, borderRadius: 8,
+                boxShadow: '0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04)',
+                padding: 4, zIndex: 50, maxHeight: 360, overflowY: 'auto'
+              }}>
+                {SCENARIO_GROUPS.map(group => (
+                  <div key={pick(group.label, locale)}>
+                    <div style={{
+                      padding: '8px 10px 4px', fontSize: 9.5, fontWeight: 700,
+                      color: 'var(--text-tertiary)', letterSpacing: '.08em',
+                      textTransform: 'uppercase', userSelect: 'none'
+                    }}>{pick(group.label, locale)}</div>
+                    {group.scenarios.map(s => (
+                      <div key={s.id}
+                        onClick={() => { onOverlay(s.id); setLoadOpen(false) }}
+                        style={{
+                          padding: '7px 10px', borderRadius: 6, cursor: 'pointer',
+                          fontSize: 12, fontWeight: 500, color: 'var(--text-primary)',
+                          userSelect: 'none', transition: 'background .12s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-muted)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}>
+                        {pick(s.title, locale)}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
         {/* COMPONENTS stat card */}
         <div style={{
