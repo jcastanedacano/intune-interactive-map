@@ -110,6 +110,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
   const blastClr = blastActive ? hopColor(blastHop) : null
 
   let bg, borderColor, borderW
+  let dimUnpriced = false
   if (blastActive) {
     bg = blastHop === 0 ? `${blastClr}22` : `${blastClr}14`
     borderColor = blastClr; borderW = blastHop === 0 ? 2.5 : 2
@@ -123,10 +124,16 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
     bg = `${T.selection}12`; borderColor = T.selection; borderW = 2.5
   } else if (isConnected) {
     bg = catBgActive(accent, isDark); borderColor = accent; borderW = 2
-  } else if (overlay === 'cost' && PRICING[item.id]) {
-    // Cost heatmap: tint the whole card by its cost tier (cheap=green → expensive=red)
-    const tierColor = COST_TIER_COLOR[getCostTier(item.id) ?? 0]
-    bg = tierColor + (isDark ? '26' : '14'); borderColor = tierColor; borderW = 2
+  } else if (overlay === 'cost') {
+    if (PRICING[item.id]) {
+      // Cost heatmap: tint the whole card by its cost tier (cheap=green → expensive=red)
+      const tierColor = COST_TIER_COLOR[getCostTier(item.id) ?? 0]
+      bg = tierColor + (isDark ? '26' : '14'); borderColor = tierColor; borderW = 2
+    } else {
+      // No price/tier: recede neutrally so the tier-colored priced cards pop
+      bg = 'var(--bg-surface)'; borderColor = 'var(--border)'; borderW = 1
+      dimUnpriced = true
+    }
   } else {
     bg = catBg(accent, isDark); borderColor = catBorder(accent, isDark); borderW = 1
   }
@@ -142,7 +149,7 @@ function DomainCard({ item, atomicNum, overlay, isSelected, isConnected, isDimme
         border: `${borderW}px solid ${borderColor}`,
         borderRadius: 10,
         cursor: 'pointer',
-        opacity: isDimmed ? 0.13 : 1,
+        opacity: isDimmed ? 0.13 : dimUnpriced ? 0.55 : 1,
         transition: 'opacity .18s, box-shadow .14s, transform .13s, border-color .15s',
         transform: isSelected ? 'scale(1.025)' : 'scale(1)',
         boxShadow: isSelected
