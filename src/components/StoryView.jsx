@@ -456,29 +456,60 @@ function Annotation({ a, nodes, override, onMove, svgRef }) {
         }} dangerouslySetInnerHTML={{__html: a.body}}></div>
       </foreignObject>
       {/* Triangle attached to the card edge (not floating at the original anchor).
-          The arrow direction points from the card toward the anchor area. */}
+          The arrow direction points from the card toward the anchor area.
+          Animated: subtle back-and-forth slide toward the pointing direction
+          (mirrors the flow particle motion used in the rest of Story view). */}
       {(() => {
         const cx = x + w/2, cy = y + h/2  // card center
-        // Compute triangle tip + base depending on direction
+        const ANIM_DUR = '1.6s'
+        const ANIM_AMP = 4 // pixels of back-and-forth motion
         if (effectiveArrow === 'down') {
-          // Card is above anchor → triangle at bottom edge pointing down
           const tipX = cx, tipY = y + h + 8
-          return <polygon points={`${cx - 7},${y + h} ${cx + 7},${y + h} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
+          return (
+            <g>
+              <polygon points={`${cx - 7},${y + h} ${cx + 7},${y + h} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5">
+                <animateTransform attributeName="transform" type="translate"
+                  values={`0,0; 0,${ANIM_AMP}; 0,0`} dur={ANIM_DUR} repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" values="0.85;1;0.85" dur={ANIM_DUR} repeatCount="indefinite" />
+              </polygon>
+            </g>
+          )
         }
         if (effectiveArrow === 'up') {
-          // Card is below anchor → triangle at top edge pointing up
           const tipX = cx, tipY = y - 8
-          return <polygon points={`${cx - 7},${y} ${cx + 7},${y} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
+          return (
+            <g>
+              <polygon points={`${cx - 7},${y} ${cx + 7},${y} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5">
+                <animateTransform attributeName="transform" type="translate"
+                  values={`0,0; 0,-${ANIM_AMP}; 0,0`} dur={ANIM_DUR} repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" values="0.85;1;0.85" dur={ANIM_DUR} repeatCount="indefinite" />
+              </polygon>
+            </g>
+          )
         }
         if (effectiveArrow === 'left') {
-          // Card is right of anchor → triangle at left edge pointing left
           const tipY = cy, tipX = x - 8
-          return <polygon points={`${x},${cy - 7} ${x},${cy + 7} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
+          return (
+            <g>
+              <polygon points={`${x},${cy - 7} ${x},${cy + 7} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5">
+                <animateTransform attributeName="transform" type="translate"
+                  values={`0,0; -${ANIM_AMP},0; 0,0`} dur={ANIM_DUR} repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" values="0.85;1;0.85" dur={ANIM_DUR} repeatCount="indefinite" />
+              </polygon>
+            </g>
+          )
         }
         if (effectiveArrow === 'right') {
-          // Card is left of anchor → triangle at right edge pointing right
           const tipY = cy, tipX = x + w + 8
-          return <polygon points={`${x + w},${cy - 7} ${x + w},${cy + 7} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5" />
+          return (
+            <g>
+              <polygon points={`${x + w},${cy - 7} ${x + w},${cy + 7} ${tipX},${tipY}`} fill="var(--bg-surface)" stroke={c} strokeWidth="1.5">
+                <animateTransform attributeName="transform" type="translate"
+                  values={`0,0; ${ANIM_AMP},0; 0,0`} dur={ANIM_DUR} repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" values="0.85;1;0.85" dur={ANIM_DUR} repeatCount="indefinite" />
+              </polygon>
+            </g>
+          )
         }
         return null
       })()}
