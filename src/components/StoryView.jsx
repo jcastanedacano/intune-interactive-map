@@ -385,7 +385,7 @@ function NarrativePane({ story, scene, idx, onPrev, onNext, onRestart }) {
           <div onClick={onNext} style={{flex:1, padding:'7px 14px', borderRadius:8, fontSize:12, fontWeight:600, background:primaryColor, color:'#fff', cursor:'pointer', textAlign:'center', userSelect:'none'}}>{t('story.next')}</div>
         )}
       </div>
-      <div style={{padding:'8px 24px 14px', background:'var(--bg-surface)', display:'flex', justifyContent:'space-between', fontSize:10, color:SV.ink3}}>
+      <div style={{padding:'8px 24px 14px', background:'var(--bg-surface)', display:'flex', justifyContent:'space-between', fontSize:10, color:SV.ink2}}>
         <span>{t('story.scene', { idx: idx + 1, total })}</span>
         <span><kbd style={kbdStyle}>←</kbd> <kbd style={kbdStyle}>→</kbd> {t('story.navigate')}</span>
       </div>
