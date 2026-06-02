@@ -78,8 +78,8 @@ function reducer(state, action) {
       return { ...state, customEdges: [...state.customEdges, { source, target, type, label: label || type, flow }] }
     }
     case 'removeEdge': {
-      const { source, target, type } = action
-      return { ...state, customEdges: state.customEdges.filter(e => !(e.source === source && e.target === target && e.type === type)) }
+      const { source, target, edgeType } = action
+      return { ...state, customEdges: state.customEdges.filter(e => !(e.source === source && e.target === target && e.type === edgeType)) }
     }
     case 'loadScenario': {
       const s = SCENARIO_MAP[action.id]

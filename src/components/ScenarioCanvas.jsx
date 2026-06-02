@@ -153,6 +153,7 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
   const loadRef = useRef(null)
   const [loadOpen, setLoadOpen] = useState(false) // "Cargar escenario…" custom dropdown
   const [tooltip, setTooltip] = useState(null)
+  const [hoveredEdge, setHoveredEdge] = useState(null) // index of edge being hovered (for delete affordance)
   const [addMenu, setAddMenu] = useState(null) // { screenX, screenY, fromId }
   const [zoomState, setZoomState] = useState(d3.zoomIdentity)
   // `flowing` is now owned by App so the DetailPanel button (Animar/Detener)
@@ -1011,16 +1012,37 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
             const labelW = (e.label?.length || 0) * 6.2 + 16
             const labelPos = labelPositions[i] || edgeMid(s.x, s.y, t.x, t.y)
             const pathId = `flow-path-${i}`
+            const dPath = edgePath(s.x, s.y, t.x, t.y)
+            const isHovered = hoveredEdge === i
+            // Gate the delete affordance on user-added (custom) edges — catalog/auto-resolved
+            // edges are inherent to the placed nodes and removeEdge won't persist their removal.
+            const canRemove = e.custom === true
+            const removeThisEdge = (ev) => {
+              ev.preventDefault(); ev.stopPropagation()
+              dispatch({ type: 'removeEdge', source: e.source, target: e.target, edgeType: e.type })
+            }
             return (
               <g key={i} opacity={op} style={{ transition: 'opacity .25s' }}>
+                {/* Invisible wide hit path — makes the thin line easy to hover/click */}
+                <path
+                  d={dPath}
+                  fill="none"
+                  stroke="transparent"
+                  strokeWidth={16}
+                  style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+                  onMouseEnter={() => setHoveredEdge(i)}
+                  onMouseLeave={() => setHoveredEdge(null)}
+                  onContextMenu={canRemove ? removeThisEdge : undefined}
+                />
                 <path
                   id={pathId}
-                  d={edgePath(s.x, s.y, t.x, t.y)}
+                  d={dPath}
                   fill="none"
                   stroke={color}
-                  strokeWidth={sw}
+                  strokeWidth={isHovered ? sw + 1.4 : sw}
                   strokeDasharray={EDGE_TYPES[e.type]?.dash || undefined}
                   markerEnd={marker || undefined}
+                  style={isHovered ? { opacity: 1, filter: `drop-shadow(0 0 5px ${color})`, transition: 'stroke-width .15s' } : { transition: 'stroke-width .15s' }}
                 />
                 {flowing && !sDim && !tDim && (
                   <circle key={`flow-${flowKey}-${i}`} r={4} fill={color} opacity={0} style={{ filter: `drop-shadow(0 0 6px ${color})` }}>
@@ -1042,6 +1064,20 @@ function ScenarioCanvas({ scenario, dispatch, edges, edgeFilter, overlay, catego
                     <rect x={-labelW/2} y={-9} width={labelW} height={18} rx={9}
                       fill="var(--bg-surface)" stroke={color} strokeOpacity={0.45} strokeWidth={1} />
                     <text x={0} y={4} textAnchor="middle" fontSize={10.5} fontWeight={600} fill={color}>{e.label}</text>
+                  </g>
+                )}
+                {/* Delete control — appears on hover for user-added (custom) edges only.
+                    Own <g> with pointer events (the label stays pointerEvents:none).
+                    Offset to the right of the label so it doesn't cover the text. */}
+                {isHovered && canRemove && (
+                  <g
+                    transform={`translate(${labelPos.x + labelW/2 + 10},${labelPos.y})`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={removeThisEdge}
+                    onContextMenu={removeThisEdge}
+                  >
+                    <circle r={8} fill="var(--bg-surface)" stroke="#DC2626" strokeWidth={1.5} />
+                    <text x={0} y={3.5} textAnchor="middle" fontSize={11} fontWeight={700} fill="#DC2626" style={{ pointerEvents: 'none', userSelect: 'none' }}>×</text>
                   </g>
                 )}
               </g>
